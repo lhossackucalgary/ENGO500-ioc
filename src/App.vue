@@ -111,7 +111,6 @@ export default {
     display:inline-flex;
 }
 .router-view-wrapper {
-    overflow: scroll;
     position: fixed;
     top: 60px;
     width: 100%;
