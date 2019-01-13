@@ -1,6 +1,14 @@
 <template>
     <div id="app" >
         <div class="nav-bar">
+            <div class="nav-logo">
+                <div class="logo">
+                    <img class="logo" src="./assets/RSLogo.png">
+                </div>
+                <div class="logo_name">
+                    Route <br />Scouts
+                </div>
+            </div>
             <div class="nav-left">
                 <nav>
                 <router-link class="nav-left-link" to="/map">Map</router-link>
@@ -14,7 +22,11 @@
                 </nav>
             </div>
         </div>
-        <router-view/>
+        <div class="router-view-wrapper">
+            <div class="router-view">
+                <router-view />
+            </div>
+        </div>
     </div>
 </template>
 
@@ -31,18 +43,42 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 10px;
 }
 .nav-bar {
-    background: linear-gradient(-90deg, #84CF6A, #16C0B0);
+    background: #84CF6A;
     height: 60px;
-    margin-bottom: 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     overflow: hidden;
   }
+.nav-logo {
+    float: left;
+    margin-left: 10px;
+    width:30%;
+    height: 55px;
+    padding: 5px;
+    text-align: left;
+}
+.logo {
+    float: left;
+    width: 60px;
+    height: auto;
+}
+.logo_name {
+    float: left;
+    color: white;
+    font-size: 15px;
+    padding: 5px;
+    text-align: left;
+    height: 50;
+    font-weight: bold;
+}
 .nav-left {
     float: left;
     margin-left: 20px;
-    width: 70%;
+    width: 40%;
     height: 60px;
     padding: 12px;
     text-align: left;
@@ -71,4 +107,16 @@ export default {
     text-decoration: underline;
     color:#2c3e50;
 }
+.router-view {
+    display:inline-flex;
+}
+.router-view-wrapper {
+    position: fixed;
+    top: 60px;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    text-align: center;
+}
+
 </style>
