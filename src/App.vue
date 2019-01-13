@@ -3,7 +3,7 @@
         <div class="nav-bar">
             <div class="nav-logo">
                 <div class="logo">
-                    <img class="logo" src="./images/RSLogo.png">
+                    <img class="logo" src="./assets/RSLogo.png">
                 </div>
                 <div class="logo_name">
                     Route <br />Scouts
@@ -22,7 +22,11 @@
                 </nav>
             </div>
         </div>
-        <router-view/>
+        <div class="router-view-wrapper">
+            <div class="router-view">
+                <router-view />
+            </div>
+        </div>
     </div>
 </template>
 
@@ -39,12 +43,14 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 10px;
 }
 .nav-bar {
     background: #84CF6A;
     height: 60px;
-    margin-bottom: 15px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     overflow: hidden;
   }
 .nav-logo {
@@ -100,6 +106,18 @@ export default {
 .nav-right-link:hover {
     text-decoration: underline;
     color:#2c3e50;
+}
+.router-view {
+    display:inline-flex;
+    overflow: scroll;
+}
+.router-view-wrapper {
+    position: fixed;
+    top: 60px;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+    text-align: center;
 }
 
 </style>
