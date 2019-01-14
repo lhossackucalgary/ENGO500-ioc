@@ -1,10 +1,10 @@
 <template>
     <div>
-        <map-view></map-view>
-        <map-layers></map-layers>
-        <map-maint-summary></map-maint-summary>
-        <map-selected-items></map-selected-items>
-        <map-crew-info></map-crew-info>
+      <map-layers></map-layers>
+      <map-maint-summary></map-maint-summary>
+      <map-selected-items></map-selected-items>
+      <map-crew-info></map-crew-info>
+      <map-view></map-view>
     </div>
 </template>
 
