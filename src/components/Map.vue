@@ -1,8 +1,6 @@
 <template>
     <div>
-        <map-view inline-template>
-          <div id="map"></div>
-        </map-view>
+        <map-view></map-view>
         <map-layers></map-layers>
         <map-maint-summary></map-maint-summary>
         <map-selected-items></map-selected-items>
@@ -15,7 +13,7 @@ import MapCrewInfo from './MapComponents/MapCrewInfo.vue'
 import MapLayers from './MapComponents/MapLayers.vue'
 import MapMaintenanceSummary from './MapComponents/MapMaintenanceSummary.vue'
 import MapSelectedItems from './MapComponents/MapSelectedItems.vue'
-import MapView from './MapComponents/MapView.js'
+import MapView from './MapComponents/MapView.vue'
 
 export default {
   name: 'Map',
