@@ -26,7 +26,6 @@ export default {
     console.log(M)
   }
 }
-
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -34,9 +33,8 @@ export default {
 @import url("https://openlayers.org/en/latest/css/ol.css")
 
 #map {
-  position: absolute;
-  top: 0;
+  position: fixed;
   bottom: 0;
-  width: 100%;
+  right: 0;
 }
 </style>
