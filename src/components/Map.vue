@@ -44,7 +44,7 @@ export default {
 #mapcontainer {
   position: fixed;
   top: 60px;
-  right: 250px;
+  left: 250px;
   width: 100%;
   height: 100%;
 }
