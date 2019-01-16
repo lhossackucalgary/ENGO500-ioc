@@ -1,32 +1,79 @@
 <template>
-    <h2>{{msg}}</h2>
+    <div>
+      <div id="mapcontainer">
+        <map-view></map-view>
+      </div>
+      <div id="layerselcont">
+        <div id="layercontainer">
+          <map-layers></map-layers>
+        </div>
+        <div id="selectedcontainer">
+          <map-selected-items></map-selected-items>
+        </div>
+      </div>
+      <div id="maintcontainer">
+        <map-maint-summary></map-maint-summary>
+      </div>
+      <div id="crewinfo">
+        <map-crew-info></map-crew-info>
+      </div>
+    </div>
 </template>
 
 <script>
+import MapCrewInfo from './MapComponents/MapCrewInfo.vue'
+import MapLayers from './MapComponents/MapLayers.vue'
+import MapMaintenanceSummary from './MapComponents/MapMaintenanceSummary.vue'
+import MapSelectedItems from './MapComponents/MapSelectedItems.vue'
+import MapView from './MapComponents/MapView.vue'
+
 export default {
   name: 'Map',
-  data () {
-    return {
-      msg: 'Map goes here.. leaflet, anyone?'
-    }
+  components: {
+    'map-crew-info': MapCrewInfo,
+    'map-layers': MapLayers,
+    'map-maint-summary': MapMaintenanceSummary,
+    'map-selected-items': MapSelectedItems,
+    'map-view': MapView
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-  font-weight: normal;
+#mapcontainer {
+  position: fixed;
+  top: 60px;
+  left: 250px;
+  width: 100%;
+  height: 100%;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+#layerselcont {
+  position: fixed;
+  width: 250px;
+  top: 60px;
+  left: 0;
+  height: 100%;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+#layercontainer {
+  height: 50%;
+  background-color: white;
+  overflow-y: scroll;
 }
-a {
-  color: #42b983;
+
+#selectedcontainer {
+  height: 50%;
+  background-color: white;
+  overflow-y: scroll;
+}
+
+#maintcontainer {
+
+}
+
+#crewinfo {
+
 }
 </style>

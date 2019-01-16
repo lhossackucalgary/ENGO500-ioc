@@ -107,9 +107,6 @@ export default {
     text-decoration: underline;
     color:#2c3e50;
 }
-.router-view {
-    display:inline-flex;
-}
 .router-view-wrapper {
     position: fixed;
     top: 60px;
