@@ -1,0 +1,27 @@
+Apache instructions: default port 80
+edit file: /etc/apache2/httpd.conf
+
+uncomment (~line 177):
+LoadModule php7_module libexec/apache2/libphp7.so
+
+Change document root and Directory attribute beneath it to point to your ioc/dist directory (eg.
+	DocumentRoot "/Users/lhossack/Sites/ioc/dist"
+	<Directory "/Users/lhossack/Sites/ioc/dist">
+..) should be around line 245
+
+sudo apachectl start
+(if it is already started, run: $ sudo apachectl restart)
+
+
+Mysql installation instructions: default port is 3306
+brew install mysql
+brew tap homebrew/services
+brew services start mysql
+optional:
+	brew services list (check if service loaded)
+	mysql -V (check version)
+
+$(brew —prefix mysql)/bin/mysqladmin -u root password
+enter passw as: pw (for compatibility with the php app)
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'pw';
