@@ -2,6 +2,12 @@ This is the home for the routing service.
 
 Use python 3.6+
 
+To install requirements:
+$ pip install -r requirements.txt
+
+To update requirements:
+$ pip freeze > requirements.txt
+
 
 **ENSURE YOU KILL THIS SERVICE WHEN NOT IN USE**
 
