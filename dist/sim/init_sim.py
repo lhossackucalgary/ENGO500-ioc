@@ -1,37 +1,120 @@
+"""
+init_sim.py
+Initializes simulator data on SensorThings API server.
+This file runs ONCE at the beginning of a simulation. sim_main.py runs
+repeatedly throughout the simulation.
+- Creates crews with an initial location. Crews do not have data streams.
+- Creates robots with initial location. Creates & initializes data streams
+and sensors for robots.
+"""
 import logging
 import os
 import requests
+import pickle
+import random
 
+#Globals
+NUM_ROBOTS = 1
+NUM_CREW = 1
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
-def store_crew_data():
+def init_datastreams(id):
     """
-    iot_id  -> current location
-            -> destination location
-    """
-    pass
-
-def store_robot_data():
-    """
-    iot_id  -> array of sensor data (current)
-            -> array of sensor data (target?) (reduce random noise..idk how we want to do this)
+    TODO: Implement datastream creation for robot. If we need any information
+    regarding this data stream to simulate info, return it. eg. iotid
     """
     pass
 
-def main():
-    # store_crew_data()
-    # store_robot_data()
+def init_sensors(id):
+    """
+    TODO: Implement sensor creation for robot. If we need any information
+    regarding this data stream to simulate info, return it. eg. iotid
+    """
+    pass
 
-    for i in range(0, 10):
-        # Create crew (only needs to be run once per crew)
+def init_location(id):
+    """
+    Create an initial location in Calgary for a crew or a robot
+    @param[in]  Thing id to give a random location
+    @return     (lat,lon)
+    """
+    data = {"name": "Thing " + str(id) + " location",
+              "description": "Thing " + str(id) + " location",
+              "encodingType": "application/vnd.geo+json",
+              "location": {
+                "type": "Point",
+                "coordinates": [random.randint(-11420837, -11393371)/1.0e5,
+                                random.randint(5091912, 5114782)/1.0e5]
+              }
+             }
+    try:
+        r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Locations"
+                           % id, json = data, headers = headers)
+        logging.info(r.json())
+        if (r.status_code >= 200) and (r.status_code < 300):
+            coords = r.json()["location"]["coordinates"]
+            logging.info("Thing %d initial location created: %f, %f"
+                         % (id, coords[0], coords[1]))
+            return (coords[0], coords[1])
+        return (0.0,0.0)
+    except:
+        logging.exception("Request to give Thing %d a location failed." % id)
+
+
+def create_crews():
+    """
+    Creates crews with an initial location. Crews do not have data streams.
+    """
+    crew_list = []
+    for i in range(0, NUM_CREW):
+        crew = {"name": "Crew" + str(i)}
         data = {"name": "Crew" + str(i), "description": "Crew " + str(i), "properties": {"route": []}}
         try:
             r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things", json = data, headers = headers)
-            print(data)
+            logging.info(r.json())
+            if (r.status_code >= 200) and (r.status_code < 300):
+                crew["iotid"] = r.json()["@iot.id"]
+                logging.info("Crew Thing %d created" % crew["iotid"])
         except:
-            print("rip")
-            exit()
+            logging.exception("Request to create Crew %d failed." % i)
+        crew["coordinates"] = init_location(crew["iotid"])
+        crew_list.append(crew)
+    with open(r'data/crew.data', 'wb') as fout:
+        pickle.dump(crew_list, fout)
 
+
+def create_robots():
+    """
+    Creates robots with initial location. Creates & initializes data streams
+    and sensors for robots.
+    """
+    robot_list = []
+    for i in range(0, NUM_ROBOTS):
+        robot = {"name": "robot" + str(i)}
+        data = {"name": "robot" + str(i), "description": "robot " + str(i)}
+        try:
+            r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things", json = data, headers = headers)
+            logging.info(r.json())
+            if (r.status_code >= 200) and (r.status_code < 300):
+                robot["iotid"] = r.json()["@iot.id"]
+                logging.info("Robot Thing %d created" % robot["iotid"])
+        except:
+            logging.exception("Request to create robot %d failed." % i)
+        init_location(robot["iotid"])
+
+        # TODO: Encode datastream and sensor initialization output (if needed)
+        # into robot dictionary for saving.. eg. iotid of datastream and sensors
+        # and current values + any meta-data required for simulation model
+        init_datastreams(robot["iotid"])
+        init_sensors(robot["iotid"])
+        robot_list.append(robot)
+    with open(r'data/robot.data', 'wb') as fout:
+        pickle.dump(robot_list, fout)
+
+
+def main():
+    create_crews()
+    create_robots()
 
 
 if __name__ == '__main__':
