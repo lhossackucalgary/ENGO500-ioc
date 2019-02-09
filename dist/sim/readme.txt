@@ -2,7 +2,13 @@
 
 This is the home for the simulator service.
 
-Use python 3.6+
+Use python 3.6+ (If you use python 2.x it WILL fail to load .data files)
+
+To install requirements:
+$ pip install -r requirements.txt
+
+To update requirements:
+$ pip freeze > requirements.txt
 
 To start, create a cron job:
 $ crontab -e
