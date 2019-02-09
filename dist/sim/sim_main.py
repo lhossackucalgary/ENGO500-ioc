@@ -1,63 +1,38 @@
 import logging
 import os
 import requests
-import json
+import pickle
 
-def load_sim_data():
-    pass
 
-def update_locations():
-    pass
+headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
-def update_status():
-    pass
+def load_data(fin_name):
+    with open(fin_name, 'rb') as fin:
+        data = pickle.load(fin)
+    return data
 
-def store_sim_data():
-    pass
+def update_crews():
+    crews = load_data(r'./data/crew.data')
+
+
+def update_robots():
+    robots = load_data(r'./data/robot.data')
+
 
 def main():
-    # load_sim_data()
-    # update_locations()
-    # update_things()
-    # update_datastreams()
-    # store_sim_data()
+    """
+    Update crew and robot simulated information
+    """
+    update_crews()
+    logging.info("Crews update complete")
 
+    update_robots()
+    logging.info("Robots updated complete")
 
-    headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
-
-    # Create crew (only needs to be run once..)
-    # data = {"name": "Crew 1", "description": "Crew 1..", "properties": {"route": [19123901, 712312, 31231, 41232]}}
+    # Create location (Change iot user's location to new location..)
+    # data = {"name": "", "description": "crew 1 location", "encodingType": "application/vnd.geo+json","location": {"type": "Point","coordinates": [18, -10]}}
     # try:
-    #     r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things", json = data, headers = headers)
-    #     print(r.text)
-    # except:
-    #     print("rip")
-    #     exit()
-
-    # Create
-
-
-    # Create create location (Change iot user's location to new location..)
-    data = {"name": "Crew 1 location 19:47", "description": "crew 1 location", "encodingType": "application/vnd.geo+json","location": {"type": "Point","coordinates": [18, -10]}}
-    try:
-        r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things(2)/Locations", json = data, headers = headers)
-        print(r.text)
-    except:
-        print("rip")
-        exit()
-
-    # # Create
-    # data = {"Locations": [{"@iot.id": 2662853}]}
-    # try:
-    #     r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Locations", json = data)
-    #     print(r.text)
-    # except:
-    #     print("rip")
-    #     exit()
-
-    # data = {"Locations": [{"@iot.id":3}]}
-    # try:
-    #     r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(2)", json = data, headers = headers)
+    #     r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things(2)/Locations", json = data, headers = headers)
     #     print(r.text)
     # except:
     #     print("rip")
@@ -66,7 +41,7 @@ def main():
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
-    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.INFO,\
+    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.DEBUG,\
                         format="%(asctime)s [%(levelname)s]: %(message)s")
     logging.info("Simulator started")
     main()

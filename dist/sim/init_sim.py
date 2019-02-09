@@ -13,6 +13,7 @@ import requests
 import pickle
 import random
 
+
 #Globals
 NUM_ROBOTS = 1
 NUM_CREW = 1
@@ -119,7 +120,7 @@ def main():
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
-    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.INFO,\
+    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.DEBUG,\
                         format="%(asctime)s [%(levelname)s]: %(message)s")
     logging.info("Simulator started")
     main()
