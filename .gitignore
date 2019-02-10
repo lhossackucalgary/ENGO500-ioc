@@ -10,6 +10,7 @@ yarn-error.log*
 selenium-debug.log
 /logs/*
 /dist/sim/data/*
+*.py[cod]
 
 # Editor directories and files
 .idea
