@@ -27,7 +27,10 @@ def unit_vector(start, end):
     dx = end[0] - start[0]
     dy = end[1] - start[1]
     dist = math.sqrt((dx * dx) + (dy * dy))
-    return (dx/dist, dy/dist, dist)
+    if dist > 0.0000000001:
+        return (dx/dist, dy/dist, dist)
+    else:
+        return (0, 0, 0)
 
 
 def set_location(id, coords):

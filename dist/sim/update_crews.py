@@ -48,9 +48,15 @@ def update_crews():
         # calc & set new location
         uv = unit_vector(crew["coordinates"], destination)
         new_loc = []
-        new_loc.append(crew["coordinates"][0] + uv[0]*0.5/12) # 0.5 degrees/hour, 12 updates/ 5 mins.. ~55km/hr
-        new_loc.append(crew["coordinates"][1] + uv[1]*0.5/12)
-        crew["coordinates"] = set_location(id, new_loc)
+        speed = 0.5/12  # 0.5 degrees/hour = ~55km/hr = 4.5km/5 mins
+        if uv[2] > 0.000001:
+            if uv[2] < speed:
+                new_loc.append(crew["coordinates"][0] + uv[0]*uv[2])
+                new_loc.append(crew["coordinates"][1] + uv[1]*uv[2])
+            else:
+                new_loc.append(crew["coordinates"][0] + uv[0]*speed)
+                new_loc.append(crew["coordinates"][1] + uv[1]*speed)
+            crew["coordinates"] = set_location(id, new_loc)
 
     print(crews)
     store_data(crews, r'data/crew.data')
