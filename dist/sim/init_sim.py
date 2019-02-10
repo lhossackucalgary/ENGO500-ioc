@@ -12,6 +12,7 @@ import os
 import requests
 import pickle
 import random
+from util import *
 
 
 #Globals
@@ -39,28 +40,8 @@ def init_location(id):
     @param[in]  Thing id to give a random location
     @return     (lat,lon)
     """
-    data = {"name": "Thing " + str(id) + " location",
-              "description": "Thing " + str(id) + " location",
-              "encodingType": "application/vnd.geo+json",
-              "location": {
-                "type": "Point",
-                "coordinates": [random.randint(-11420837, -11393371)/1.0e5,
-                                random.randint(5091912, 5114782)/1.0e5]
-              }
-             }
-    try:
-        r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Locations"
-                           % id, json = data, headers = headers)
-        logging.debug(r.json())
-        if (r.status_code >= 200) and (r.status_code < 300):
-            coords = r.json()["location"]["coordinates"]
-            logging.debug("Thing %d initial location created: %f, %f"
-                         % (id, coords[0], coords[1]))
-            return (coords[0], coords[1])
-        return (0.0,0.0)
-    except:
-        logging.exception("Request to give Thing %d a location failed." % id)
-
+    return set_location(id, (random.randint(-11420837, -11393371)/1.0e5,
+                        random.randint(5091912, 5114782)/1.0e5))
 
 def create_crews():
     """
