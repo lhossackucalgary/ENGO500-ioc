@@ -8,7 +8,6 @@ import requests
 
 def update_crews():
     crews = load_data(r'./data/crew.data')
-    print(crews)
     for crew in crews:
         # GET next robot crew is moving to
         logging.debug("Getting crew props..")
@@ -58,5 +57,4 @@ def update_crews():
                 new_loc.append(crew["coordinates"][1] + uv[1]*speed)
             crew["coordinates"] = set_location(id, new_loc)
 
-    print(crews)
     store_data(crews, r'data/crew.data')
