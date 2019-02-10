@@ -4,11 +4,11 @@ Crew updates
 from util import *
 import logging
 import requests
-import pickle
 
 
 def update_crews():
     crews = load_data(r'./data/crew.data')
+    print(crews)
     for crew in crews:
         # GET next robot crew is moving to
         logging.debug("Getting crew props..")
@@ -45,8 +45,12 @@ def update_crews():
             logging.exception("Failed getting crew (Thing %d's) destination" % id)
             continue
 
-        # calc new location
-        print(destination)
-        print(crew["coordinates"])
+        # calc & set new location
+        uv = unit_vector(crew["coordinates"], destination)
+        new_loc = []
+        new_loc.append(crew["coordinates"][0] + uv[0]*0.5/12) # 0.5 degrees/hour, 12 updates/ 5 mins.. ~55km/hr
+        new_loc.append(crew["coordinates"][1] + uv[1]*0.5/12)
+        crew["coordinates"] = set_location(id, new_loc)
 
-        # POST new location
+    print(crews)
+    store_data(crews, r'data/crew.data')
