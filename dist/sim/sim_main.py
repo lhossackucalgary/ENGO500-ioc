@@ -16,13 +16,13 @@ def main():
         update_crews()
         logging.info("Crews update complete.")
     except:
-        logging.except("Crews update failed.")
+        logging.exception("Crews update failed.")
 
     try:
         update_robots()
         logging.info("Robots updated complete.")
     except:
-        logging.except("Robots update failed.")
+        logging.exception("Robots update failed.")
 
 
 if __name__ == '__main__':
