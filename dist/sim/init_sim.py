@@ -73,7 +73,7 @@ def create_robots():
     robot_list = []
     for i in range(0, NUM_ROBOTS):
         robot = {"name": "robot" + str(i)}
-        data = {"name": "robot" + str(i), "description": "robot " + str(i)}
+        data = {"name": "robot" + str(i), "description": "robot " + str(i), "properties": {"status": "Healthy"}}
         try:
             r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things", json = data, headers = headers)
             logging.debug(r.json())
