@@ -9,6 +9,8 @@ yarn-error.log*
 /test/e2e/reports/
 selenium-debug.log
 /logs/*
+/dist/sim/data/*
+*.py[cod]
 
 # Editor directories and files
 .idea
@@ -17,3 +19,7 @@ selenium-debug.log
 *.ntvs*
 *.njsproj
 *.sln
+
+# Exceptions
+!/logs/readme.txt
+!/dist/sim/data/readme.txt
