@@ -28,12 +28,37 @@ def init_datastreams(id):
     
     pass
 
-def init_sensors(id):
+def init_sensors():
     """
     TODO: Implement sensor creation for robot. If we need any information
     regarding this data stream to simulate info, return it. eg. iotid
     """
-    pass
+    datas = [
+        {
+            "name": "THERMOMETER", 
+            "description": "THERMOMETER temperature sensor in celcius ", 
+            "encodingType": "application/pdf", 
+            "metadata": "https://en.wikipedia.org/wiki/Thermometer"
+        }, 
+        {
+            "name": "BAROMETER", 
+            "description": "BAROMETER pressure sensor in kPa", 
+            "encodingType": "application/pdf", 
+            "metadata": "https://en.wikipedia.org/wiki/Barometer"
+        }
+    ]
+    
+    for data in datas:
+        try:
+            r = requests.post(url = "http://routescout.sensorup.com/v1.0/Sensors", json = data, headers = headers)
+            logging.debug(r.json())
+            if (r.status_code >= 200) and (r.status_code < 300):
+                sensor = r.json()["name"]
+                print(sensor)
+                logging.debug("Sensor %s created" % sensor)
+        except:
+            logging.exception("Request to create Sensor %s failed." % data["name"])
+            print(data["name"])
 
 def init_location(id):
     """
@@ -89,16 +114,16 @@ def create_robots():
         # into robot dictionary for saving.. eg. iotid of datastream and sensors
         # and current values + any meta-data required for simulation model
         init_datastreams(robot["iotid"])
-        init_sensors(robot["iotid"])
         robot_list.append(robot)
     with open(r'data/robot.data', 'wb') as fout:
         pickle.dump(robot_list, fout)
 
 
 def main():
+    init_sensors()
     create_crews()
     create_robots()
-
+    
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
