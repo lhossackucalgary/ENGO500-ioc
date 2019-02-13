@@ -2,9 +2,12 @@
 Polls the server checking data from all robot Things
 Updates robot's properties > status ("Healthy" | "Warning" | "Error")?
 """
+import os
+import logging
+
 
 def main():
-
+    pass
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
