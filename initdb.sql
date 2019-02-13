@@ -10,7 +10,7 @@ CREATE TABLE Auth.Login (
     PRIMARY KEY (user_id)
 ) ENGINE=INNODB;
 
-INSERT INTO Auth.Login (email, password, iot_id) VALUES ('cktam@ucalgary.ca', 'password', 1);
-INSERT INTO Auth.Login (email, password, iot_id) VALUES ('scclo@ucalgary.ca', 'password', 2);
-INSERT INTO Auth.Login (email, password, iot_id) VALUES ('dwyip@ucalgary.ca', 'password', 3);
-INSERT INTO Auth.Login (email, password, iot_id) VALUES ('lhossack@ucalgary.ca', 'password', 4);
+INSERT INTO Auth.Login (email, password, iot_id) VALUES ('cktam@ucalgary.ca', 'password', 290);
+INSERT INTO Auth.Login (email, password, iot_id) VALUES ('scclo@ucalgary.ca', 'password', 293);
+INSERT INTO Auth.Login (email, password, iot_id) VALUES ('dwyip@ucalgary.ca', 'password', 296);
+INSERT INTO Auth.Login (email, password, iot_id) VALUES ('lhossack@ucalgary.ca', 'password', 299);
