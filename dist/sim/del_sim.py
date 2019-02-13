@@ -8,7 +8,7 @@ def deleteAllThings():
     #get all things from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
-        print("got things")
+        print("deleting things")
     except:
         print("error: delete things at 1")
         exit()
@@ -31,7 +31,7 @@ def deleteAllLocations():
     #get all locations from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Locations", headers = headers)
-        print("got locations")
+        print("deleting locations")
     except:
         print("error: locations at 1")
         exit()
@@ -54,7 +54,7 @@ def deleteAllHistLocs():
     #get all locations from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/HistoricalLocations", headers = headers)
-        print("got historical locations")
+        print("deleting historical locations")
     except:
         print("error: hist loc at 1")
         exit()
@@ -77,7 +77,7 @@ def deleteAllDatastreams():
     #get all datastreams from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)
-        print("got datastreams")
+        print("deleting datastreams")
     except:
         print("error: datastreams at 1")
         exit()
@@ -100,7 +100,7 @@ def deleteAllSensors():
     #get all sensors from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Sensors", headers = headers)
-        print("got sensors")
+        print("deleting sensors")
     except:
         print("error: sensors at 1")
         exit()
@@ -123,7 +123,7 @@ def deleteAllObsProps():
     #get all observed properties from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/ObservedProperties", headers = headers)
-        print("got observed properties")
+        print("deleting observed properties")
     except:
         print("error: obs props at 1")
         exit()
@@ -146,7 +146,7 @@ def deleteAllObservations():
     #get all observations from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations", headers = headers)
-        print("got observations")
+        print("deleting observations")
     except:
         print("error: observations at 1")
         exit()
@@ -169,7 +169,7 @@ def deleteAllFeatOfInt():
     #get all features of interest from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/FeaturesOfInterest", headers = headers)
-        print("got features of interest")
+        print("deleting features of interest")
     except:
         print("error: feats at 1")
         exit()
