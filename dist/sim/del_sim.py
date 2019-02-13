@@ -188,11 +188,7 @@ def deleteAllFeatOfInt():
             print("error: feats at 2")
             exit()
 
-if __name__ == '__main__':
-    cwd = os.path.dirname(os.path.realpath(__file__))
-    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.INFO,\
-                        format="%(asctime)s [%(levelname)s]: %(message)s")
-    logging.info("Simulator started")
+def main():
     deleteAllThings()
     deleteAllLocations()
     deleteAllHistLocs()
@@ -202,4 +198,11 @@ if __name__ == '__main__':
     deleteAllObservations()
     deleteAllFeatOfInt()
 
+
+if __name__ == '__main__':
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    logging.basicConfig(filename=cwd+'/../../logs/sim.log', filemode='a', level=logging.INFO,\
+                        format="%(asctime)s [%(levelname)s]: %(message)s")
+    logging.info("Simulator started")
+    main()
     logging.info("Simulator ended")

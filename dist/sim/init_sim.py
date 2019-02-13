@@ -25,6 +25,7 @@ def init_datastreams(id):
     TODO: Implement datastream creation for robot. If we need any information
     regarding this data stream to simulate info, return it. eg. iotid
     """
+    
     pass
 
 def init_sensors(id):
