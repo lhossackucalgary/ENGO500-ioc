@@ -5,6 +5,9 @@ import requests
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def deleteAllThings():
+    #id delete exceptions
+    ex = [290, 293, 296, 299]
+
     #get all things from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
@@ -21,11 +24,12 @@ def deleteAllThings():
         id = thing["@iot.id"]
         #Delete current thing using id
         #print(id)
-        try:
-            r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Things(%d)" %id, headers = headers)
-        except:
-            print("error: delete things at 2")
-            exit()
+        if id not in ex:
+            try:
+                r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Things(%d)" %id, headers = headers)
+            except:
+                print("error: delete things at 2")
+                exit()
         
 def deleteAllLocations():
     #get all locations from api
