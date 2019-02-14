@@ -19,6 +19,7 @@ selenium-debug.log
 *.ntvs*
 *.njsproj
 *.sln
+*.data
 
 # Exceptions
 !/logs/readme.txt
