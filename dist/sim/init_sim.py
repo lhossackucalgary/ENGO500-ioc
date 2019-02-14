@@ -16,8 +16,8 @@ from util import *
 
 
 #Globals
-NUM_ROBOTS = 1
-NUM_CREW = 1
+NUM_ROBOTS = 30
+NUM_CREW = 3
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def init_datastreams(id):
@@ -25,7 +25,7 @@ def init_datastreams(id):
     TODO: Implement datastream creation for robot. If we need any information
     regarding this data stream to simulate info, return it. eg. iotid
     """
-    
+
     pass
 
 def init_sensors():
@@ -35,19 +35,19 @@ def init_sensors():
     """
     datas = [
         {
-            "name": "THERMOMETER", 
-            "description": "THERMOMETER temperature sensor in celcius ", 
-            "encodingType": "application/pdf", 
+            "name": "THERMOMETER",
+            "description": "THERMOMETER temperature sensor in celcius ",
+            "encodingType": "application/pdf",
             "metadata": "https://en.wikipedia.org/wiki/Thermometer"
-        }, 
+        },
         {
-            "name": "BAROMETER", 
-            "description": "BAROMETER pressure sensor in kPa", 
-            "encodingType": "application/pdf", 
+            "name": "BAROMETER",
+            "description": "BAROMETER pressure sensor in kPa",
+            "encodingType": "application/pdf",
             "metadata": "https://en.wikipedia.org/wiki/Barometer"
         }
     ]
-    
+
     for data in datas:
         try:
             r = requests.post(url = "http://routescout.sensorup.com/v1.0/Sensors", json = data, headers = headers)
@@ -123,7 +123,7 @@ def main():
     init_sensors()
     create_crews()
     create_robots()
-    
+
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
