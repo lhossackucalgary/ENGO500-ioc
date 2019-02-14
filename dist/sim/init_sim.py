@@ -21,18 +21,49 @@ NUM_CREW = 3
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def init_datastreams(id):
-    """
-    TODO: Implement datastream creation for robot. If we need any information
-    regarding this data stream to simulate info, return it. eg. iotid
-    """
+    #print("creating datastream for %d" %id)
+    datas = [
+        {
+            "name": "TEMP_stream_%d" %id,
+            "description": "Datastream for recording temperature",
+            "observationType": "application/pdf",
+            "unitOfMeasurement": {
+                "name": "Degree Celsius",
+                "symbol": "degC",
+                "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
+            },
+            "Thing":{"@iot.id":id},
+            "ObservedProperty":{"@iot.id":304},
+            "Sensor":{"@iot.id":302}
+        },
+        {
+            "name": "PRES_stream_%d" %id,
+            "description": "Datastream for recording pressure",
+            "observationType": "application/pdf",
+            "unitOfMeasurement": {
+                "name": "kiloPascal",
+                "symbol": "kPa",
+                "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#KiloPascal"
+            },
+            "Thing":{"@iot.id":id},
+            "ObservedProperty":{"@iot.id":305},
+            "Sensor":{"@iot.id":303}
+        }
+    ]
 
-    pass
+    for data in datas:
+        try:
+            r = requests.post(url = "http://routescout.sensorup.com/v1.0/Datastreams", json = data, headers = headers)
+            logging.debug(r.json())
+            if (r.status_code >= 200) and (r.status_code < 300):
+                ds = r.json()["name"]
+                #print(ds)
+                logging.debug("Datastream %s created" % ds)
+        except:
+            logging.exception("Request to create Datastream %s failed." % data["name"])
+            print("error creating datastream %s" %data["name"])
 
 def init_sensors():
-    """
-    TODO: Implement sensor creation for robot. If we need any information
-    regarding this data stream to simulate info, return it. eg. iotid
-    """
     datas = [
         {
             "name": "THERMOMETER",
@@ -54,11 +85,37 @@ def init_sensors():
             logging.debug(r.json())
             if (r.status_code >= 200) and (r.status_code < 300):
                 sensor = r.json()["name"]
-                print(sensor)
+                #print(sensor)
                 logging.debug("Sensor %s created" % sensor)
         except:
             logging.exception("Request to create Sensor %s failed." % data["name"])
             print(data["name"])
+
+def init_observedProperties():
+    datas = [
+        {
+            "name": "Area Temperature",
+            "description": "The degree or intensity of heat present in the area",
+            "definition": "http://www.qudt.org/qudt/owl/1.0.0/quantity/Instances.html#AreaTemperature"
+        },
+        {
+            "name": "Air pressure",
+            "description": "The degree or intensity of pressure in the air",
+            "definition": "https://en.wikipedia.org/wiki/Atmospheric_pressure"
+        }
+    ]
+
+    for data in datas:
+        try:
+            r = requests.post(url = "http://routescout.sensorup.com/v1.0/ObservedProperties", json = data, headers = headers)
+            logging.debug(r.json())
+            if (r.status_code >= 200) and (r.status_code < 300):
+                op = r.json()["name"]
+                #print(op)
+                logging.debug("ObsProp %s created" % op)
+        except:
+            logging.exception("Request to create ObsProp %s failed." % data["name"])
+            print("error creating %s" % data["name"])
 
 def init_location(id):
     """
@@ -121,6 +178,7 @@ def create_robots():
 
 def main():
     init_sensors()
+    init_observedProperties()
     create_crews()
     create_robots()
 
