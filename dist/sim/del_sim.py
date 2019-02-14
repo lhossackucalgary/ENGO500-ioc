@@ -4,6 +4,18 @@ import requests
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
+
+def cleanRoutesFromNondeletedCrews(id):
+    data = {"properties": {"route": []}}
+    try:
+        r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%d)" % id, json = data, headers = headers)
+        if (r.status_code >= 200) and (r.status_code < 300):
+            print("cleaning route for crew %d" % id)
+            return
+        print("error: cleaning route")
+    except:
+        print("error: cleaning route")
+
 def deleteAllThings():
     #id delete exceptions
     ex = [290, 293, 296, 299]
@@ -30,7 +42,10 @@ def deleteAllThings():
             except:
                 print("error: delete things at 2")
                 exit()
-        
+        else:
+            cleanRoutesFromNondeletedCrews(id)
+
+
 def deleteAllLocations():
     #get all locations from api
     try:
