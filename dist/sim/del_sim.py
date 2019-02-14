@@ -197,8 +197,8 @@ def main():
     deleteAllLocations()
     deleteAllHistLocs()
     deleteAllDatastreams()
-    deleteAllSensors()
-    deleteAllObsProps()
+    #deleteAllSensors()
+    #deleteAllObsProps()
     deleteAllObservations()
     deleteAllFeatOfInt()
 
