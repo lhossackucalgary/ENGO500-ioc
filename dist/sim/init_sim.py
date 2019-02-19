@@ -33,8 +33,8 @@ def init_datastreams(id):
                 "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#DegreeCelsius"
             },
             "Thing":{"@iot.id":id},
-            "ObservedProperty":{"@iot.id":304},
-            "Sensor":{"@iot.id":302}
+            "ObservedProperty":{"@iot.id":848},
+            "Sensor":{"@iot.id":846}
         },
         {
             "name": "PRES_stream_%d" %id,
@@ -46,8 +46,8 @@ def init_datastreams(id):
                 "definition": "http://www.qudt.org/qudt/owl/1.0.0/unit/Instances.html#KiloPascal"
             },
             "Thing":{"@iot.id":id},
-            "ObservedProperty":{"@iot.id":305},
-            "Sensor":{"@iot.id":303}
+            "ObservedProperty":{"@iot.id":849},
+            "Sensor":{"@iot.id":847}
         }
     ]
 
@@ -177,6 +177,10 @@ def create_robots():
 
 
 def main():
+    """
+    please only initialize sensors and observed properties once!
+    Running them more than once will create dublicates only that have diff iot.id's
+    """
     init_sensors()
     init_observedProperties()
     create_crews()
