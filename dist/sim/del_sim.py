@@ -116,6 +116,10 @@ def deleteAllDatastreams():
             exit()
 
 def deleteAllSensors():
+    """
+    put iot.id of any sensors that should be kept in the following exceptions array named ex
+    """
+    ex = [846, 847]
     #get all sensors from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Sensors", headers = headers)
@@ -132,13 +136,18 @@ def deleteAllSensors():
         id = sensor["@iot.id"]
         #Delete current sensor using id
         #print(id)
-        try:
-            r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Sensors(%d)" %id, headers = headers)
-        except:
-            print("error: sensors at 2")
-            exit()
+        if id not in ex:
+            try:
+                r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Sensors(%d)" %id, headers = headers)
+            except:
+                print("error: sensors at 2")
+                exit()
 
 def deleteAllObsProps():
+    """
+    put iot.id of any Observed Properties that should be kept in the following exceptions array named ex
+    """
+    ex = [848, 849]
     #get all observed properties from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/ObservedProperties", headers = headers)
@@ -155,11 +164,12 @@ def deleteAllObsProps():
         id = obsprop["@iot.id"]
         #Delete current obsprop using id
         #print(id)
-        try:
-            r = requests.delete(url = "http://routescout.sensorup.com/v1.0/ObservedProperties(%d)" %id, headers = headers)
-        except:
-            print("error: obs props at 2")
-            exit()
+        if id not in ex:
+            try:
+                r = requests.delete(url = "http://routescout.sensorup.com/v1.0/ObservedProperties(%d)" %id, headers = headers)
+            except:
+                print("error: obs props at 2")
+                exit()
 
 def deleteAllObservations():
     #get all observations from api
@@ -212,10 +222,14 @@ def main():
     deleteAllLocations()
     deleteAllHistLocs()
     deleteAllDatastreams()
-    #deleteAllSensors()
-    #deleteAllObsProps()
     deleteAllObservations()
     deleteAllFeatOfInt()
+    """
+    REMEMBER: put all iot.id's of crews, sensors, and observable properties into 
+    designmated exception arrays before deleting OR IOT.ID's WILL BE REASSIGNED!!!
+    """
+    deleteAllSensors()
+    deleteAllObsProps()
 
 
 if __name__ == '__main__':
