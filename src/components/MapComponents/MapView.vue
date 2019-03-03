@@ -3,13 +3,83 @@
 </template>
 
 <script>
-import {Map, View} from 'ol'
-import TileLayer from 'ol/layer/Tile'
-import XYZ from 'ol/source/XYZ'
+/* eslint-disable */
+import {Map as OLMap, View} from 'ol';
+import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
+import XYZ from 'ol/source/XYZ';
+import {fromLonLat} from 'ol/proj';
+
+function getLocations(listOfThings, outputMap) {
+  function getLocation(i) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = (function(id) {
+      return function() {
+        if (this.readyState == 4 && this.status == 200) {
+          var responseJSON = JSON.parse(xhttp.responseText);
+          if (responseJSON['@iot.count'] > 0) {
+            outputMap.set(id, responseJSON.value[0].location.coordinates);
+          } else {
+            // Remove thing id from list of things if it doesn't have a location..
+            var index = listOfThings.indexOf(id);
+            if (index > -1) {
+              listOfThings.splice(index, 1);
+            }
+          }
+        }
+      }
+    })(listOfThings[i]);
+
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things(" + listOfThings[i] + ")/Locations", true);
+    xhttp.send();
+  }
+
+  for (var i = 0; i < listOfThings.length; i++) {
+    getLocation(i);
+  }
+}
+
+function getThings(things_props, thing_id_list, things_locations_map) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function () {
+    if (this.readyState == 4 && this.status == 200) {
+      var things_list = JSON.parse(xhttp.responseText).value;
+      for (var t = 0; t < things_list.length; t++) {
+        thing_id_list.push(things_list[t]['@iot.id']);
+        things_props.set(things_list[t]['@iot.id'], things_list[t]);
+      }
+      getLocations(thing_id_list, things_locations_map);
+    }
+  };
+  xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things", true);
+  xhttp.send();
+}
+
+function LoadMapData(things, thing_ids, thing_locations) {
+  things.clear();
+  thing_ids.length = 0;
+  thing_locations.clear();
+  getThings(things, thing_ids, thing_locations);
+
+  // crewLocations will be filled async by getLocations..
+  var intervalId = setInterval(function() {
+    if (thing_ids.length > 0 && thing_locations.size == thing_ids.length) {
+      // Add data into layer groups
+      console.log("Downloaded map data");
+      console.log(things);
+      console.log(thing_ids);
+      console.log(thing_locations);
+
+      clearInterval(intervalId);
+      return;
+    }
+  }, 250);
+
+}
+
 
 export default {
   mounted () {
-    var M = new Map({
+    var M = new OLMap({
       target: 'map',
       layers: [
         new TileLayer({
@@ -19,11 +89,20 @@ export default {
         })
       ],
       view: new View({
-        center: [0, 0],
-        zoom: 2
+        center: fromLonLat([-114,51]),
+        zoom: 10
       })
-    })
-    console.log(M)
+    });
+
+    var thing_locations = new Map();  //map crew id to location
+    var things = new Map(); //map crew id to props
+    var thing_ids = [];
+
+    LoadMapData(things, thing_ids, thing_locations);
+    var dataLoader = setInterval(function() {
+      LoadMapData(things, thing_ids, thing_locations);
+    }, 10000); // 60000 == 1 minute
+
   }
 }
 </script>
