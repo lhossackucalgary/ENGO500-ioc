@@ -66,21 +66,26 @@ function LoadMapData(things, thing_ids, thing_locations, vecSource, vecLayer) {
   thing_locations.clear();
   getThings(things, thing_ids, thing_locations);
 
-  // crewLocations will be filled async by getLocations..
-  var intervalId = setInterval(function() {
+  function data_load_check() {
     if (thing_ids.length > 0 && thing_locations.size == thing_ids.length) {
-      // Add data into layer groups
 
+      // Add data into layer groups
+      console.log("Data downloaded");
+
+      vecSource.clear();
       for (let i = 0; i < thing_ids.length; i++) {
         let feature_s = new Feature(new Point(fromLonLat(thing_locations.get(thing_ids[i]))));
         feature_s.setProperties({"name": "myName", "desc": "descriptino"});
         vecSource.addFeature(feature_s);
       }
-
-      clearInterval(intervalId);
       return;
+    } else {
+      setTimeout(data_load_check, 500);
     }
-  }, 250);
+  }
+
+  data_load_check();
+
 }
 
 var vectorSource = new VectorSource();
@@ -123,12 +128,13 @@ export default {
     var things = new Map(); //map crew id to props
     var thing_ids = [];
 
-
-
-    LoadMapData(things, thing_ids, thing_locations, vectorSource, vectorLayer);
-    var dataLoader = setInterval(function() {
+    function sendDataRequest() {
+      console.log("sent data requests");
       LoadMapData(things, thing_ids, thing_locations, vectorSource, vectorLayer);
-    }, 60000); // 60000 == 1 minute
+      setTimeout(sendDataRequest, 60000);
+    };
+
+    sendDataRequest();
 
   }
 }
