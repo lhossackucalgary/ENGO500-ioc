@@ -26,17 +26,6 @@
 <script>
 import * as d3 from 'd3'
 
-window.onload = function(){
-    //document.body.clientwidth
-    setupVis1();
-    setupVis2();
-    setupVis3();
-    setupVis4();
-    setupVis5();
-    setupVis6();
-    //changeHealthBarHeights("health", 100);
-};
-
 const ROBOT_HEALTH = [
     { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
     { "robot" : "robot_2", "health" : 20, "pressure" : 70, "temperature" : 50},
@@ -177,12 +166,12 @@ var Healthplot = function(){
         this.yScale = d3.scaleLinear()
             .domain(yDomain)
             .range(yRange);
-        
+
         this.xScale = d3.scaleBand()
             .domain(d3.range(0, xLength))
             .range(xRange)
             .padding(0.1);
-            
+
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
             .domain(this.data.map(function(d){ return d.robot; }));
@@ -204,14 +193,14 @@ var Healthplot = function(){
             .attr("transform", `translate(${_margin.left}, ${_vis1.height - _margin.bottom})`)
             .attr("class", "x axis")
             .call(this.xAxis);
-        
+
         // x-axis label
         this.svg.append("text")
             .attr("x", this.width / 2)
             .attr("y", this.height - _margin.bottom / 2 + 15)
             .style("text-anchor", "middle")
             .text("Robot Name");
-        
+
         // y-axis label
         this.svg.append("text")
             .attr("x", _margin.left)
@@ -235,24 +224,24 @@ var Healthplot = function(){
                 .attr("y", function(d) { return _vis1.yScale(d.health); })
                 .attr("transform", `translate(${_margin.left}, 0)`)
                 .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
-                .text(function(d) { 
+                .text(function(d) {
                 return d.robot; });
                 // same as return d["robot"];
     }
 
     this.update = function() {
-        console.log(this.data[0].robot);
-        console.log(_vis1.data[0].robot);
+        // console.log(this.data[0].robot);
+        // console.log(_vis1.data[0].robot);
         const t = d3.transition()
             .duration(750);
-        
+
         this.svg.selectAll(".bar")
             .order()
             .transition(t)
             .delay(function(d, i) { return i*20; })
             .style("fill", "blue")
             .attr("x", function(d, i) { return _vis1.xScale(i); });
-        
+
         this.svg.selectAll(".bar")
             .exit().remove();
 
@@ -263,8 +252,7 @@ var Healthplot = function(){
             .delay(function(d, i) { return i*20; })
             .style("fill", "red");
     }
-}  
-
+}
 
 var singleLineGraph = function () {
     this.data;
@@ -289,18 +277,20 @@ var singleLineGraph = function () {
         this.yRange = yRange;
 
         this.data.forEach(function(d) {
-            d.date = Date.parse(d.date);
+            if (typeof(d.date) === "string") {
+              d.date = Date.parse(d.date);
+            }
             d.result = +d.result;
         });
 
         this.yScale = d3.scaleLinear()
             .domain([0, d3.max(this.data, function(d) { return d.result; })])
             .range(yRange);
-        
+
         this.xScale = d3.scaleTime()
             .domain(d3.extent(this.data, function(d) { return d.date; }))
             .range([_margin.right, this.width - _margin.left]);
-            
+
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
             .domain(this.data.map(function(d){ return d.robot; }));
@@ -322,14 +312,14 @@ var singleLineGraph = function () {
             .attr("transform", `translate(${_margin.left}, ${_vis1.height - _margin.bottom})`)
             .attr("class", "x axis")
             .call(this.xAxis);
-        
+
         // x-axis label
         this.svg.append("text")
             .attr("x", this.width / 2)
             .attr("y", this.height - _margin.bottom / 2 + 15)
             .style("text-anchor", "middle")
             .text("Robot Name");
-        
+
         // y-axis label
         this.svg.append("text")
             .attr("x", _margin.left)
@@ -344,7 +334,7 @@ var singleLineGraph = function () {
         var yScale = d3.scaleLinear()
             .domain([0, d3.max(this.data, function(d) { return d.result; })])
             .range(this.yRange);
-        
+
         var xScale = d3.scaleTime()
             .domain(d3.extent(this.data, function(d) { return d.date; }))
             .range([_margin.right, this.width - _margin.left]);
@@ -360,7 +350,7 @@ var singleLineGraph = function () {
                 .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
         //scale range of data
-        console.log(this.data);
+        // console.log(this.data);
 
         // Add the valueline path.
         this.svg.append("path")
@@ -381,7 +371,7 @@ var singleLineGraph = function () {
         this.svg.append("g")
             .attr("transform", `translate(${_margin.left}, 0)`)
             .call(d3.axisLeft(this.yScale));
-        
+
     }
 
     function drawLine(lineData,lineColor,lineLabel,lineId)
@@ -389,14 +379,14 @@ var singleLineGraph = function () {
             // append line to svg
         var group = this.svg.append("g")
                         .attr('class', lineId);
-        
+
             group.append("svg:path")
                     .attr('d', lineSelection(lineData))
                     .attr('stroke', lineColor)
                     .attr('stroke-width', 2)
-                    .attr('fill', 'none');      
-            
-        // prepare label for line    
+                    .attr('fill', 'none');
+
+        // prepare label for line
         group.append("rect")
             .attr("width", chartConfig.lineLabel.width)
             .attr("height", chartConfig.lineLabel.height)
@@ -406,7 +396,7 @@ var singleLineGraph = function () {
             .attr("stroke", lineColor)
             .attr("fill", lineColor)
             .attr("stroke-width", 1);
-            
+
     // draw line label text
     group.append("text")
             .attr("dx", xScale(lineData[0].year)-(chartConfig.lineConnectorLength+7))
@@ -414,18 +404,18 @@ var singleLineGraph = function () {
             .attr("text-anchor", "end")
         .attr("class", "lineLabel")
             .style("fill", "white")
-            .text(lineLabel);        
+            .text(lineLabel);
 
     // line to label connector
     group.append("line")
-    .attr({ 
+    .attr({
     x1: xScale(lineData[0].year), y1: yScale(lineData[0].sale), //start of the line
     x2: xScale(lineData[0].year)-chartConfig.lineConnectorLength, y2: yScale(lineData[0].sale)  //end of the line
             })
     .attr('stroke', lineColor)
     .attr('stroke-width', 2)
     .attr('fill', lineColor);
-    
+
     return group;
     }
 
@@ -435,14 +425,14 @@ var singleLineGraph = function () {
         console.log(_vis1.data[0].robot);
         const t = d3.transition()
             .duration(750);
-        
+
         this.svg.selectAll("rect")
             .order()
             .transition(t)
             .delay(function(d, i) { return i*20; })
             .style("fill", "blue")
             .attr("x", function(d, i) { return _vis1.xScale(i); });
-        
+
         this.gx.transition(t)
             .call(this.xAxisScale)
             .delay(function(d, i) { return i*20; })
@@ -457,7 +447,6 @@ var singleLineGraph = function () {
  * @param maxAttrValue the maximum value the attribute can have
  * assume the min value is 0
  */
-
 function changeHealthBarHeights(attr, maxAttrValue){
     for (var i = 0; i < _data1.length; i++){
         var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);
@@ -498,7 +487,7 @@ function setupVis2(){
 
     for (let i = 0; i < PRESSURE_DATA.length; i++) {
         if (PRESSURE_DATA[i].robot === "robot_1") {
-            console.log(PRESSURE_DATA[i].robot);
+            //console.log(PRESSURE_DATA[i].robot);
             data2.push(PRESSURE_DATA[i]);
             count++;
         }
@@ -523,7 +512,7 @@ function setupVis3(){
 
     for (let i = 0; i < PRESSURE_DATA.length; i++) {
         if (PRESSURE_DATA[i].robot === "robot_2") {
-            console.log(PRESSURE_DATA[i].robot);
+            //console.log(PRESSURE_DATA[i].robot);
             data3.push(PRESSURE_DATA[i]);
             count++;
         }
@@ -615,7 +604,7 @@ function setupVis5(){
 
     for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
         if (TEMPERATURE_DATA[i].robot === "robot_1") {
-            console.log(TEMPERATURE_DATA[i].robot);
+            // console.log(TEMPERATURE_DATA[i].robot);
             data3.push(TEMPERATURE_DATA[i]);
             count++;
         }
@@ -640,7 +629,7 @@ function setupVis6(){
 
     for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
         if (TEMPERATURE_DATA[i].robot === "robot_2") {
-            console.log(TEMPERATURE_DATA[i].robot);
+            // console.log(TEMPERATURE_DATA[i].robot);
             data3.push(TEMPERATURE_DATA[i]);
             count++;
         }
@@ -654,6 +643,14 @@ function setupVis6(){
 
 export default {
   name: 'Analytics',
+  mounted () {
+    setupVis1();
+    setupVis2();
+    setupVis3();
+    setupVis4();
+    setupVis5();
+    setupVis6();
+  },
   data () {
     return {
       msg: '',
