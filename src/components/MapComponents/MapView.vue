@@ -4,10 +4,15 @@
 
 <script>
 /* eslint-disable */
+import Feature from 'ol/Feature.js';
 import {Map as OLMap, View} from 'ol';
+import Point from 'ol/geom/Point.js';
+import Overlay from 'ol/Overlay.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
+import {Vector as VectorSource} from 'ol/source.js';
 import XYZ from 'ol/source/XYZ';
 import {fromLonLat} from 'ol/proj';
+import {Fill, Stroke, Style, Icon} from 'ol/style.js';
 
 function getLocations(listOfThings, outputMap) {
   function getLocation(i) {
@@ -54,7 +59,8 @@ function getThings(things_props, thing_id_list, things_locations_map) {
   xhttp.send();
 }
 
-function LoadMapData(things, thing_ids, thing_locations) {
+
+function LoadMapData(things, thing_ids, thing_locations, vecSource, vecLayer) {
   things.clear();
   thing_ids.length = 0;
   thing_locations.clear();
@@ -64,18 +70,36 @@ function LoadMapData(things, thing_ids, thing_locations) {
   var intervalId = setInterval(function() {
     if (thing_ids.length > 0 && thing_locations.size == thing_ids.length) {
       // Add data into layer groups
-      console.log("Downloaded map data");
-      console.log(things);
-      console.log(thing_ids);
-      console.log(thing_locations);
+
+      for (let i = 0; i < thing_ids.length; i++) {
+        let feature_s = new Feature(new Point(fromLonLat(thing_locations.get(thing_ids[i]))));
+        feature_s.setProperties({"name": "myName", "desc": "descriptino"});
+        vecSource.addFeature(feature_s);
+      }
 
       clearInterval(intervalId);
       return;
     }
   }, 250);
-
 }
 
+var vectorSource = new VectorSource();
+
+var iconStyle = new Style({
+  image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+    anchor: [0.5, 50],
+    anchorXUnits: 'fraction',
+    anchorYUnits: 'pixels',
+    src: require('../../assets/logo.png'),
+    scale: 0.1
+  }))
+});
+
+
+var vectorLayer = new VectorLayer({
+  source: vectorSource,
+  style: iconStyle
+});
 
 export default {
   mounted () {
@@ -86,7 +110,8 @@ export default {
           source: new XYZ({
             url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           })
-        })
+        }),
+        vectorLayer
       ],
       view: new View({
         center: fromLonLat([-114,51]),
@@ -98,10 +123,12 @@ export default {
     var things = new Map(); //map crew id to props
     var thing_ids = [];
 
-    LoadMapData(things, thing_ids, thing_locations);
+
+
+    LoadMapData(things, thing_ids, thing_locations, vectorSource, vectorLayer);
     var dataLoader = setInterval(function() {
-      LoadMapData(things, thing_ids, thing_locations);
-    }, 10000); // 60000 == 1 minute
+      LoadMapData(things, thing_ids, thing_locations, vectorSource, vectorLayer);
+    }, 60000); // 60000 == 1 minute
 
   }
 }
