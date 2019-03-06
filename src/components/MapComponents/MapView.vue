@@ -60,7 +60,8 @@ function getThings(things_props, thing_id_list, things_locations_map) {
 }
 
 
-function LoadMapData(things, thing_ids, thing_locations, vecSource, vecLayer) {
+function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warning_src,
+                     b_urgent_src, b_unknown_src, b_needsparts_src, c_src) {
   things.clear();
   thing_ids.length = 0;
   thing_locations.clear();
@@ -68,15 +69,48 @@ function LoadMapData(things, thing_ids, thing_locations, vecSource, vecLayer) {
 
   function data_load_check() {
     if (thing_ids.length > 0 && thing_locations.size == thing_ids.length) {
+      //console.log(things);
+      //console.log(thing_locations);
 
-      // Add data into layer groups
-      console.log("Data downloaded");
+      b_healthy_src.clear();
+      b_warning_src.clear();
+      b_urgent_src.clear();
+      b_unknown_src.clear();
+      b_needsparts_src.clear();
+      c_src.clear();
 
-      vecSource.clear();
       for (let i = 0; i < thing_ids.length; i++) {
+        // Create feature
         let feature_s = new Feature(new Point(fromLonLat(thing_locations.get(thing_ids[i]))));
-        feature_s.setProperties({"name": "myName", "desc": "descriptino"});
-        vecSource.addFeature(feature_s);
+        var thing_ = things.get(thing_ids[i]);
+        feature_s.setProperties(thing_);
+        var props_ = thing_["properties"];
+
+        // Assign to a layer source
+        if (typeof(props_["status"]) !== "undefined") {
+          // is a robot
+          if (props_["status"] === "Healthy") {
+            b_healthy_src.addFeature(feature_s);
+          } else if (props_["status"] === "Warning") {
+            b_warning_src.addFeature(feature_s);
+          } else if (props_["status"] === "Urgent") {
+            b_urgent_src.addFeature(feature_s);
+          } else if (props_["status"] === "Unknown") {
+            b_unknown_src.addFeature(feature_s);
+          } else if (props_["status"] === "Needs parts") {
+            b_needsparts_src.addFeature(feature_s);
+          }
+        }
+        if (typeof(props_["route"]) !== "undefined") { //(thing_["properties"]["route"] !== "undefined") {
+          // is a crew
+          c_src.addFeature(feature_s);
+          // also print their route to a layer..
+        }
+
+        /*        if is bot (true) {
+        } else if is crew (true) {
+        }*/
+
       }
       return;
     } else {
@@ -85,28 +119,108 @@ function LoadMapData(things, thing_ids, thing_locations, vecSource, vecLayer) {
   }
 
   data_load_check();
-
 }
 
-var vectorSource = new VectorSource();
+// var vectorSource = new VectorSource();
+var bots_healthy_source = new VectorSource();
+var bots_warning_source = new VectorSource();
+var bots_urgent_source = new VectorSource();
+var bots_unknown_source = new VectorSource();
+var bots_needsparts_source = new VectorSource();
+var crews_source = new VectorSource();
 
-var iconStyle = new Style({
-  image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-    anchor: [0.5, 50],
-    anchorXUnits: 'fraction',
-    anchorYUnits: 'pixels',
-    src: require('../../assets/logo.png'),
-    scale: 0.1
-  }))
+// // var vectorLayer = new VectorLayer({
+//   source: vectorSource,
+//   style: new Style({
+//     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+//       anchor: [0.5, 50],
+//       anchorXUnits: 'fraction',
+//       anchorYUnits: 'pixels',
+//       src: require('../../assets/logo.png'),
+//       scale: 0.1
+//     }))
+//   })
+// });
+var bots_healthy_layer = new VectorLayer({
+  source: bots_healthy_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/logo.png'),
+      scale: 0.1
+    }))
+  })
 });
-
-
-var vectorLayer = new VectorLayer({
-  source: vectorSource,
-  style: iconStyle
+var bots_warning_layer = new VectorLayer({
+  source: bots_warning_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/logo.png'),
+      scale: 0.1
+    }))
+  })
+});
+var bots_urgent_layer = new VectorLayer({
+  source: bots_urgent_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/logo.png'),
+      scale: 0.1
+    }))
+  })
+});
+var bots_unknown_layer = new VectorLayer({
+  source: bots_unknown_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/logo.png'),
+      scale: 0.1
+    }))
+  })
+});
+var bots_needsparts_layer = new VectorLayer({
+  source: bots_needsparts_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/logo.png'),
+      scale: 0.1
+    }))
+  })
+});
+var crews_layer = new VectorLayer({
+  source: crews_source,
+  style: new Style({
+    image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
+      anchor: [0.5, 50],
+      anchorXUnits: 'fraction',
+      anchorYUnits: 'pixels',
+      src: require('../../assets/RSLogo.png'),
+      scale: 0.04
+    }))
+  })
 });
 
 export default {
+  bots_healthy_source,
+  bots_warning_source,
+  bots_urgent_source,
+  bots_unknown_source,
+  bots_needsparts_source,
+  crews_source,
   mounted () {
     var M = new OLMap({
       target: 'map',
@@ -116,7 +230,12 @@ export default {
             url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           })
         }),
-        vectorLayer
+        bots_healthy_layer,
+        bots_warning_layer,
+        bots_urgent_layer,
+        bots_unknown_layer,
+        bots_needsparts_layer,
+        crews_layer
       ],
       view: new View({
         center: fromLonLat([-114,51]),
@@ -130,7 +249,9 @@ export default {
 
     function sendDataRequest() {
       console.log("sent data requests");
-      LoadMapData(things, thing_ids, thing_locations, vectorSource, vectorLayer);
+      LoadMapData(things, thing_ids, thing_locations, bots_healthy_source,
+                  bots_warning_source, bots_urgent_source, bots_unknown_source,
+                  bots_needsparts_source, crews_source);
       setTimeout(sendDataRequest, 60000);
     };
 
