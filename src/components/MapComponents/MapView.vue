@@ -145,9 +145,9 @@ var bots_healthy_layer = new VectorLayer({
   source: bots_healthy_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/Healthy.png'),
       scale: 0.7
     }))
@@ -157,9 +157,9 @@ var bots_warning_layer = new VectorLayer({
   source: bots_warning_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/Warning.png'),
       scale: 0.7
     }))
@@ -169,9 +169,9 @@ var bots_urgent_layer = new VectorLayer({
   source: bots_urgent_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/Urgent.png'),
       scale: 0.7
     }))
@@ -181,9 +181,9 @@ var bots_unknown_layer = new VectorLayer({
   source: bots_unknown_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/Unknown.png'),
       scale: 0.7
     }))
@@ -193,9 +193,9 @@ var bots_needsparts_layer = new VectorLayer({
   source: bots_needsparts_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/NeedsParts.png'),
       scale: 0.7
     }))
@@ -205,9 +205,9 @@ var crews_layer = new VectorLayer({
   source: crews_source,
   style: new Style({
     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-      anchor: [0.5, 50],
+      anchor: [0.5, 0.5],
       anchorXUnits: 'fraction',
-      anchorYUnits: 'pixels',
+      anchorYUnits: 'fraction',
       src: require('../../assets/Crew.png'),
       scale: 0.7
     }))
