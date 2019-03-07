@@ -93,7 +93,7 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
             b_healthy_src.addFeature(feature_s);
           } else if (props_["status"] === "Warning") {
             b_warning_src.addFeature(feature_s);
-          } else if (props_["status"] === "Urgent") {
+          } else if (props_["status"] === "SICK AF") {
             b_urgent_src.addFeature(feature_s);
           } else if (props_["status"] === "Unknown") {
             b_unknown_src.addFeature(feature_s);
@@ -254,9 +254,39 @@ export default {
                   bots_needsparts_source, crews_source);
       setTimeout(sendDataRequest, 60000);
     };
-
     sendDataRequest();
-
+  },
+  props: {
+    healthyLayerOn: Boolean,
+    warningLayerOn: Boolean,
+    urgentLayerOn: Boolean,
+    unknownLayerOn: Boolean,
+    needsPartsLayerOn: Boolean,
+    crewLayerOn: Boolean,
+    routesLayerOn: Boolean
+  },
+  watch: {
+    healthyLayerOn: function(newVal, oldVal) {
+      bots_healthy_layer.setVisible(newVal);
+    },
+    warningLayerOn: function(newVal, oldVal) {
+      bots_warning_layer.setVisible(newVal);
+    },
+    urgentLayerOn: function(newVal, oldVal) {
+      bots_urgent_layer.setVisible(newVal);
+    },
+    unknownLayerOn: function(newVal, oldVal) {
+      bots_unknown_layer.setVisible(newVal);
+    },
+    needsPartsLayerOn: function(newVal, oldVal) {
+      bots_needsparts_layer.setVisible(newVal);
+    },
+    crewLayerOn: function(newVal, oldVal) {
+      crews_layer.setVisible(newVal);
+    },
+    routesLayerOn: function(newVal, oldVal) {
+      bots_healthy_layer.setVisible(newVal);
+    }
   }
 }
 </script>

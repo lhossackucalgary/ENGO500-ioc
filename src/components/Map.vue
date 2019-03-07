@@ -1,11 +1,23 @@
 <template>
     <div>
       <div id="mapcontainer">
-        <map-view></map-view>
+        <map-view v-bind:healthyLayerOn="healthyOn"
+                  v-bind:warningLayerOn="warningOn"
+                  v-bind:urgentLayerOn="urgentOn"
+                  v-bind:unknownLayerOn="unknownOn"
+                  v-bind:needsPartsLayerOn="needsPartsOn"
+                  v-bind:crewLayerOn="crewsOn"
+                  ></map-view>
       </div>
       <div id="layerselcont">
         <div id="layercontainer">
-          <map-layers></map-layers>
+          <map-layers v-on:toggleHealthy="updateHealthy($event)"
+                      v-on:toggleWarning="updateWarning($event)"
+                      v-on:toggleUrgent="updateUrgent($event)"
+                      v-on:toggleUnknown="updateUnknown($event)"
+                      v-on:toggleNeedsParts="updateNeedsParts($event)"
+                      v-on:toggleCrews="updateCrews($event)"
+                      ></map-layers>
         </div>
         <div id="selectedcontainer">
           <map-selected-items></map-selected-items>
@@ -35,6 +47,36 @@ export default {
     'map-maint-summary': MapMaintenanceSummary,
     'map-selected-items': MapSelectedItems,
     'map-view': MapView
+  },
+  data() {
+    return {
+      healthyOn: true,
+      warningOn: true,
+      urgentOn: true,
+      unknownOn: true,
+      needsPartsOn: true,
+      crewsOn: true
+    }
+  },
+  methods: {
+    updateHealthy:function(status) {
+      this.healthyOn = status;
+    },
+    updateWarning:function(status) {
+      this.warningOn = status;
+    },
+    updateUrgent:function(status) {
+      this.urgentOn = status;
+    },
+    updateUnknown:function(status) {
+      this.unknownOn = status;
+    },
+    updateNeedsParts:function(status) {
+      this.needsPartsOn = status;
+    },
+    updateCrews:function(status) {
+      this.crewsOn = status;
+    }
   }
 }
 </script>
