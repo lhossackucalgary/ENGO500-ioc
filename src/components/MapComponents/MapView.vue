@@ -148,7 +148,7 @@ var bots_healthy_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/logo.png'),
+      src: require('../../assets/Healthy.png'),
       scale: 0.1
     }))
   })
@@ -160,7 +160,7 @@ var bots_warning_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/logo.png'),
+      src: require('../../assets/Warning.png'),
       scale: 0.1
     }))
   })
@@ -172,7 +172,7 @@ var bots_urgent_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/logo.png'),
+      src: require('../../assets/Urgent.png'),
       scale: 0.1
     }))
   })
@@ -184,7 +184,7 @@ var bots_unknown_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/logo.png'),
+      src: require('../../assets/Unknown.png'),
       scale: 0.1
     }))
   })
@@ -196,7 +196,7 @@ var bots_needsparts_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/logo.png'),
+      src: require('../../assets/NeedsParts.png'),
       scale: 0.1
     }))
   })
@@ -208,7 +208,7 @@ var crews_layer = new VectorLayer({
       anchor: [0.5, 50],
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
-      src: require('../../assets/RSLogo.png'),
+      src: require('../../assets/Crew.png'),
       scale: 0.04
     }))
   })
