@@ -129,18 +129,6 @@ var bots_unknown_source = new VectorSource();
 var bots_needsparts_source = new VectorSource();
 var crews_source = new VectorSource();
 
-// // var vectorLayer = new VectorLayer({
-//   source: vectorSource,
-//   style: new Style({
-//     image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
-//       anchor: [0.5, 50],
-//       anchorXUnits: 'fraction',
-//       anchorYUnits: 'pixels',
-//       src: require('../../assets/logo.png'),
-//       scale: 0.1
-//     }))
-//   })
-// });
 var bots_healthy_layer = new VectorLayer({
   source: bots_healthy_source,
   style: new Style({
@@ -215,12 +203,6 @@ var crews_layer = new VectorLayer({
 });
 
 export default {
-  bots_healthy_source,
-  bots_warning_source,
-  bots_urgent_source,
-  bots_unknown_source,
-  bots_needsparts_source,
-  crews_source,
   mounted () {
     var M = new OLMap({
       target: 'map',
