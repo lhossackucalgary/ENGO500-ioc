@@ -149,7 +149,7 @@ var bots_healthy_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/Healthy.png'),
-      scale: 0.1
+      scale: 0.7
     }))
   })
 });
@@ -161,7 +161,7 @@ var bots_warning_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/Warning.png'),
-      scale: 0.1
+      scale: 0.7
     }))
   })
 });
@@ -173,7 +173,7 @@ var bots_urgent_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/Urgent.png'),
-      scale: 0.1
+      scale: 0.7
     }))
   })
 });
@@ -185,7 +185,7 @@ var bots_unknown_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/Unknown.png'),
-      scale: 0.1
+      scale: 0.7
     }))
   })
 });
@@ -197,7 +197,7 @@ var bots_needsparts_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/NeedsParts.png'),
-      scale: 0.1
+      scale: 0.7
     }))
   })
 });
@@ -209,7 +209,7 @@ var crews_layer = new VectorLayer({
       anchorXUnits: 'fraction',
       anchorYUnits: 'pixels',
       src: require('../../assets/Crew.png'),
-      scale: 0.04
+      scale: 0.7
     }))
   })
 });
