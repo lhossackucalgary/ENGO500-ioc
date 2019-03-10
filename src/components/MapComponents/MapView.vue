@@ -252,12 +252,22 @@ export default {
       })
     });
 
+    M.on('click', function (evt) {
+      var obj = M.forEachFeatureAtPixel(evt.pixel,
+
+      function (feature, layer) {
+          console.log(feature["values_"]);
+          console.log(feature["values_"]["properties"]);
+          return [feature,layer];
+      })
+    });
+
     var thing_locations = new Map();  //map crew id to location
     var things = new Map(); //map crew id to props
     var thing_ids = [];
 
     function sendDataRequest() {
-      console.log("sent data requests");
+      // console.log("sent data requests");
       LoadMapData(things, thing_ids, thing_locations, bots_healthy_source,
                   bots_warning_source, bots_urgent_source, bots_unknown_source,
                   bots_needsparts_source, crews_source, routes_source);
