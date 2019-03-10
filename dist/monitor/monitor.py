@@ -20,6 +20,15 @@ def breakMeMaybe(id):
                 logging.debug("Broke robot %s" % id)
         except:
             logging.exception("Monitor breakMeMaybe failed")
+    else:
+        try:
+            data = {"properties" : {"status":"Healthy"}}
+            r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%s)" % id, json = data, headers = headers)
+            if (r.status_code >= 200) and (r.status_code < 300):
+                logging.debug("Healthy robot %s" % id)
+        except:
+            logging.exception("Monitor breakMeMaybe failed")
+
 
 
 def main():
