@@ -7,12 +7,14 @@
 import Feature from 'ol/Feature.js';
 import {Map as OLMap, View} from 'ol';
 import Point from 'ol/geom/Point.js';
+import LineString from 'ol/geom/LineString';
 import Overlay from 'ol/Overlay.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {Vector as VectorSource} from 'ol/source.js';
 import XYZ from 'ol/source/XYZ';
 import {fromLonLat} from 'ol/proj';
 import {Fill, Stroke, Style, Icon} from 'ol/style.js';
+
 
 function getLocations(listOfThings, outputMap) {
   function getLocation(i) {
@@ -61,7 +63,7 @@ function getThings(things_props, thing_id_list, things_locations_map) {
 
 
 function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warning_src,
-                     b_urgent_src, b_unknown_src, b_needsparts_src, c_src) {
+                     b_urgent_src, b_unknown_src, b_needsparts_src, c_src, route_src) {
   things.clear();
   thing_ids.length = 0;
   thing_locations.clear();
@@ -78,6 +80,7 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
       b_unknown_src.clear();
       b_needsparts_src.clear();
       c_src.clear();
+      route_src.clear();
 
       for (let i = 0; i < thing_ids.length; i++) {
         // Create feature
@@ -105,6 +108,19 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
           // is a crew
           c_src.addFeature(feature_s);
           // also print their route to a layer..
+
+          if (props_["route"].length >= 1) {
+            // Add crew's location
+            var list_of_coords = [fromLonLat(thing_locations.get(thing_ids[i]))];
+
+
+            // Add location of each bot:
+            for (let i = 0; i < props_["route"].length; i++) {
+              list_of_coords.push(fromLonLat(thing_locations.get(props_["route"][i])));
+            }
+            var route_feature = new Feature(new LineString(list_of_coords));
+            route_src.addFeature(route_feature);
+          }
         }
 
         /*        if is bot (true) {
@@ -128,6 +144,7 @@ var bots_urgent_source = new VectorSource();
 var bots_unknown_source = new VectorSource();
 var bots_needsparts_source = new VectorSource();
 var crews_source = new VectorSource();
+var routes_source = new VectorSource();
 
 var bots_healthy_layer = new VectorLayer({
   source: bots_healthy_source,
@@ -201,6 +218,15 @@ var crews_layer = new VectorLayer({
     }))
   })
 });
+var routes_layer = new VectorLayer({
+  source: routes_source,
+  style: new Style({
+    stroke: new Stroke({
+      color: 'green',
+      width: 3
+    })
+  })
+});
 
 export default {
   mounted () {
@@ -217,7 +243,8 @@ export default {
         bots_urgent_layer,
         bots_unknown_layer,
         bots_needsparts_layer,
-        crews_layer
+        crews_layer,
+        routes_layer
       ],
       view: new View({
         center: fromLonLat([-114,51]),
@@ -233,7 +260,7 @@ export default {
       console.log("sent data requests");
       LoadMapData(things, thing_ids, thing_locations, bots_healthy_source,
                   bots_warning_source, bots_urgent_source, bots_unknown_source,
-                  bots_needsparts_source, crews_source);
+                  bots_needsparts_source, crews_source, routes_source);
       setTimeout(sendDataRequest, 60000);
     };
     sendDataRequest();
