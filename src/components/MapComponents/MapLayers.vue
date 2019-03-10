@@ -18,8 +18,7 @@
       </li>
       <li>Route
         <ul>
-          <li>Confirmed</li>
-          <li>Pending</li>
+          <li><label><input type="checkbox" v-on:click="toggleRoutes" checked>Routes</label></li>
         </ul>
       </li>
     </ul>
@@ -88,6 +87,14 @@ export default {
         this.crews = true;
       }
       this.$emit('toggleCrews', this.crews);
+    },
+    toggleRoutes:function(){
+      if (this.routes === true) {
+        this.routes = false;
+      } else {
+        this.routes = true;
+      }
+      this.$emit('toggleRoutes', this.routes);
     }
   }
 }

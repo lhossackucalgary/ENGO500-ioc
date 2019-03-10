@@ -7,6 +7,7 @@
                   v-bind:unknownLayerOn="unknownOn"
                   v-bind:needsPartsLayerOn="needsPartsOn"
                   v-bind:crewLayerOn="crewsOn"
+                  v-bind:routeLayerOn="routesOn"
                   ></map-view>
       </div>
       <div id="layerselcont">
@@ -17,6 +18,7 @@
                       v-on:toggleUnknown="updateUnknown($event)"
                       v-on:toggleNeedsParts="updateNeedsParts($event)"
                       v-on:toggleCrews="updateCrews($event)"
+                      v-on:toggleRoutes="updateRoutes($event)"
                       ></map-layers>
         </div>
         <div id="selectedcontainer">
@@ -55,7 +57,8 @@ export default {
       urgentOn: true,
       unknownOn: true,
       needsPartsOn: true,
-      crewsOn: true
+      crewsOn: true,
+      routesOn: true
     }
   },
   methods: {
@@ -76,6 +79,9 @@ export default {
     },
     updateCrews:function(status) {
       this.crewsOn = status;
+    },
+    updateRoutes:function(status) {
+      this.routesOn = status;
     }
   }
 }

@@ -272,7 +272,7 @@ export default {
     unknownLayerOn: Boolean,
     needsPartsLayerOn: Boolean,
     crewLayerOn: Boolean,
-    routesLayerOn: Boolean
+    routeLayerOn: Boolean
   },
   watch: {
     healthyLayerOn: function(newVal, oldVal) {
@@ -293,8 +293,8 @@ export default {
     crewLayerOn: function(newVal, oldVal) {
       crews_layer.setVisible(newVal);
     },
-    routesLayerOn: function(newVal, oldVal) {
-      bots_healthy_layer.setVisible(newVal);
+    routeLayerOn: function(newVal, oldVal) {
+      routes_layer.setVisible(newVal);
     }
   }
 }
