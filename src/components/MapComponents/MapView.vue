@@ -268,13 +268,30 @@ export default {
       var hit = false;
       var obj = M.forEachFeatureAtPixel(evt.pixel, function (feature, layer) {
           hit = true;
-
+          var popupStr = "";
           // Build popup string:
-          var popupStr = feature["values_"]["properties"]["status"];
+          if(typeof(feature["values_"]["properties"]["status"]) !== "undefined"){
+            // Robot
+                        console.log(feature);
+            popupStr += "Name: " + feature["values_"]["name"];
+            popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
+            popupStr += "<br\>Status: " + feature["values_"]["properties"]["status"];
 
-          popup.getElement().innerHTML = popupStr;
+            popup.getElement().innerHTML = popupStr;
+            popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
+          } else if (typeof(feature["values_"]["properties"]["route"]) !== "undefined") {
+            // Crew
+            popupStr += "Name: " + feature["values_"]["name"];
+            popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
+            popupStr += "<br\>Route: " + feature["values_"]["properties"]["route"];
 
-          popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
+            popup.getElement().innerHTML = popupStr;
+            popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
+          } else {
+            // Route or unknown element
+            popup.setPosition(undefined);
+          }
+
 
           M.addOverlay(popup);
           return [feature,layer];
