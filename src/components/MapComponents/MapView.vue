@@ -261,7 +261,7 @@ export default {
       autoPanAnimation: {
         duration: 250
       },
-      offset: [0, -60]
+      offset: [0, -70]
     });
 
     M.on('click', function (evt) {
@@ -275,6 +275,7 @@ export default {
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Status: " + feature["values_"]["properties"]["status"];
+            popupStr += "<br\><button type=\"button\">Compare</button>";
 
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
@@ -283,6 +284,7 @@ export default {
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Route: " + feature["values_"]["properties"]["route"];
+            popupStr += "<br\><button type=\"button\">Show more</button>";
 
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
