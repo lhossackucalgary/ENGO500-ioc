@@ -1,6 +1,7 @@
 """
 Main update file for simulator
 Just initialized logger, calls update_crews() and update_robots()
+**Run init_sim.py before running this script!!
 """
 import logging
 import os
@@ -93,31 +94,6 @@ def updateDatastream():
         pickle.dump(ds_list, f)
 
 
-def initSimPickle():
-    #get all datastreams from api
-    try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
-        print("getting datastreams")
-    except:
-        print("error: datastreams at 1")
-        exit()
-
-    #get all datastreams in json form
-    datastreams = rd.json()["value"]
-
-    #empty list for initializing datastream id's in pickle
-    ds_list = []
-
-    for datastream in datastreams:
-        #get id of datastream
-        id = datastream["@iot.id"]
-        ds = {"iotid": id, "psn": 0 }
-        ds_list.append(ds)
-    
-    print(ds_list)
-    with open(r'data/dataSim.data', 'wb') as f:
-        pickle.dump(ds_list, f)
-
 def temp():
     """
     Update crew and robot simulated information
@@ -141,8 +117,6 @@ def test():
 def main():
     #updateDatastream
     updateDatastream()
-
-    #initSimPickle()
     #test()
 
 
