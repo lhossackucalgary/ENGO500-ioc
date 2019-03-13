@@ -175,6 +175,31 @@ def create_robots():
     with open(r'data/robot.data', 'wb') as fout:
         pickle.dump(robot_list, fout)
 
+def initSimPickle():
+    #get all datastreams from api
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
+        print("getting datastreams")
+    except:
+        print("error: datastreams at 1")
+        exit()
+
+    #get all datastreams in json form
+    datastreams = rd.json()["value"]
+
+    #empty list for initializing datastream id's in pickle
+    ds_list = []
+
+    for datastream in datastreams:
+        #get id of datastream
+        id = datastream["@iot.id"]
+        ds = {"iotid": id, "psn": 0 }
+        ds_list.append(ds)
+    
+    #print(ds_list)
+    with open(r'data/dataSim.data', 'wb') as f:
+        pickle.dump(ds_list, f)
+
 
 def main():
     """
@@ -185,6 +210,7 @@ def main():
     init_observedProperties()
     create_crews()
     create_robots()
+    initSimPickle()
 
 
 if __name__ == '__main__':

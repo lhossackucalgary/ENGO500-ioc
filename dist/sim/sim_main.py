@@ -1,12 +1,25 @@
 """
 Main update file for simulator
 Just initialized logger, calls update_crews() and update_robots()
+**Run init_sim.py before running this script!!
 """
 import logging
 import os
+import requests
 from update_crews import update_crews
 from update_robots import update_robots
+import random
+import csv
+import pickle
+import datetime
+import re
+from util import *
 
+headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
+    
+def test():
+    test = load_data(r'data/dataSim.data')
+    print(test)
 
 def main():
     """
