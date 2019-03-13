@@ -132,7 +132,6 @@ def getWarningRobots():
     return warningBots
 
 def main():
-
     """ break some bots (Please improve when... possible) """
     # Make list of all robots
     bot_list = []

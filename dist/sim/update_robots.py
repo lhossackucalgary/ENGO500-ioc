@@ -42,6 +42,10 @@ def update_robots():
     #get all datastreams in json form
     datastreams = rd.json()["value"]
     
+    warningds = getWarningDatastreams()
+    urgentds = getUrgentDatastreams()
+    unknownds = getUnknownDatastreams()
+    time = datetime.datetime.now().replace(microsecond=0).isoformat()
 
     for datastream in datastreams:
         """
@@ -54,7 +58,6 @@ def update_robots():
         get current time
         for utc: datetime.datetime.utcnow().isoformat()
         """
-        time = datetime.datetime.now().replace(microsecond=0).isoformat()
 
         """
         use description to determine data type and which col it should be grabbing dataset from
@@ -62,6 +65,7 @@ def update_robots():
         col => column correlating to dataset
         rmax => max range (row) of dataset
         """
+        
         col = None 
         rmax = None 
         if (desc == "Datastream for recording pressure"):
@@ -71,6 +75,33 @@ def update_robots():
             col = 1
             rmax = 24
 
+        """check if ds belongs to robot with warning status"""
+        if id in warningds:
+            if (desc == "Datastream for recording pressure"):
+                col = 4
+                rmax = 17
+            if (desc == "Datastream for recording temperature"):
+                col = 5
+                rmax = 24
+
+        """check if ds belongs to robot with urgent status"""         
+        if id in urgentds:
+            if (desc == "Datastream for recording pressure"):
+                col = 4
+                rmax = 17
+            if (desc == "Datastream for recording temperature"):
+                col = 5
+                rmax = 24
+
+        """check if ds belongs to robot with unknown status"""
+        if id in unknownds:
+            if (desc == "Datastream for recording pressure"):
+                col = 4
+                rmax = 17
+            if (desc == "Datastream for recording temperature"):
+                col = 5
+                rmax = 24
+
         psn = None
         i = 0
         for ds in ds_list:
@@ -79,7 +110,7 @@ def update_robots():
                 psn = ds["psn"]
 
                 #update datastream index position
-                if (psn == rmax):
+                if (psn >= rmax):
                     ds["psn"] = 0
                 else:
                     ds["psn"] = psn + 1
@@ -126,3 +157,90 @@ def update_robots():
         pickle.dump(ds_list, f)
 
     store_data(robots, r'data/robot.data')
+
+def getRobotDatastreams(id):
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)      
+        #print("getting datastreams")
+    except:
+        print("error: datastreams at 1")
+        exit()
+
+    #get all datastreams in json form
+    datastreams = rd.json()["value"]
+    return datastreams
+
+""" get all datastreams of robots with Urgent status """
+def getUrgentDatastreams():
+    urgentBots = getUrgentRobots()
+    urgentDS = []
+
+    for botid in urgentBots:
+        robotds = getRobotDatastreams(botid)
+        for ds in robotds:
+            urgentDS.append(ds["@iot.id"])
+    
+    #print(urgentDS)
+    return urgentDS
+
+""" get all datastreams of robots with Warning status """
+def getWarningDatastreams():
+    warningBots = getWarningRobots()
+    warningDS = []
+
+    for botid in warningBots:
+        robotds = getRobotDatastreams(botid)
+        for ds in robotds:
+            warningDS.append(ds["@iot.id"])
+    
+    #print(warningDS)
+    return warningDS
+
+""" get all datastreams of robots with Unknown status """
+def getUnknownDatastreams():
+    unknownBots = getUnknownRobots()
+    unknownDS = []
+
+    for botid in unknownBots:
+        robotds = getRobotDatastreams(botid)
+        for ds in robotds:
+            unknownDS.append(ds["@iot.id"])
+    
+    #print(unknownDS)
+    return unknownDS
+
+""" get all robots with Urgent status from robotStatus.data """
+def getUrgentRobots():
+    robotStats = load_data(r'data/robotStatus.data')
+    urgentBots = []
+
+    for stat in robotStats:
+        if stat["status"] == "Urgent":
+            urgentBots.append(stat["iotid"])
+    
+    #print(urgentBots)
+    return urgentBots
+
+""" get all robots with Warning status from robotStatus.data """
+def getWarningRobots():
+    robotStats = load_data(r'data/robotStatus.data')
+    warningBots = []
+
+    for stat in robotStats:
+        if stat["status"] == "Warning":
+            warningBots.append(stat["iotid"])
+    
+    #print(warningBots)
+    return warningBots
+
+""" get all robots with Unknown status from robotStatus.data """
+def getUnknownRobots():
+    robotStats = load_data(r'data/robotStatus.data')
+    unknownBots = []
+
+    for stat in robotStats:
+        if stat["status"] == "Unknown":
+            unknownBots.append(stat["iotid"])
+    
+    #print(unknownBots)
+    return unknownBots

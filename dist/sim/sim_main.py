@@ -7,6 +7,8 @@ import logging
 import os
 import requests
 from update_crews import update_crews
+from update_robots import getUrgentDatastreams
+from update_robots import getWarningDatastreams
 from update_robots import update_robots
 import random
 import csv
