@@ -24,10 +24,14 @@ def update_robots():
         sid = list(csv.reader(csvfile))
     #print(sid)
 
-    #import current datastream positions in .data file
+    """
+    import current datastream positions in .data file
+    """
     ds_list = load_data(r'data/dataSim.data')
 
-    #get all datastreams from api
+    """
+    get all datastreams from api
+    """
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
         print("getting datastreams")
@@ -40,19 +44,26 @@ def update_robots():
     
 
     for datastream in datastreams:
-        #get id of datastream
+        """
+        get id of datastream
+        """
         id = datastream["@iot.id"]
         desc = datastream["description"]
         
-        #get current time
-        #for utc: datetime.datetime.utcnow().isoformat()
+        """
+        get current time
+        for utc: datetime.datetime.utcnow().isoformat()
+        """
         time = datetime.datetime.now().replace(microsecond=0).isoformat()
 
-        #use description to determine data type and which col it should be grabbing dataset from
-        #can use this section to assign bad data as well...
-
-        col = None #column correlating to correct dataset
-        rmax = None #max range of dataset
+        """
+        use description to determine data type and which col it should be grabbing dataset from
+        can use this section to assign bad data as well...
+        col => column correlating to dataset
+        rmax => max range (row) of dataset
+        """
+        col = None 
+        rmax = None 
         if (desc == "Datastream for recording pressure"):
             col = 0
             rmax = 17

@@ -11,7 +11,10 @@ import pickle
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def breakMeMaybe(id):
+    
     if random.randint(0,100) < 50:
+
+
         try:
             data = {"properties" : {"status":"SICK AF"}}
             r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%s)" % id, json = data, headers = headers)
@@ -29,6 +32,26 @@ def breakMeMaybe(id):
         except:
             logging.exception("Monitor breakMeMaybe failed")
 
+def updateRobotStatus():
+    #get current robot status data
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    robotStats = load_data(cwd+'/../sim/data/robotStatus.data')
+
+    # Make list of all robots
+    bot_list = []
+    try:
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        if (r.status_code >= 200) and (r.status_code < 300):
+            responseJSON = r.json()
+            things = responseJSON["value"]
+            for thing in things:
+                if "status" in thing["properties"]:
+                    botid = thing["@iot.id"]
+                    botstat = thing["properties"]["status"]
+                    
+                    for stat in robotStats:
+                        if (botid == stat["iotid"]):
+                            #check if status is same or diff
 
 
 def main():
@@ -55,6 +78,7 @@ def main():
     for robot in bot_list:
         if breakMeMaybe(robot):
             broken_bots.append(robot)
+
 
 
     # Don't change: Output crew_list and broken_bots

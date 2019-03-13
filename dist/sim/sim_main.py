@@ -18,7 +18,7 @@ from util import *
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
     
 def test():
-    test = load_data(r'data/dataSim.data')
+    test = load_data(r'data/robot.data')
     print(test)
 
 def main():

@@ -200,6 +200,49 @@ def initSimPickle():
     with open(r'data/dataSim.data', 'wb') as f:
         pickle.dump(ds_list, f)
 
+def initBrokenRobotData():
+    # Make list of all robots
+    bot_list = []
+    try:
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        if (r.status_code >= 200) and (r.status_code < 300):
+            responseJSON = r.json()
+            things = responseJSON["value"]
+            for thing in things:
+                if "status" in thing["properties"]:
+                    bot = {"iotid": thing["@iot.id"], "status": thing["properties"]["status"], "count": 10}
+                    bot_list.append(bot)                 
+    except:
+        logging.exception("Failed getting list of robots")
+    
+    #save in data file
+    with open(r'data/robotStatus.data', 'wb') as f:
+        pickle.dump(bot_list, f)
+
+def initRobotStatus():
+    # Make list of all robots
+    bot_id = []
+    try:
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        if (r.status_code >= 200) and (r.status_code < 300):
+            responseJSON = r.json()
+            things = responseJSON["value"]
+            for thing in things:
+                if "status" in thing["properties"]:
+                    bot_id.append(thing["@iot.id"])                 
+    except:
+        logging.exception("Failed getting list of robots")
+    #change all robot status to healthy
+    for id in bot_id:
+        try:
+            data = {"properties" : {"status":"Healthy"}}
+            r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%s)" % id, json = data, headers = headers)
+            if (r.status_code >= 200) and (r.status_code < 300):
+                return True
+                logging.debug("Healed robot %s" % id)
+        except:
+            logging.exception("Monitor breakMeMaybe failed")
+
 
 def main():
     """
@@ -211,6 +254,9 @@ def main():
     create_crews()
     create_robots()
     initSimPickle()
+    initRobotStatus()
+    initBrokenRobotData()
+    
 
 
 if __name__ == '__main__':
