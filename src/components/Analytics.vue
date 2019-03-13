@@ -18,13 +18,14 @@
           <svg id="vis5" class="svg_boxes"></svg>
           <h3>Thermometer_236: Robot_2</h3>
           <svg id="vis6" class="svg_boxes"></svg>
-          <h3>Temperature Bins (Quantize)</h3>
+          <h3>Historical Data</h3>
           <svg id="vis4" class="svg_boxes"></svg>
       </div>
 </template>
 
 <script>
 import * as d3 from 'd3'
+
 
 const ROBOT_HEALTH = [
     { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
@@ -689,7 +690,12 @@ export default {
             if (order === "value-descending") _vis1.data.sort((a, b) => b.health - a.health);
             _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
             _vis1.update();
-        }
+        },
+  },
+  route: {
+      activate() {
+          graph();
+      }
   }
 }
 </script>
