@@ -261,7 +261,7 @@ export default {
       autoPanAnimation: {
         duration: 250
       },
-      offset: [0, -35]
+      offset: [0, -60]
     });
 
     M.on('click', function (evt) {
