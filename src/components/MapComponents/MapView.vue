@@ -272,7 +272,6 @@ export default {
           // Build popup string:
           if(typeof(feature["values_"]["properties"]["status"]) !== "undefined"){
             // Robot
-                        console.log(feature);
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Status: " + feature["values_"]["properties"]["status"];
