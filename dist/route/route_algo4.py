@@ -42,7 +42,7 @@ def main():
         while item in crew_list:
             crew_list.remove(item)
 
-
+    print(crew_list)
     for index in broken_bots:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -82,6 +82,8 @@ def main():
     Calculate distance of closest crew to robot
     """
     crew_routes = [[] for _ in range(0,len(crew_list))]
+    crew_routes_dist = [[] for _ in range(0,len(crew_list))]
+
     for i in range(0,len(broken_bots)):
         cb_dist = [[] for _ in range(0,len(crew_list))]
 
@@ -89,12 +91,31 @@ def main():
             dist = geopy.distance.distance(broken_bot_coord[i],crew_coord[j]).km
             cb_dist[j] = [j,dist]
 
+
         cb_dist.sort(key=lambda x: x[1])
 
+
+        #for k in range(0,len(cb_dist)):
+        #    if (len(crew_routes[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
+        #        crew_routes[cb_dist[k][0]].append(broken_bots[i])
+        #        crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
+        #        break
+
+        
         for k in range(0,len(cb_dist)):
-            if (len(crew_routes[cb_dist[k][0]-1])) <= (len(broken_bots)/len(crew_list)):
-                crew_routes[cb_dist[k][0]-1].append(broken_bots[i])
+            if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
+            #if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(crew_list)):
+                crew_routes_dist[cb_dist[k][0]].append([broken_bots[i],cb_dist[k][1]])
+                #crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
                 break
+
+
+
+    for i in range(0,len(crew_routes_dist)):
+        crew_routes_dist[i].sort(key=lambda x: x[1])
+        for j in range(0,len(crew_routes_dist[i])):
+            crew_routes[i].append(crew_routes_dist[i][j][0])
+
 
     """
     Check if there are any crews with 0 robots, if so - assign closest robot to crew
@@ -130,6 +151,7 @@ def main():
 
             crew_routes[check_crew[i]].append(min_check[0])
 
+    print(crew_routes)
 
     """
     Uploading routes to server
