@@ -1,5 +1,9 @@
 <template>
+  <div class="">
     <div id="map"></div>
+    <!--div id="popup">STUFF</div-->
+    <div id="popup"></div>
+  </div>
 </template>
 
 <script>
@@ -14,7 +18,6 @@ import {Vector as VectorSource} from 'ol/source.js';
 import XYZ from 'ol/source/XYZ';
 import {fromLonLat} from 'ol/proj';
 import {Fill, Stroke, Style, Icon} from 'ol/style.js';
-
 
 function getLocations(listOfThings, outputMap) {
   function getLocation(i) {
@@ -112,7 +115,6 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
           if (props_["route"].length >= 1) {
             // Add crew's location
             var list_of_coords = [fromLonLat(thing_locations.get(thing_ids[i]))];
-
 
             // Add location of each bot:
             for (let i = 0; i < props_["route"].length; i++) {
@@ -252,14 +254,36 @@ export default {
       })
     });
 
-    M.on('click', function (evt) {
-      var obj = M.forEachFeatureAtPixel(evt.pixel,
+    var popup = new Overlay({
+      positioning: 'center-center',
+      element: document.getElementById('popup'),
+      autoPan: true,
+      autoPanAnimation: {
+        duration: 250
+      },
+      offset: [0, -35]
+    });
 
-      function (feature, layer) {
-          console.log(feature["values_"]);
-          console.log(feature["values_"]["properties"]);
+    M.on('click', function (evt) {
+      var hit = false;
+      var obj = M.forEachFeatureAtPixel(evt.pixel, function (feature, layer) {
+          hit = true;
+
+          // Build popup string:
+          var popupStr = feature["values_"]["properties"]["status"];
+
+          popup.getElement().innerHTML = popupStr;
+
+          popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
+
+          M.addOverlay(popup);
           return [feature,layer];
-      })
+      }, {
+        hitTolerance: 3
+      });
+      if (!hit) {
+        popup.setPosition(undefined);
+      }
     });
 
     var thing_locations = new Map();  //map crew id to location
@@ -318,5 +342,25 @@ export default {
   position: fixed;
   bottom: 0;
   right: 0;
+}
+
+#popup {
+  /*width: 20px;*/
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 3px 5px;
+  border-radius: 6px;
+}
+
+#popup::after {
+  content: " ";
+  position: absolute;
+  top: 100%; /* At the bottom of the tooltip */
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
 }
 </style>
