@@ -232,16 +232,16 @@ def initRobotStatus():
                     bot_id.append(thing["@iot.id"])                 
     except:
         logging.exception("Failed getting list of robots")
+       
     #change all robot status to healthy
     for id in bot_id:
         try:
             data = {"properties" : {"status":"Healthy"}}
             r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%s)" % id, json = data, headers = headers)
             if (r.status_code >= 200) and (r.status_code < 300):
-                return True
                 logging.debug("Healed robot %s" % id)
         except:
-            logging.exception("Monitor breakMeMaybe failed")
+            logging.exception("Init_sim initRobotStatus() failed")
 
 
 def main():
@@ -249,13 +249,15 @@ def main():
     please only initialize sensors and observed properties once!
     Running them more than once will create dublicates only that have diff iot.id's
     """
+    """
     init_sensors()
     init_observedProperties()
     create_crews()
     create_robots()
     initSimPickle()
-    initRobotStatus()
     initBrokenRobotData()
+    """
+    initRobotStatus()
     
 
 
