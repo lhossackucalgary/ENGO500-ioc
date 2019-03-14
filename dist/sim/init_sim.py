@@ -175,11 +175,13 @@ def create_robots():
     with open(r'data/robot.data', 'wb') as fout:
         pickle.dump(robot_list, fout)
 
-def initSimPickle():
+""" initialize dataSim.data file """
+""" fills dataSim.data with the iotid of all datastreams and psn: 0 """
+def initSimData():
     #get all datastreams from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
-        print("getting datastreams")
+        #print("getting datastreams")
     except:
         print("error: datastreams at 1")
         exit()
@@ -200,7 +202,7 @@ def initSimPickle():
     with open(r'data/dataSim.data', 'wb') as f:
         pickle.dump(ds_list, f)
 
-def initBrokenRobotData():
+def initRobotStatusData():
     # Make list of all robots
     bot_list = []
     try:
@@ -249,14 +251,12 @@ def main():
     please only initialize sensors and observed properties once!
     Running them more than once will create dublicates only that have diff iot.id's
     """
-    """
     init_sensors()
     init_observedProperties()
     create_crews()
     create_robots()
-    initSimPickle()
-    initBrokenRobotData()
-    """
+    initSimData()
+    initRobotStatusData()
     initRobotStatus()
     
 

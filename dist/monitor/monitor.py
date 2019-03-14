@@ -158,9 +158,10 @@ def main():
 
     """get ids of bots in diff categories"""
     broken_bots = getUrgentRobots()
-    warning_bots = getWarningRobots()
+    broken_bots.append(getWarningRobots())
+    print(broken_bots)
 
-    exit() #exiting for now cause dunno what's suppose to happen next
+    """ UPDATE LATER: should probably seperate warning_bots in monitor_out at some point!! """
 
     # Don't change: Output crew_list and broken_bots
     route_info = {"crew_list": crew_list, "broken_bots": broken_bots}
