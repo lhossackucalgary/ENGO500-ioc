@@ -156,10 +156,11 @@ def main():
     """make some robots sick"""
     updateRobotStatus()
 
-    """get ids of bots in diff categories"""
+    """get ids of broken bots (aka bots with warning and urgent status)"""
     broken_bots = getUrgentRobots()
-    broken_bots.append(getWarningRobots())
-    print(broken_bots)
+    warning_bots = getWarningRobots()
+    for botid in warning_bots:
+        broken_bots.append(botid)
 
     """ UPDATE LATER: should probably seperate warning_bots in monitor_out at some point!! """
 
@@ -168,7 +169,11 @@ def main():
     cwd = os.path.dirname(os.path.realpath(__file__))
     with open(cwd+'/../route/monitor_out.data', 'wb') as fout:
         pickle.dump(route_info, fout)
-
+    
+    """ add file of robotStats to routing """
+    robotStats = load_data(r'../sim/data/robotStatus.data')
+    with open(cwd+'/../route/monitor_out2.data', 'wb') as fout:
+        pickle.dump(robotStats, fout)
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
