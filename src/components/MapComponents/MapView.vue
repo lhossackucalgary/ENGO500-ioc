@@ -99,7 +99,7 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
             b_healthy_src.addFeature(feature_s);
           } else if (props_["status"] === "Warning") {
             b_warning_src.addFeature(feature_s);
-          } else if (props_["status"] === "SICK AF") {
+          } else if (props_["status"] === "Urgent") {
             b_urgent_src.addFeature(feature_s);
           } else if (props_["status"] === "Unknown") {
             b_unknown_src.addFeature(feature_s);
