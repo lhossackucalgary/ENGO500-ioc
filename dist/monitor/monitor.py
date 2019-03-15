@@ -131,6 +131,15 @@ def getWarningRobots():
     #print(warningBots)
     return warningBots
 
+def calcRobotHP():
+    #before writing, need to create datastream and obsType for health
+    """ get list of all robots """
+    """ for each robot, get list of datastreams """
+        """ for each datastream, check type of sensor (pressure, temp, etc) """
+            """ compare to ideal pressure/temp value to get a percentage """
+        """ average all percentages from all datastreams from the robot """
+        """ post resulting percentage as HP of robot as Observation """
+
 def main():
     """ break some bots (Please improve when... possible) """
     # Make list of all robots

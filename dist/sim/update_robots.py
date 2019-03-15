@@ -20,7 +20,7 @@ def update_robots():
     import simulator input data in csv
     """
     sid = []
-    with open('data/simInputData.csv', newline='') as csvfile:
+    with open('simInputData.csv', newline='') as csvfile:
         sid = list(csv.reader(csvfile))
     #print(sid)
 

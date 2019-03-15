@@ -11,7 +11,6 @@ from update_robots import getUrgentDatastreams
 from update_robots import getWarningDatastreams
 from update_robots import update_robots
 import random
-import csv
 import pickle
 import datetime
 import re
