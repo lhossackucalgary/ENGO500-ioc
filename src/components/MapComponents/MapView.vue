@@ -270,7 +270,10 @@ export default {
           hit = true;
           var popupStr = "";
           // Build popup string:
-          if(typeof(feature["values_"]["properties"]["status"]) !== "undefined"){
+          if(typeof(feature["values_"]["properties"]) === "undefined") {
+            // not robot or crew (route)
+            popup.setPosition(undefined);
+          } else if(typeof(feature["values_"]["properties"]["status"]) !== "undefined"){
             // Robot
             let obj_ = {"name": feature["values_"]["name"], "iotid": feature["values_"]["@iot.id"], "properties": feature["values_"]["properties"], "geometry": toLonLat(feature["values_"]["geometry"]["flatCoordinates"])};
 
@@ -291,10 +294,9 @@ export default {
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
           } else {
-            // Route or unknown element
+            // unknown element with props
             popup.setPosition(undefined);
           }
-
 
           M.addOverlay(popup);
           return [feature,layer];
