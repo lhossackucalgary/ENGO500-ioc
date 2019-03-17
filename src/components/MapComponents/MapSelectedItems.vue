@@ -7,7 +7,15 @@
 
 <script>
 export default {
-
+  created(){
+      let localThis = this
+      document.addEventListener('addbotcmp', this.addBotCmp)
+  },
+  methods: {
+    addBotCmp:function(e) {
+      console.log("iotid: " + e.detail);
+    }
+  }
 }
 </script>
 

@@ -275,7 +275,7 @@ export default {
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Status: " + feature["values_"]["properties"]["status"];
-            popupStr += "<br\><button type=\"button\">Compare</button>";
+            popupStr += "<br\><button type=\"button\" onclick=\"document.dispatchEvent(new CustomEvent('addbotcmp', {detail:" + feature['values_']['@iot.id'] + "}))\">Compare</button>";
 
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
