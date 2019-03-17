@@ -13,7 +13,7 @@ export default {
   },
   methods: {
     addBotCmp:function(e) {
-      console.log("iotid: " + e.detail);
+      console.log(e.detail);
     }
   }
 }

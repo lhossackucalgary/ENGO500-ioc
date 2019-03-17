@@ -16,7 +16,7 @@ import Overlay from 'ol/Overlay.js';
 import {Tile as TileLayer, Vector as VectorLayer} from 'ol/layer.js';
 import {Vector as VectorSource} from 'ol/source.js';
 import XYZ from 'ol/source/XYZ';
-import {fromLonLat} from 'ol/proj';
+import {fromLonLat, toLonLat} from 'ol/proj';
 import {Fill, Stroke, Style, Icon} from 'ol/style.js';
 
 function getLocations(listOfThings, outputMap) {
@@ -272,10 +272,12 @@ export default {
           // Build popup string:
           if(typeof(feature["values_"]["properties"]["status"]) !== "undefined"){
             // Robot
+            let obj_ = {"name": feature["values_"]["name"], "iotid": feature["values_"]["@iot.id"], "properties": feature["values_"]["properties"], "geometry": toLonLat(feature["values_"]["geometry"]["flatCoordinates"])};
+
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Status: " + feature["values_"]["properties"]["status"];
-            popupStr += "<br\><button type=\"button\" onclick=\"document.dispatchEvent(new CustomEvent('addbotcmp', {detail:" + feature['values_']['@iot.id'] + "}))\">Compare</button>";
+            popupStr += "<br\><button type=\"button\" onclick=\"document.dispatchEvent(new CustomEvent('addbotcmp', {detail:" + JSON.stringify(obj_).replace(/\"/g, "'") + "}))\">Compare</button>";
 
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
