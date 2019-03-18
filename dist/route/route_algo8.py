@@ -110,7 +110,6 @@ def main():
         bot_urgent = [bot for bot in bot_urgent if bot['iotid'] != min_route['robotid']]
         routes.append(min_route)
 
-
     while bot_warning != []:
         cb_dist = []
         for crew in crew_list:
@@ -151,7 +150,7 @@ def main():
     for index in range(0, len(crew_routes)):
         try:
             data = {"properties": {"route": crew_routes[index]}}
-            r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%d)" % crew_list[index], json = data, headers = headers)
+            r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%d)" % crew_id[index], json = data, headers = headers)
             if (r.status_code >= 200) and (r.status_code < 300):
                 logging.debug("Adding route to crew %d" % crew_list[index])
             else:
