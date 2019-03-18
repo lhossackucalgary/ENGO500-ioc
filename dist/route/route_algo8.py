@@ -4,7 +4,6 @@ import pickle
 import requests
 import geopy.distance
 import math
-from collections import defaultdict
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
@@ -28,6 +27,7 @@ def main():
         broken_bots = pickle.load(fin)
 
     broken_bots = [bot for bot in broken_bots if bot['status'] != 'Healthy']
+
 
     """
     Obtain coordinates of crew and broken robots
