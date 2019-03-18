@@ -1,21 +1,16 @@
 <template>
   <div class="">
-    <h2>Selected Items</h2>
-
+    Name: {{feature.name}} <br>
+    Iot Id: {{feature.iotid}} <br>
+    Status: {{feature.properties.status}} <br>
+    
   </div>
 </template>
 
 <script>
 export default {
-  created(){
-      let localThis = this
-      document.addEventListener('addbotcmp', this.addBotCmp)
-  },
-  methods: {
-    addBotCmp:function(e) {
-      console.log(e.detail);
-      //Add to list.. watch list, create component list?
-    }
+  props: {
+    feature: Object
   }
 }
 </script>
