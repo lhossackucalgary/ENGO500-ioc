@@ -9,12 +9,11 @@ headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3M
 
 def main():
     """
-    Crew & Broken Bots data from monitor_out.data
+    Crew data from monitor_out.data
     """
     with open('./monitor_out.data', 'rb') as fin:
         data_in = pickle.load(fin)
     crew_list = data_in["crew_list"]
-    broken_bots = data_in["broken_bots"]
 
 
     """
@@ -23,9 +22,19 @@ def main():
     with open('./monitor_out2.data', 'rb') as fin:
         bot_stat = pickle.load(fin)
 
-    print(bot_stat)
+    bot_urgent = []
+    bot_warning = []
 
+    for bot in bot_stat:
+        if bot['status'] == 'Urgent':
+            bot_urgent.append(bot['iotid'])
+        elif bot['status'] == 'Warning':
+            bot_warning.append(bot['iotid'])
+        else:
+            continue
 
+    print(bot_urgent)
+    print(bot_warning)
     """
     Obtain coordinates of crew and broken robots
     """
@@ -122,7 +131,7 @@ def main():
 
     """
     Uploading routes to server
-    """
+
 
     for index in range(0, len(crew_routes)):
         try:
@@ -134,7 +143,7 @@ def main():
                 logging.warning("HTTP Error code while adding route for crew %d" % crew_list[index])
         except:
                 logging.exception("Exception thrown generating route")
-
+    """
 
 """
 Logging data
