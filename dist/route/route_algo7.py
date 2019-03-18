@@ -9,21 +9,33 @@ headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3M
 
 def main():
     """
-    Routing closest robot to each crew in chronological order
+    Crew & Broken Bots data from monitor_out.data
     """
     with open('./monitor_out.data', 'rb') as fin:
         data_in = pickle.load(fin)
     crew_list = data_in["crew_list"]
     broken_bots = data_in["broken_bots"]
-    crew_coord = []
-    broken_bot_coord = []
-    crew_error = []
-    bot_error = []
+
+
+    """
+    Broken Bots Status data from monitor_out2.data
+    """
+    with open('./monitor_out2.data', 'rb') as fin:
+        data_in = pickle.load(fin)
+    print(data_in)
+    bot_stat = data_in["bot_list"]
+
+    print(bot_stat)
 
 
     """
     Obtain coordinates of crew and broken robots
     """
+    crew_coord = []
+    broken_bot_coord = []
+    crew_error = []
+    bot_error = []
+
     for index in crew_list:
         try:
             crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
