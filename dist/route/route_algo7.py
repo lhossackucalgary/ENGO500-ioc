@@ -18,17 +18,6 @@ def main():
 
 
     """
-    Broken Bots Status data from monitor_out2.data
-    """
-    with open('./monitor_out2.data', 'rb') as fin:
-        data_in = pickle.load(fin)
-    print(data_in)
-    bot_stat = data_in["bot_list"]
-
-    print(bot_stat)
-
-
-    """
     Obtain coordinates of crew and broken robots
     """
     crew_coord = []
