@@ -1,10 +1,10 @@
 <template>
-  <div class="">
+  <li class="">
     Name: {{feature.name}} <br>
     Iot Id: {{feature.iotid}} <br>
     Status: {{feature.properties.status}} <br>
-    
-  </div>
+
+  </li>
 </template>
 
 <script>

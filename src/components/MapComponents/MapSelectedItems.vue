@@ -1,20 +1,42 @@
 <template>
   <div class="">
     <h2>Selected Items</h2>
-
+    <ul>
+      <li
+        is="selected-item"
+        v-for="(item, index) in selected"
+        v-bind:key="index.iotid"
+        v-bind:feature="item"
+        v-on:remove="this.selected.splice(index, 1)"
+      ></li>
+    </ul>
   </div>
 </template>
 
 <script>
+import SelectedItem from './SelectedItem.vue';
+
 export default {
+  components: {
+    'selected-item': SelectedItem
+  },
   created(){
       let localThis = this
       document.addEventListener('addbotcmp', this.addBotCmp)
   },
+  data() {
+    return {
+      selected: []
+    }
+  },
   methods: {
     addBotCmp:function(e) {
-      console.log(e.detail);
-      //Add to list.. watch list, create component list?
+      this.selected.push(e.detail);
+    }
+  },
+  watch: {
+    selected: function () {
+      console.log(this.selected);
     }
   }
 }
