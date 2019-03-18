@@ -7,7 +7,7 @@
         v-for="(item, index) in selected"
         v-bind:key="index.iotid"
         v-bind:feature="item"
-        v-on:remove="this.selected.splice(index, 1)"
+        v-on:remove="selected.splice(index, 1)"
       ></li>
     </ul>
   </div>
@@ -40,11 +40,6 @@ export default {
       if (!inSet) {
         this.selected.push(e.detail);
       }
-    }
-  },
-  watch: {
-    selected: function () {
-      console.log(this.selected);
     }
   }
 }

@@ -1,9 +1,11 @@
 <template>
-  <li class="">
-    Name: {{feature.name}} <br>
-    Iot Id: {{feature.iotid}} <br>
-    Status: {{feature.properties.status}} <br>
-
+  <li>
+    <div>
+      Name: {{feature.name}} <br>
+      Iot Id: {{feature.iotid}} <br>
+      Status: {{feature.properties.status}} <br>
+      <button v-on:click="$emit('remove')">x</button>
+    </div>
   </li>
 </template>
 
@@ -24,9 +26,14 @@ ul {
   list-style-type: none;
   padding: 0;
 }
+button {
+  position: relative;
+}
 li {
   display: inline-block;
-  margin: 0 10px;
+  margin: 0 0px;
+  width: 100%;
+  border-top: 1px solid black;
 }
 a {
   color: #42b983;
