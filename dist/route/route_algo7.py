@@ -3,27 +3,28 @@ import os
 import pickle
 import requests
 import geopy.distance
+import math
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
-
 def main():
     """
-    Routing closest robot to each crew in chronological order
+    Crew & Broken Bots data from monitor_out.data
     """
     with open('./monitor_out.data', 'rb') as fin:
         data_in = pickle.load(fin)
     crew_list = data_in["crew_list"]
     broken_bots = data_in["broken_bots"]
-    crew_coord = []
-    broken_bot_coord = []
-    crew_error = []
-    bot_error = []
 
 
     """
     Obtain coordinates of crew and broken robots
     """
+    crew_coord = []
+    broken_bot_coord = []
+    crew_error = []
+    bot_error = []
+
     for index in crew_list:
         try:
             crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -42,7 +43,7 @@ def main():
         while item in crew_list:
             crew_list.remove(item)
 
-    print(crew_list)
+
     for index in broken_bots:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -79,79 +80,36 @@ def main():
 
 
     """
-    Calculate distance of closest crew to robot
+    Calculate distance between crew and robot
     """
+    routes = []
     crew_routes = [[] for _ in range(0,len(crew_list))]
-    crew_routes_dist = [[] for _ in range(0,len(crew_list))]
 
-    for i in range(0,len(broken_bots)):
-        cb_dist = [[] for _ in range(0,len(crew_list))]
+    while len(broken_bots)!=0:
+        cb_dist = []
+        for i in range(0,len(crew_list)):
+            for j in range(0,len(broken_bots)):
+                dist = geopy.distance.distance(broken_bot_coord[j],crew_coord[i]).km
+                cb_dist.append({'crewid': crew_list[i],'robotid': broken_bots[j], 'dist': dist})
 
-        for j in range(0,len(crew_list)):
-            dist = geopy.distance.distance(broken_bot_coord[i],crew_coord[j]).km
-            cb_dist[j] = [j,dist]
+        min_dist = math.inf
+        for route in cb_dist:
+            if route['dist'] < min_dist:
+                min_dist = route['dist']
+                min_route = route
 
-
-        cb_dist.sort(key=lambda x: x[1])
-
-
-        #for k in range(0,len(cb_dist)):
-        #    if (len(crew_routes[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
-        #        crew_routes[cb_dist[k][0]].append(broken_bots[i])
-        #        crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
-        #        break
-
-        
-        for k in range(0,len(cb_dist)):
-            if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
-            #if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(crew_list)):
-                crew_routes_dist[cb_dist[k][0]].append([broken_bots[i],cb_dist[k][1]])
-                #crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
-                break
-
-
-
-    for i in range(0,len(crew_routes_dist)):
-        crew_routes_dist[i].sort(key=lambda x: x[1])
-        for j in range(0,len(crew_routes_dist[i])):
-            crew_routes[i].append(crew_routes_dist[i][j][0])
+        crew_coord[crew_list.index(min_route['crewid'])] = broken_bot_coord[broken_bots.index(min_route['robotid'])]
+        del broken_bot_coord[broken_bots.index(min_route['robotid'])]
+        broken_bots.remove(min_route['robotid'])
+        routes.append(min_route)
 
 
     """
-    Check if there are any crews with 0 robots, if so - assign closest robot to crew
+    Append crew routes
     """
+    for r in routes:
+        crew_routes[crew_list.index(r['crewid'])].append(r['robotid'])
 
-    check_bot = []
-    check_crew = []
-    check_crew = [i for i,x in enumerate(crew_routes) if not x]
-    for i in range(0,len(crew_routes)):
-        if len(crew_routes[i]) > 1:
-            check_bot = check_bot + crew_routes[i]
-    check_dist = [[] for _ in range(0,len(check_bot))]
-
-
-    if (len(broken_bots) > len(crew_list)):
-        for i in range(0,len(check_crew)):
-
-            check_bot = []
-            for k in range(0,len(crew_routes)):
-                if len(crew_routes[k]) > 1:
-                    check_bot = check_bot + crew_routes[k]
-                check_dist = [[] for _ in range(0,len(check_bot))]
-
-            for j in range(0,len(check_bot)):
-                check_dist[j] = [check_bot[j],geopy.distance.distance(broken_bot_coord[(broken_bots.index(check_bot[j]))],crew_coord[i]).km]
-            min_check = min(check_dist, key=lambda x: x[1])
-
-            for crew in crew_routes:
-                try:
-                    crew.remove(min_check[0])
-                except ValueError:
-                    pass
-
-            crew_routes[check_crew[i]].append(min_check[0])
-
-    print(crew_routes)
 
     """
     Uploading routes to server
