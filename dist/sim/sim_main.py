@@ -7,9 +7,10 @@ import logging
 import os
 import requests
 from update_crews import update_crews
+from update_robots import getUrgentDatastreams
+from update_robots import getWarningDatastreams
 from update_robots import update_robots
 import random
-import csv
 import pickle
 import datetime
 import re
@@ -18,7 +19,7 @@ from util import *
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
     
 def test():
-    test = load_data(r'data/dataSim.data')
+    test = load_data(r'data/robot.data')
     print(test)
 
 def main():
