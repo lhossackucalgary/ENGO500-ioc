@@ -26,10 +26,10 @@ def grabAllRobotStatus():
             for thing in things:
                 if "status" in thing["properties"]:
                     bot = {"iotid": thing["@iot.id"], "status": thing["properties"]["status"]}
-                    bot_list.append(bot)                 
+                    bot_list.append(bot)
     except:
         logging.exception("Failed getting list of robots")
-    
+
     #save in data file
     #print(bot_list)
     with open(r'../sim/data/robotStatus.data', 'wb') as f:
@@ -115,7 +115,7 @@ def getUrgentRobots():
     for stat in robotStats:
         if stat["status"] == "Urgent":
             urgentBots.append(stat["iotid"])
-    
+
     #print(urgentBots)
     return urgentBots
 
@@ -127,18 +127,14 @@ def getWarningRobots():
     for stat in robotStats:
         if stat["status"] == "Warning":
             warningBots.append(stat["iotid"])
-    
+
     #print(warningBots)
     return warningBots
 
 def calcRobotHP():
     #before writing, need to create datastream and obsType for health
-    """ get list of all robots """
-    """ for each robot, get list of datastreams """
-        """ for each datastream, check type of sensor (pressure, temp, etc) """
-            """ compare to ideal pressure/temp value to get a percentage """
-        """ average all percentages from all datastreams from the robot """
-        """ post resulting percentage as HP of robot as Observation """
+    """
+    """
 
 def main():
     """ break some bots (Please improve when... possible) """
@@ -178,7 +174,7 @@ def main():
     cwd = os.path.dirname(os.path.realpath(__file__))
     with open(cwd+'/../route/monitor_out.data', 'wb') as fout:
         pickle.dump(route_info, fout)
-    
+
     """ add file of robotStats to routing """
     robotStats = load_data(r'../sim/data/robotStatus.data')
     with open(cwd+'/../route/monitor_out2.data', 'wb') as fout:

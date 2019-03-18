@@ -42,7 +42,7 @@ def main():
         while item in crew_list:
             crew_list.remove(item)
 
-    print(crew_list)
+
     for index in broken_bots:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -77,6 +77,8 @@ def main():
         broken_bot_coord[i][0] = lat
         broken_bot_coord[i][1] = lon
 
+    print(crew_list)
+    print(broken_bots)
 
     """
     Calculate distance of closest crew to robot
@@ -95,28 +97,30 @@ def main():
         cb_dist.sort(key=lambda x: x[1])
 
 
+
+
         #for k in range(0,len(cb_dist)):
-        #    if (len(crew_routes[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
+        #    if (len(crew_routes[cb_dist[k][0]])) <= (len(crew_list)):
         #        crew_routes[cb_dist[k][0]].append(broken_bots[i])
         #        crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
         #        break
 
-        
+
         for k in range(0,len(cb_dist)):
             if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
             #if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(crew_list)):
                 crew_routes_dist[cb_dist[k][0]].append([broken_bots[i],cb_dist[k][1]])
-                #crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
+                crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
                 break
 
 
-
+    print(crew_routes)            
     for i in range(0,len(crew_routes_dist)):
         crew_routes_dist[i].sort(key=lambda x: x[1])
         for j in range(0,len(crew_routes_dist[i])):
             crew_routes[i].append(crew_routes_dist[i][j][0])
 
-
+    print(crew_routes)
     """
     Check if there are any crews with 0 robots, if so - assign closest robot to crew
     """
@@ -142,6 +146,9 @@ def main():
             for j in range(0,len(check_bot)):
                 check_dist[j] = [check_bot[j],geopy.distance.distance(broken_bot_coord[(broken_bots.index(check_bot[j]))],crew_coord[i]).km]
             min_check = min(check_dist, key=lambda x: x[1])
+
+            print(check_dist)
+            print(min_check)
 
             for crew in crew_routes:
                 try:
