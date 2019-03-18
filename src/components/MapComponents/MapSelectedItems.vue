@@ -31,7 +31,15 @@ export default {
   },
   methods: {
     addBotCmp:function(e) {
-      this.selected.push(e.detail);
+      let inSet = false;
+      for (let i = 0; i < this.selected.length; i++) {
+        if (e.detail.iotid === this.selected[i].iotid){
+          inSet = true;
+        }
+      }
+      if (!inSet) {
+        this.selected.push(e.detail);
+      }
     }
   },
   watch: {
