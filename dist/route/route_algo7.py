@@ -42,7 +42,7 @@ def main():
         while item in crew_list:
             crew_list.remove(item)
 
-    print(crew_list)
+
     for index in broken_bots:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -81,23 +81,38 @@ def main():
     """
     Calculate distance between crew and robot
     """
-    cb_dist = []
+    routes = []
+    crew_routes = [[] for _ in range(0,len(crew_list))]
 
-    for i in range(0,len(crew_list)):
-        for j in range(0,len(broken_bots)):
-            dist = geopy.distance.distance(broken_bot_coord[j],crew_coord[i]).km
-            cb_dist.append({'crewid': crew_list[i],'robotid': broken_bots[j], 'dist': dist})
+    while len(broken_bots)!=0:
+        cb_dist = []
+        for i in range(0,len(crew_list)):
+            for j in range(0,len(broken_bots)):
+                dist = geopy.distance.distance(broken_bot_coord[j],crew_coord[i]).km
+                cb_dist.append({'crewid': crew_list[i],'robotid': broken_bots[j], 'dist': dist})
 
-    min_dist = math.inf
-    for route in cb_dist:
-        if route["dist"] < min_dist:
-            min_dist = route["dist"]
-            min_route = route
-    print(min_route)
-    print(min_dist)
+        min_dist = math.inf
+        for route in cb_dist:
+            if route['dist'] < min_dist:
+                min_dist = route['dist']
+                min_route = route
+
+        crew_coord[crew_list.index(min_route['crewid'])] = broken_bot_coord[broken_bots.index(min_route['robotid'])]
+        del broken_bot_coord[broken_bots.index(min_route['robotid'])]
+        broken_bots.remove(min_route['robotid'])
+        routes.append(min_route)
+
+
+    """
+    Append crew routes
+    """
+    for r in routes:
+        crew_routes[crew_list.index(r['crewid'])].append(r['robotid'])
+
+
     """
     Uploading routes to server
-
+    """
 
     for index in range(0, len(crew_routes)):
         try:
@@ -110,7 +125,7 @@ def main():
         except:
                 logging.exception("Exception thrown generating route")
 
-    """
+
 """
 Logging data
 """
