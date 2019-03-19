@@ -286,10 +286,12 @@ export default {
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
           } else if (typeof(feature["values_"]["properties"]["route"]) !== "undefined") {
             // Crew
+            let obj_ = {"name": feature["values_"]["name"], "iotid": feature["values_"]["@iot.id"], "properties": feature["values_"]["properties"], "geometry": toLonLat(feature["values_"]["geometry"]["flatCoordinates"])}
+
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
             popupStr += "<br\>Route: " + feature["values_"]["properties"]["route"];
-            popupStr += "<br\><button type=\"button\">Show more</button>";
+            popupStr += "<br\><button type=\"button\" onclick=\"document.dispatchEvent(new CustomEvent('crewShowMore', {detail:" + JSON.stringify(obj_).replace(/\"/g, "'") + "}))\">Show More</button>";
 
             popup.getElement().innerHTML = popupStr;
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
