@@ -290,7 +290,7 @@ export default {
 
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
-            popupStr += "<br\>Route: " + feature["values_"]["properties"]["route"];
+            //popupStr += "<br\>Route: " + feature["values_"]["properties"]["route"];
             popupStr += "<br\><button type=\"button\" onclick=\"document.dispatchEvent(new CustomEvent('crewShowMore', {detail:" + JSON.stringify(obj_).replace(/\"/g, "'") + "}))\">Show More</button>";
 
             popup.getElement().innerHTML = popupStr;
