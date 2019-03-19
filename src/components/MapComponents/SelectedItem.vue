@@ -33,7 +33,7 @@ li {
   display: inline-block;
   margin: 0 0px;
   width: 100%;
-  border-top: 1px solid black;
+  border-bottom: 1px solid black;
 }
 a {
   color: #42b983;

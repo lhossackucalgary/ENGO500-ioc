@@ -1,6 +1,7 @@
 <template>
   <div class="">
     <h2>Selected Items</h2>
+    <button name="button">Compare!</button>
     <ul>
       <li
         is="selected-item"
@@ -49,10 +50,12 @@ export default {
 <style scoped>
 h1, h2 {
   font-weight: normal;
+  margin-bottom: 0px;
 }
 ul {
   list-style-type: none;
   padding: 0;
+  border-top: 1px solid black;
 }
 li {
   display: inline-block;
