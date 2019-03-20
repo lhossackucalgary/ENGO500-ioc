@@ -7,7 +7,7 @@ import math
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
-def CalcDist(bot_list):
+def CalcDist(bot_list, crew_list, routes):
     cb_dist = []
     for crew in crew_list:
         for bot in bot_list:
@@ -22,10 +22,15 @@ def CalcDist(bot_list):
 
     for crew in crew_list:
         if crew['iotid'] == min_route['crewid']:
+            crew['route'].append(min_route['robotid'])
             crew['coord'] = min_route['botcoord']
 
-    bot_list = [bot for bot in bot_warning if bot['iotid'] != min_route['robotid']]
-    routes.append(min_route)
+
+    bot_list = [bot for bot in bot_list if bot['iotid'] != min_route['robotid']]
+    return bot_list
+
+    print(crew_list)
+    #routes.append(min_route)
 
 
 def main():
@@ -64,6 +69,7 @@ def main():
                     crew_error.append(index['iotid'])
                 else:
                     index['coord'] = responseJSON['value'][0]['location']['coordinates']
+                    index['route'] = []
             else:
                 print("there was an error")
         except:
@@ -111,23 +117,36 @@ def main():
         else:
             continue
 
+
+
     while bot_urgent != []:
-        CalcDist(bot_urgent)
+        bot_urgent = CalcDist(bot_urgent, crew_list, routes)
+
+#    for crew in crew_list:
+        #if
 
     while bot_warning != []:
-        CalcDist(bot_warning)
+        bot_warning = CalcDist(bot_warning, crew_list, routes)
+
+
 
 
     """
     Append crew routes
     """
-    crew_id = []
-    for crew in crew_list:
-        crew_id.append(crew['iotid'])
-
     crew_routes = [[] for _ in range(0,len(crew_list))]
-    for r in routes:
-        crew_routes[crew_id.index(r['crewid'])].append(r['robotid'])
+    ind = 0
+    for crew in crew_list:
+        print(crew)
+        crew_routes[ind] = crew['route']
+        ind = ind + 1
+
+    print(crew_routes)
+        #crew_id.append(crew['iotid'])
+
+    #crew_routes = [[] for _ in range(0,len(crew_list))]
+    #for r in routes:
+        #crew_routes[crew_id.index(r['crewid'])].append(r['robotid'])
 
 
     """
