@@ -238,13 +238,13 @@ def main():
     except:
         logging.exception("Failed getting list of robots")
 
-    """caclulate health of robots as observation"""
-    """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
-    calcRobotHP()
     """grab current robot status from API"""
     grabAllRobotStatus()
     """run this to reset robot status to healthy"""
     #resetRobotStatus()
+    """caclulate health of robots as observation"""
+    """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
+    calcRobotHP()
     """make some robots sick"""
     updateRobotStatus()
 
