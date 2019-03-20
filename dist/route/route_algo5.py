@@ -61,7 +61,7 @@ def main():
         while item in broken_bots:
             broken_bots.remove(item)
 
-
+    total_broken = len(broken_bots)
     """
     Swap coordinate format to [lat,long]
     """
@@ -84,42 +84,41 @@ def main():
     crew_routes = [[] for _ in range(0,len(crew_list))]
     crew_routes_dist = [[] for _ in range(0,len(crew_list))]
 
-    for i in range(0,len(broken_bots)):
-        cb_dist = [[] for _ in range(0,len(crew_list))]
+    while len(broken_bots) != 0:
+        for i in range(0,len(crew_list)):
+            cb_dist = [[] for _ in range(0,len(broken_bots))]
 
-        for j in range(0,len(crew_list)):
-            dist = geopy.distance.distance(broken_bot_coord[i],crew_coord[j]).km
-            cb_dist[j] = [j,dist]
-
-
-        cb_dist.sort(key=lambda x: x[1])
+            for j in range(0,len(broken_bots)):
+                dist = geopy.distance.distance(broken_bot_coord[j],crew_coord[i]).km
+                cb_dist[j] = [j,dist]
 
 
-        #for k in range(0,len(cb_dist)):
-        #    if (len(crew_routes[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
-        #        crew_routes[cb_dist[k][0]].append(broken_bots[i])
-        #        crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
-        #        break
+            cb_dist.sort(key=lambda x: x[1])
+            print(cb_dist)
 
-        
-        for k in range(0,len(cb_dist)):
-            if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(broken_bots)/len(crew_list)):
-            #if (len(crew_routes_dist[cb_dist[k][0]])) <= (len(crew_list)):
-                crew_routes_dist[cb_dist[k][0]].append([broken_bots[i],cb_dist[k][1]])
-                #crew_coord[cb_dist[k][0]] = broken_bot_coord[i]
-                break
+            for k in range(0,len(cb_dist)):
+                if (len(crew_routes[i])) <= (total_broken/len(crew_list)):
+                    crew_routes[i].append(broken_bots[cb_dist[k][0]])
+                    crew_coord[i] = broken_bot_coord[cb_dist[k][0]]
+                    del broken_bots[cb_dist[k][0]]
+                    del broken_bot_coord[cb_dist[k][0]]
+                    break
 
 
+        """
+        for i in range(0,len(crew_routes_dist)):
+            crew_routes_dist[i].sort(key=lambda x: x[1])
+            for j in range(0,len(crew_routes_dist[i])):
+                crew_routes[i].append(crew_routes_dist[i][j][0])
+        """
 
-    for i in range(0,len(crew_routes_dist)):
-        crew_routes_dist[i].sort(key=lambda x: x[1])
-        for j in range(0,len(crew_routes_dist[i])):
-            crew_routes[i].append(crew_routes_dist[i][j][0])
+        if len(broken_bots) == 0:
+            break
 
 
     """
     Check if there are any crews with 0 robots, if so - assign closest robot to crew
-    """
+
 
     check_bot = []
     check_crew = []
@@ -150,9 +149,8 @@ def main():
                     pass
 
             crew_routes[check_crew[i]].append(min_check[0])
-
+    """
     print(crew_routes)
-
     """
     Uploading routes to server
     """
