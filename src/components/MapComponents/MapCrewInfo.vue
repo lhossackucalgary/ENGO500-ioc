@@ -58,12 +58,14 @@ export default {
           if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
             crewInfoThis.route.splice(index+1, 0, id);
 
-            let data = {"description": "[]", "properties": {"route": crewInfoThis.route}};
+            // TODO: Guaranteed_route must cross-reference previous guaranteed route
+            let guaranteed_route = JSON.stringify(crewInfoThis.route.slice(0,index+2));
+            let data = {"description": guaranteed_route, "properties": {"route": crewInfoThis.route}};
 
             var xhttp2 = new XMLHttpRequest();
             xhttp2.onreadystatechange = function() {
               if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
-                // send msg to map layer to reload map data
+                // TODO: emit event to map layer to reload sources
                 alert("Route successfully updated.");
               } else if (this.readyState == 4) {
                 alert("Failed to update route. Please refresh and try again.");
