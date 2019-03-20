@@ -7,6 +7,27 @@ import math
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
+def CalcDist(bot_list):
+    cb_dist = []
+    for crew in crew_list:
+        for bot in bot_list:
+            dist = geopy.distance.distance(bot['coord'],crew['coord']).m
+            cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
+
+    min_dist = math.inf
+    for route in cb_dist:
+        if route['dist'] < min_dist:
+            min_dist = route['dist']
+            min_route = route
+
+    for crew in crew_list:
+        if crew['iotid'] == min_route['crewid']:
+            crew['coord'] = min_route['botcoord']
+
+    bot_list = [bot for bot in bot_warning if bot['iotid'] != min_route['robotid']]
+    routes.append(min_route)
+
+
 def main():
     """
     Crew data from monitor_out.data
@@ -91,44 +112,10 @@ def main():
             continue
 
     while bot_urgent != []:
-        cb_dist = []
-        for crew in crew_list:
-            for bot in bot_urgent:
-                dist = geopy.distance.distance(bot['coord'],crew['coord']).m
-                cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
-
-        min_dist = math.inf
-        for route in cb_dist:
-            if route['dist'] < min_dist:
-                min_dist = route['dist']
-                min_route = route
-
-        for crew in crew_list:
-            if crew['iotid'] == min_route['crewid']:
-                crew['coord'] = min_route['botcoord']
-
-        bot_urgent = [bot for bot in bot_urgent if bot['iotid'] != min_route['robotid']]
-        routes.append(min_route)
+        CalcDist(bot_urgent)
 
     while bot_warning != []:
-        cb_dist = []
-        for crew in crew_list:
-            for bot in bot_warning:
-                dist = geopy.distance.distance(bot['coord'],crew['coord']).m
-                cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
-
-        min_dist = math.inf
-        for route in cb_dist:
-            if route['dist'] < min_dist:
-                min_dist = route['dist']
-                min_route = route
-
-        for crew in crew_list:
-            if crew['iotid'] == min_route['crewid']:
-                crew['coord'] = min_route['botcoord']
-
-        bot_warning = [bot for bot in bot_warning if bot['iotid'] != min_route['robotid']]
-        routes.append(min_route)
+        CalcDist(bot_warning)
 
 
     """
@@ -145,7 +132,7 @@ def main():
 
     """
     Uploading routes to server
-    """
+
 
     for index in range(0, len(crew_routes)):
         try:
@@ -158,7 +145,7 @@ def main():
         except:
                 logging.exception("Exception thrown generating route")
 
-
+    """
 """
 Logging data
 """
