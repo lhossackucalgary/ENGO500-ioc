@@ -119,7 +119,7 @@ def deleteAllSensors():
     """
     put iot.id of any sensors that should be kept in the following exceptions array named ex
     """
-    ex = [846, 847]
+    ex = [846, 847, 8668]
     #get all sensors from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Sensors", headers = headers)
@@ -147,7 +147,7 @@ def deleteAllObsProps():
     """
     put iot.id of any Observed Properties that should be kept in the following exceptions array named ex
     """
-    ex = [848, 849]
+    ex = [848, 849, 8671]
     #get all observed properties from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/ObservedProperties", headers = headers)
