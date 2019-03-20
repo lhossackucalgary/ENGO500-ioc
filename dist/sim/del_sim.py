@@ -6,7 +6,7 @@ headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3M
 
 
 def cleanRoutesFromNondeletedCrews(id):
-    data = {"properties": {"route": []}}
+    data = {"properties": {"route": []}, "description": "[]"}
     try:
         r = requests.patch(url = "http://routescout.sensorup.com/v1.0/Things(%d)" % id, json = data, headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
@@ -47,6 +47,22 @@ def deleteAllThings():
 
 
 def deleteAllLocations():
+    #thing id of delete exceptions
+    ex = [290, 293, 296, 299]
+
+    #get location of thing id exceptions
+    ex_loc = []
+    for id in ex:
+        try:
+            rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Thing(%d)/Locations" %id, headers = headers)
+        except:
+            print("error: getting location of thing id delete exceptions")
+            exit()
+        locations = rd.json()["value"]
+        for location in locations:
+            loc_id = location["@iot.id"]
+        ex_loc.append(loc_id)
+
     #get all locations from api
     try:
         rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Locations", headers = headers)
@@ -63,11 +79,12 @@ def deleteAllLocations():
         id = location["@iot.id"]
         #Delete current location using id
         #print(id)
-        try:
-            r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Locations(%d)" %id, headers = headers)
-        except:
-            print("error: locations at 2")
-            exit()
+        if id not in ex_loc:
+            try:
+                r = requests.delete(url = "http://routescout.sensorup.com/v1.0/Locations(%d)" %id, headers = headers)
+            except:
+                print("error: locations at 2")
+                exit()
 
 def deleteAllHistLocs():
     #get all locations from api
@@ -218,6 +235,7 @@ def deleteAllFeatOfInt():
             exit()
 
 def main():
+
     deleteAllThings()
     deleteAllLocations()
     deleteAllHistLocs()
