@@ -55,6 +55,7 @@ function changeHealthBarHeights(attr, maxAttrValue){
 }
 export default {
   name: 'App'
+  
 }
 </script>
 

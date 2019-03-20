@@ -26,7 +26,6 @@
 <script>
 import * as d3 from 'd3'
 
-
 const ROBOT_HEALTH = [
     { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
     { "robot" : "robot_2", "health" : 20, "pressure" : 70, "temperature" : 50},

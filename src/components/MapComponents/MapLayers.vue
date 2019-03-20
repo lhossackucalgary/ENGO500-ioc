@@ -23,6 +23,7 @@
       </li>
     </ul>
     <hr>
+    <hr>
   </div>
 </template>
 
