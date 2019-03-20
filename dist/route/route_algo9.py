@@ -14,23 +14,25 @@ def CalcDist(bot_list, crew_list, routes):
             dist = geopy.distance.distance(bot['coord'],crew['coord']).m
             cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
 
+    cb_dist = sorted(cb_dist, key=lambda k: k['dist'])
     min_dist = math.inf
-    for route in cb_dist:
-        if route['dist'] < min_dist:
-            min_dist = route['dist']
-            min_route = route
-
     for crew in crew_list:
-        if crew['iotid'] == min_route['crewid']:
-            crew['route'].append(min_route['robotid'])
-            crew['coord'] = min_route['botcoord']
+        if len(crew['route']) < min_dist:
+            min_dist = len(crew['route'])
 
 
-    bot_list = [bot for bot in bot_list if bot['iotid'] != min_route['robotid']]
-    return bot_list
+    for route in cb_dist:
+        for crew in crew_list:
+            if (route['crewid'] == crew['iotid']) and (len(crew['route']) < (min_dist*2+1)):
+                crew['route'].append(route['robotid'])
+                crew['coord'] = route['botcoord']
+                bot_list = [bot for bot in bot_list if bot['iotid'] != route['robotid']]
+                return bot_list
+                break
+        else:
+            continue
+        break
 
-    print(crew_list)
-    #routes.append(min_route)
 
 
 def main():
@@ -118,12 +120,8 @@ def main():
             continue
 
 
-
     while bot_urgent != []:
         bot_urgent = CalcDist(bot_urgent, crew_list, routes)
-
-#    for crew in crew_list:
-        #if
 
     while bot_warning != []:
         bot_warning = CalcDist(bot_warning, crew_list, routes)
@@ -134,24 +132,23 @@ def main():
     """
     Append crew routes
     """
+    crew_id = []
+    for crew in crew_list:
+        crew_id.append(crew['iotid'])
+        
     crew_routes = [[] for _ in range(0,len(crew_list))]
     ind = 0
     for crew in crew_list:
-        print(crew)
         crew_routes[ind] = crew['route']
         ind = ind + 1
 
+    print(crew_list)
     print(crew_routes)
-        #crew_id.append(crew['iotid'])
-
-    #crew_routes = [[] for _ in range(0,len(crew_list))]
-    #for r in routes:
-        #crew_routes[crew_id.index(r['crewid'])].append(r['robotid'])
 
 
     """
     Uploading routes to server
-
+    """
 
     for index in range(0, len(crew_routes)):
         try:
@@ -164,7 +161,7 @@ def main():
         except:
                 logging.exception("Exception thrown generating route")
 
-    """
+
 """
 Logging data
 """
