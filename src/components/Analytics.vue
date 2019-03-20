@@ -129,6 +129,22 @@ var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
 //var data = [10, 20, 30 , 40, 50];
 
+function loadData(){
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+        var things_list = JSON.parse(xhttp.responseText).value;
+        for (var t = 0; t < things_list.length; t++) {
+            thing_id_list.push(things_list[t]['@iot.id']);
+            things_props.set(things_list[t]['@iot.id'], things_list[t]);
+        }
+        getLocations(thing_id_list, things_locations_map);
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things", true);
+    xhttp.send();
+}
+
 // code modified from Scott Murray's example
 // https://alignedleft.com/tutorials/d3/scales
 function setupVis1(){
