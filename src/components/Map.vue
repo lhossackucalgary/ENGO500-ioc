@@ -106,7 +106,8 @@ export default {
 }
 
 #layercontainer {
-  height: 50%;
+  display: inline-block;
+  width: 100%;
   background-color: white;
   overflow-y: scroll;
 }

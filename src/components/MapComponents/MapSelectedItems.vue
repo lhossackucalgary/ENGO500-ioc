@@ -1,13 +1,48 @@
 <template>
   <div class="">
     <h2>Selected Items</h2>
-    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <button name="button">Compare!</button>
+    <ul>
+      <li
+        is="selected-item"
+        v-for="(item, index) in selected"
+        v-bind:key="index.iotid"
+        v-bind:feature="item"
+        v-on:remove="selected.splice(index, 1)"
+      ></li>
+    </ul>
   </div>
 </template>
 
 <script>
-export default {
+import SelectedItem from './SelectedItem.vue';
 
+export default {
+  components: {
+    'selected-item': SelectedItem
+  },
+  created(){
+      let localThis = this
+      document.addEventListener('addbotcmp', this.addBotCmp)
+  },
+  data() {
+    return {
+      selected: []
+    }
+  },
+  methods: {
+    addBotCmp:function(e) {
+      let inSet = false;
+      for (let i = 0; i < this.selected.length; i++) {
+        if (e.detail.iotid === this.selected[i].iotid){
+          inSet = true;
+        }
+      }
+      if (!inSet) {
+        this.selected.push(e.detail);
+      }
+    }
+  }
 }
 </script>
 
@@ -15,10 +50,12 @@ export default {
 <style scoped>
 h1, h2 {
   font-weight: normal;
+  margin-bottom: 0px;
 }
 ul {
   list-style-type: none;
   padding: 0;
+  border-top: 1px solid black;
 }
 li {
   display: inline-block;
