@@ -59,8 +59,8 @@ def init_datastreams(id):
                 "definition": "https://en.wikipedia.org/wiki/Percentage"
             },
             "Thing":{"@iot.id":id},
-            "ObservedProperty":{"@iot.id":8671},
-            "Sensor":{"@iot.id":8668}
+            "ObservedProperty":{"@iot.id":9854},
+            "Sensor":{"@iot.id":9851}
         }
     ]
 
