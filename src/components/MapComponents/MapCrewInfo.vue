@@ -50,15 +50,31 @@ export default {
       this.route.splice(i, 1);
     },
     addBotForm: function(i) {
-      console.log(this.formInputs[i]);
       let inputVal = parseInt(this.formInputs[i]);
       var crewInfoThis = this;
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = (function(crewInfoThis, id, index) {
           return function() {
           if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
-            console.log("Returned AJAX req");
             crewInfoThis.route.splice(index+1, 0, id);
+
+            let data = {"description": "[]", "properties": {"route": crewInfoThis.route}};
+
+            var xhttp2 = new XMLHttpRequest();
+            xhttp2.onreadystatechange = function() {
+              if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+                // send msg to map layer to reload map data
+                alert("Route successfully updated.");
+              } else if (this.readyState == 4) {
+                alert("Failed to update route. Please refresh and try again.");
+              }
+            }
+
+            xhttp2.open("PATCH", "http://routescout.sensorup.com/v1.0/Things(" + crewInfoThis.iotid + ")", true);
+            xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+            xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            xhttp2.send(JSON.stringify(data));
+
           } else if (this.readyState == 4) {
             alert("iotid " + id + " is not a valid iotid.");
           }
@@ -70,9 +86,8 @@ export default {
     }
   },
   watch: {
-    route: function() {
-      // send msg to map layer to update feature's routes
-      // send msg to server to update server's routes..
+    route: function(newVal, oldVal) {
+
     }
   }
 }
