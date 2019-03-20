@@ -31,28 +31,7 @@
 </template>
 
 <script>
-function changeHealthBarHeights(attr, maxAttrValue){
-    for (var i = 0; i < _data1.length; i++){
-        var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);
-        var bar = document.getElementById("column_" + i);
 
-        var oldY = bar.getAttribute("y");
-        var oldHeight = bar.getAttribute("height");
-        var newY = _vis_height - PADDING_FOR_LABELS - newHeight;
-
-        bar.setAttribute("y", oldY);
-        bar.setAttribute("height", oldHeight);
-
-        var animate = "<animate id='animate_bar_" + i + "' attributeName='y' from='" + oldY + "' " +
-            "to='" + newY + "' dur='1s' begin='indefinite'" +
-            "repeatCount='1' fill='freeze'></animate>" +
-            "<animate attributeName='height' from='"+ oldHeight +"' to='"+ newHeight +"' dur='1s' " +
-            "begin='animate_bar_"+ i +".begin' fill='freeze'></animate>" +
-            "<title>"+ _data1[i][attr] +"</title>";
-        bar.innerHTML = animate;
-        document.getElementById('animate_bar_' + i).beginElement();
-    }
-}
 export default {
   name: 'App'
   
