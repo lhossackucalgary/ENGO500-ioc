@@ -63,15 +63,16 @@ export default {
             let data = {"description": guaranteed_route, "properties": {"route": crewInfoThis.route}};
 
             var xhttp2 = new XMLHttpRequest();
-            xhttp2.onreadystatechange = function() {
-              if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
-                // TODO: emit event to map layer to reload sources
-                alert("Route successfully updated.");
-              } else if (this.readyState == 4) {
-                alert("Failed to update route. Please refresh and try again.");
+            xhttp2.onreadystatechange = (function (crewInfoThis) {
+                return function() {
+                if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+                  crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+                  alert("Route successfully updated.");
+                } else if (this.readyState == 4) {
+                  alert("Failed to update route. Please refresh and try again.");
+                }
               }
-            }
-
+            })(crewInfoThis);
             xhttp2.open("PATCH", "http://routescout.sensorup.com/v1.0/Things(" + crewInfoThis.iotid + ")", true);
             xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
             xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");

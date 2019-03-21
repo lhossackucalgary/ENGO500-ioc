@@ -64,7 +64,6 @@ function getThings(things_props, thing_id_list, things_locations_map) {
   xhttp.send();
 }
 
-
 function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warning_src,
                      b_urgent_src, b_unknown_src, b_needsparts_src, c_src, route_src) {
   things.clear();
@@ -73,6 +72,8 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
   getThings(things, thing_ids, thing_locations);
 
   function data_load_check() {
+
+
     if (thing_ids.length > 0 && thing_locations.size == thing_ids.length) {
       //console.log(things);
       //console.log(thing_locations);
@@ -121,6 +122,7 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
               list_of_coords.push(fromLonLat(thing_locations.get(props_["route"][i])));
             }
             var route_feature = new Feature(new LineString(list_of_coords));
+            route_feature.setProperties(thing_)
             route_src.addFeature(route_feature);
           }
         }
@@ -128,7 +130,6 @@ function LoadMapData(things, thing_ids, thing_locations, b_healthy_src, b_warnin
         /*        if is bot (true) {
         } else if is crew (true) {
         }*/
-
       }
       return;
     } else {
@@ -313,12 +314,12 @@ export default {
     var thing_locations = new Map();  //map crew id to location
     var things = new Map(); //map crew id to props
     var thing_ids = [];
-
+    var send_single_data_req;
     function sendDataRequest() {
       // console.log("sent data requests");
       LoadMapData(things, thing_ids, thing_locations, bots_healthy_source,
-                  bots_warning_source, bots_urgent_source, bots_unknown_source,
-                  bots_needsparts_source, crews_source, routes_source);
+                    bots_warning_source, bots_urgent_source, bots_unknown_source,
+                    bots_needsparts_source, crews_source, routes_source);
       setTimeout(sendDataRequest, 60000);
     };
     sendDataRequest();
@@ -330,7 +331,13 @@ export default {
     unknownLayerOn: Boolean,
     needsPartsLayerOn: Boolean,
     crewLayerOn: Boolean,
-    routeLayerOn: Boolean
+    routeLayerOn: Boolean,
+    refreshRoutesWatcher: Object
+  },
+  data() {
+    return {
+      send_single_data_req: Function
+    }
   },
   watch: {
     healthyLayerOn: function(newVal, oldVal) {
@@ -353,6 +360,36 @@ export default {
     },
     routeLayerOn: function(newVal, oldVal) {
       routes_layer.setVisible(newVal);
+    },
+    refreshRoutesWatcher: function(newVal, oldVal) {
+
+      let entries_crews = Object.entries(crews_source.undefIdIndex_);
+      for (let i = 0; i < entries_crews.length; i++) {
+        if (entries_crews[i][1].values_["@iot.id"] == newVal.iotid) {
+          entries_crews[i][1].values_.properties.route = newVal.route;
+        }
+      }
+
+      //routes_source
+      console.log(newVal);
+      let entries_routes = Object.entries(routes_source.undefIdIndex_);
+      for (let i = 0; i < entries_routes.length; i++) {
+        if (entries_routes[i][1].values_["@iot.id"] == newVal.iotid) {
+          if (newVal["route"].length >= 1) {
+            console.log(entries_routes[i][0]);
+            // // Add crew's location
+            // var list_of_coords = [fromLonLat(thing_locations.get(thing_ids[i]))];
+            //
+            // // Add location of each bot:
+            // for (let i = 0; i < props_["route"].length; i++) {
+            //   list_of_coords.push(fromLonLat(thing_locations.get(props_["route"][i])));
+            // }
+            // var route_feature = new Feature(new LineString(list_of_coords));
+            // route_feature.setProperties(thing_)
+            // routes_source.addFeature(route_feature);
+          }
+        }
+      }
     }
   }
 }
