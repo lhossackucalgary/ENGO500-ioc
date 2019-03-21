@@ -204,7 +204,10 @@ def calcRobotHP():
         
         """ average all percentages from all datastreams from the robot """
         hp_total = (hp_pres + hp_temp)/2
+        if (hp_total < 0):
+            hp_total = 0
         #print(hp_total)
+        
         if (HP_id != None):
             """ post resulting percentage as HP of robot as Observation """
             data = {
