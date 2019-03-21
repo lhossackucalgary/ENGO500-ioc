@@ -48,6 +48,24 @@ export default {
     },
     deleteBot: function(i) {
       this.route.splice(i, 1);
+      // TODO: Guaranteed_route must cross-reference previous guaranteed route
+      let guaranteed_route = JSON.stringify(this.route.slice(0,i));
+      let data = {"description": guaranteed_route, "properties": {"route": this.route}};
+
+      var xhttp2 = new XMLHttpRequest();
+      xhttp2.onreadystatechange = (function (crewInfoThis) {
+          return function() {
+          if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+            crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+          } else if (this.readyState == 4) {
+            alert("Failed to update route. Please refresh and try again.");
+          }
+        }
+      })(this);
+      xhttp2.open("PATCH", "http://routescout.sensorup.com/v1.0/Things(" + this.iotid + ")", true);
+      xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+      xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+      xhttp2.send(JSON.stringify(data));
     },
     addBotForm: function(i) {
       let inputVal = parseInt(this.formInputs[i]);
@@ -67,7 +85,6 @@ export default {
                 return function() {
                 if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
                   crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
-                  alert("Route successfully updated.");
                 } else if (this.readyState == 4) {
                   alert("Failed to update route. Please refresh and try again.");
                 }
