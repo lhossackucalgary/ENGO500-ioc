@@ -130,6 +130,30 @@ var parseDate = d3.timeParse("%Y-%m-%d");
 //var data = [10, 20, 30 , 40, 50];
 var th;
 
+function loadObservation(obid){
+    //create object to hold observation id, result, and time
+    var obj_obs = function(id, result, time) {
+        this.id = id;
+        this.result = result;
+        this.time = time;
+    }
+    //create an object with null values to hold resulting obs
+    var obs = new obj_obs(null, null, null);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var r = JSON.parse(xhttp.responseText);
+
+            obs.id = r['@iot.id'];
+            obs.result = r['result'];
+            obs.time = r['resultTime'];
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations("+obid+")", true);
+    xhttp.send();
+    return obs;
+}
+
 function loadDatastreams_Obs(){
     var dsobs = [];
     var xhttp = new XMLHttpRequest();
@@ -162,12 +186,17 @@ function loadDatastreams_Obs(){
                     console.error("datastream does not have valid type: " + desc);
                 }
 
-                //get obids from datastream at i
+                //get observations from datastream at i
                 var obs = r[i]['Observations'];//obs array at i
                 var obids = [];
                 for (var j = 0; j < obs.length; j++) {
                     var obid = obs[j]['@iot.id'];//obid at datastream i, 
-                    obids.push(obid);
+
+                    //get the info of the obs
+                    var obs_info = loadObservation(obid);
+
+                    //push to obids, which now contains obs info (id, result, time)
+                    obids.push(obs_info);
                 }
 
                 //create new obj_ds_ob to hold all of the data
