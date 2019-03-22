@@ -238,10 +238,9 @@ function loadThing_Datastreams_Obs(dsobs){
                 var allds = r[i]['Datastreams'];
                 for (var j = 0; j < allds.length; j++) {
                     var dsid = allds[j]['@iot.id'];
-                    //console.log(dsobs[0]);
+
                     //loop through dsobs to find the dsob matching the current dsid
                     for (var k = 0; k < dsobs.length; k++) {
-                        //console.log(dsobs[k].id);
                         if (dsid == dsobs[k].id) {
                             thds.push(dsobs[k]);
                         }
