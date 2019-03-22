@@ -124,7 +124,6 @@ def main():
         if not crew['desc']:
             continue
         else:
-
             crew_desc = crew['desc'][1:-1]
             crew_desc = crew_desc.split(',')
             try:
@@ -139,22 +138,8 @@ def main():
     Calculate distance between crew and robot
     """
     routes = []
-    bot_urgent = []
-    bot_warning = []
-
-    for bot in broken_bots:
-        if bot['status'] == 'Urgent':
-            bot_urgent.append(bot)
-        elif bot['status'] == 'Warning':
-            bot_warning.append(bot)
-        else:
-            continue
-
-    while bot_urgent != []:
-        bot_urgent = CalcDist(bot_urgent, crew_list, routes)
-
-    while bot_warning != []:
-        bot_warning = CalcDist(bot_warning, crew_list, routes)
+    while broken_bots != []:
+        broken_bots = CalcDist(broken_bots, crew_list, routes)
 
 
     """
@@ -168,7 +153,6 @@ def main():
     """
     Uploading routes to server
     """
-
     for crew in crew_list:
         try:
             data = {"description": crew['desc'], "properties": {"route": crew['route']}}
