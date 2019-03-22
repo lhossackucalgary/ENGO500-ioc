@@ -1,6 +1,6 @@
 <template>
   <div class="">
-    <h2>Selected Items</h2>
+    <h2>Selected Robots</h2>
     <button name="button">Compare!</button>
     <ul>
       <li
