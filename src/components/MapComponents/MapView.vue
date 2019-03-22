@@ -22,7 +22,7 @@ import {Fill, Stroke, Style, Icon} from 'ol/style.js';
 
 export default {
   mounted () {
-    var bots_healthy_layer = new VectorLayer({
+    this.bots_healthy_layer = new VectorLayer({
       source: this.bots_healthy_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -34,7 +34,8 @@ export default {
         }))
       })
     });
-    var bots_warning_layer = new VectorLayer({
+
+    this.bots_warning_layer = new VectorLayer({
       source: this.bots_warning_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -46,7 +47,8 @@ export default {
         }))
       })
     });
-    var bots_urgent_layer = new VectorLayer({
+
+    this.bots_urgent_layer = new VectorLayer({
       source: this.bots_urgent_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -58,7 +60,8 @@ export default {
         }))
       })
     });
-    var bots_unknown_layer = new VectorLayer({
+
+    this.bots_unknown_layer = new VectorLayer({
       source: this.bots_unknown_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -70,7 +73,8 @@ export default {
         }))
       })
     });
-    var bots_needsparts_layer = new VectorLayer({
+
+    this.bots_needsparts_layer = new VectorLayer({
       source: this.bots_needsparts_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -82,7 +86,8 @@ export default {
         }))
       })
     });
-    var crews_layer = new VectorLayer({
+
+    this.crews_layer = new VectorLayer({
       source: this.crews_source,
       style: new Style({
         image: new Icon(/** @type {module:ol/style/Icon~Options} */ ({
@@ -94,7 +99,8 @@ export default {
         }))
       })
     });
-    var routes_layer = new VectorLayer({
+
+    this.routes_layer = new VectorLayer({
       source: this.routes_source,
       style: new Style({
         stroke: new Stroke({
@@ -104,7 +110,6 @@ export default {
       })
     });
 
-
     var M = new OLMap({
       target: 'map',
       layers: [
@@ -113,13 +118,13 @@ export default {
             url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           })
         }),
-        bots_healthy_layer,
-        bots_warning_layer,
-        bots_urgent_layer,
-        bots_unknown_layer,
-        bots_needsparts_layer,
-        crews_layer,
-        routes_layer
+        this.bots_healthy_layer,
+        this.bots_warning_layer,
+        this.bots_urgent_layer,
+        this.bots_unknown_layer,
+        this.bots_needsparts_layer,
+        this.crews_layer,
+        this.routes_layer
       ],
       view: new View({
         center: fromLonLat([-114,51]),
@@ -208,29 +213,36 @@ export default {
       bots_needsparts_source: new VectorSource(),
       crews_source: new VectorSource(),
       routes_source: new VectorSource(),
+      bots_healthy_layer: new VectorLayer(),
+      bots_warning_layer: new VectorLayer(),
+      bots_urgent_layer: new VectorLayer(),
+      bots_unknown_layer: new VectorLayer(),
+      bots_needsparts_layer: new VectorLayer(),
+      crews_layer: new VectorLayer(),
+      routes_layer: new VectorLayer()
     }
   },
   watch: {
     healthyLayerOn: function(newVal, oldVal) {
-      bots_healthy_layer.setVisible(newVal);
+      this.bots_healthy_layer.setVisible(newVal);
     },
     warningLayerOn: function(newVal, oldVal) {
-      bots_warning_layer.setVisible(newVal);
+      this.bots_warning_layer.setVisible(newVal);
     },
     urgentLayerOn: function(newVal, oldVal) {
-      bots_urgent_layer.setVisible(newVal);
+      this.bots_urgent_layer.setVisible(newVal);
     },
     unknownLayerOn: function(newVal, oldVal) {
-      bots_unknown_layer.setVisible(newVal);
+      this.bots_unknown_layer.setVisible(newVal);
     },
     needsPartsLayerOn: function(newVal, oldVal) {
-      bots_needsparts_layer.setVisible(newVal);
+      this.bots_needsparts_layer.setVisible(newVal);
     },
     crewLayerOn: function(newVal, oldVal) {
-      crews_layer.setVisible(newVal);
+      this.crews_layer.setVisible(newVal);
     },
     routeLayerOn: function(newVal, oldVal) {
-      routes_layer.setVisible(newVal);
+      this.routes_layer.setVisible(newVal);
     },
     refreshRoutesWatcher: function(newVal, oldVal) {
       this.LoadMapData(this.things, this.thing_ids, this.thing_locations, this.bots_healthy_source,
