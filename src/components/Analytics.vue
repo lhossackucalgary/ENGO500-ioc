@@ -128,21 +128,152 @@ var _vis6;
 var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
 //var data = [10, 20, 30 , 40, 50];
+var th;
 
-function loadData(){
+function loadDatastreams_Obs(){
+    var dsobs = [];
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        
+        if (this.readyState == 4 && this.status == 200) {
+            var r = JSON.parse(xhttp.responseText).value;
+
+            //object to hold datastream:id, type, and list of observation ids
+            var Obj_ds_ob = function(a, b, c){
+                this.id = a;
+                this.type = b //either T, P, or H (temp, pressure, or HP)
+                this.obids = c;
+            }
+
+            for (var i = 0; i < r.length; i++) {
+                var dsid = r[i]['@iot.id']; //datastream id at i
+                
+                var desc = r[i]['description'];
+
+                //get type of the datastream at i
+                var type = null; 
+                if (desc === "Datastream for recording pressure") {
+                    type = 'P';
+                } else if (desc === "Datastream for recording temperature") {
+                    type = 'T';
+                } else if (desc === "Health percentage") {
+                    type = 'H';
+                } else {
+                    console.error("datastream does not have valid type: " + desc);
+                }
+
+                //get obids from datastream at i
+                var obs = r[i]['Observations'];//obs array at i
+                var obids = [];
+                for (var j = 0; j < obs.length; j++) {
+                    var obid = obs[j]['@iot.id'];//obid at datastream i, 
+                    obids.push(obid);
+                }
+
+                //create new obj_ds_ob to hold all of the data
+                var dsob = new Obj_ds_ob(dsid,type,obids);
+                //add to array of datastream w obs
+                dsobs.push(dsob);
+            }
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", true);
+    xhttp.send();
+    return dsobs;
+}
+
+function loadThing_Datastreams_Obs(dsobs){
+    var thdsobs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-        var things_list = JSON.parse(xhttp.responseText).value;
-        for (var t = 0; t < things_list.length; t++) {
-            thing_id_list.push(things_list[t]['@iot.id']);
-            things_props.set(things_list[t]['@iot.id'], things_list[t]);
-        }
-        getLocations(thing_id_list, things_locations_map);
+            var r = JSON.parse(xhttp.responseText).value;
+
+            //object to hold thing: id, name, desc, status, and list of ds objects
+            var obj_th_ds_obs = function(id, name, desc, stat, ds) {
+                this.id = id;
+                this.name = name;
+                this.desc = desc;
+                this.status = stat;
+                this.ds = ds;
+            }
+
+            for (var i = 0; i < r.length; i++) {
+                var thid = r[i]['@iot.id'];
+                var thname = r[i]['name'];
+                var thdesc = r[i]['description'];
+                var thstat = r[i]['properties']['status'];
+                var thds = [];
+
+                //get all datastreams of thing at i
+                var allds = r[i]['Datastreams'];
+                for (var j = 0; j < allds.length; j++) {
+                    var dsid = allds[j]['@iot.id'];
+                    //console.log(dsobs[0]);
+                    //loop through dsobs to find the dsob matching the current dsid
+                    for (var k = 0; k < dsobs.length; k++) {
+                        //console.log(dsobs[k].id);
+                        if (dsid == dsobs[k].id) {
+                            thds.push(dsobs[k]);
+                        }
+                    }
+                }
+
+                //create new obj_th_ds_obs to hold all of the thing info
+                var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
+                
+                //append to final list of all things
+                thdsobs.push(thdsob);
+            }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$expand=Datastreams", true);
     xhttp.send();
+    return thdsobs;
+}
+
+function getData(){
+    var ds = loadDatastreams_Obs();
+    th = [];
+
+    //check that ds is defined before running loadThing_Datastreams_Obs(ds)
+    function ds_data_check() {
+        if (ds.length > 0) {
+            th = loadThing_Datastreams_Obs(ds);
+        } else {
+            setTimeout(ds_data_check, 500);
+        }
+    }
+    ds_data_check();
+    
+    
+    function th_data_check() {
+        if (th.length > 0) {
+            console.log(th);
+            //console.log(th[5].ds[1].id);
+        } else {
+            setTimeout(th_data_check, 500);
+        }
+    }
+    th_data_check();
+    
+    //get health percentage data
+    //first get iotid of all HP datastreams
+    /*
+    var HP_id = [];
+    for (var i = 0; i < ds.length; i++) {
+        var desc = ds[i]['description'];
+        var id = ds[i]['@iot.id'];
+        if (desc === "Health percentage") {
+            HP_id.append(id);
+        }
+    }
+
+    //then get the ID of the obs of the HP datastreams
+    for (var i = 0; i < HP_id.length; i++) {
+        
+    }
+    */
 }
 
 // code modified from Scott Murray's example
@@ -666,6 +797,7 @@ export default {
     setupVis4();
     setupVis5();
     setupVis6();
+    getData();
   },
   data () {
     return {
