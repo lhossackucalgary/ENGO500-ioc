@@ -8,6 +8,7 @@
                   v-bind:needsPartsLayerOn="needsPartsOn"
                   v-bind:crewLayerOn="crewsOn"
                   v-bind:routeLayerOn="routesOn"
+                  v-bind:refreshRoutesWatcher="refreshRoutes"
                   ></map-view>
       </div>
       <div id="layerselcont">
@@ -29,7 +30,8 @@
         <map-maint-summary></map-maint-summary>
       </div>
       <div id="crewinfo">
-        <map-crew-info></map-crew-info>
+        <map-crew-info v-on:crewRouteUpdated="refreshRoutesf($event)"
+                       ></map-crew-info>
       </div>
     </div>
 </template>
@@ -58,7 +60,8 @@ export default {
       unknownOn: true,
       needsPartsOn: true,
       crewsOn: true,
-      routesOn: true
+      routesOn: true,
+      refreshRoutes: {}
     }
   },
   methods: {
@@ -82,6 +85,9 @@ export default {
     },
     updateRoutes:function(status) {
       this.routesOn = status;
+    },
+    refreshRoutesf:function(obj) {
+      this.refreshRoutes = obj;
     }
   }
 }

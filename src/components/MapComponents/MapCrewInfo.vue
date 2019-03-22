@@ -4,7 +4,7 @@
     <p>Iot ID: {{iotid}}</p>
     <p>Location: ({{geometry[0].toFixed(6)}}, {{geometry[1].toFixed(6)}})</p>
     <ol>Route:
-      <li v-for="i in route" >{{i}}</li>
+      <li v-for="(i, index) in route"><button v-on:click="deleteBot(route.indexOf(i))">x</button>{{i}}<input v-model="formInputs[index]" type="text" style="width: 50px;"></input><button v-on:click="addBotForm(index)">+</button></li>
     </ol>
 
     <button id="closecrewinfopanebtn" name="button" v-on:click="closeCrewInfo">&rarr;</button>
@@ -30,7 +30,8 @@ export default {
       geometry: Array,
       iotid: Number,
       name: String,
-      route: Array
+      route: Array,
+      formInputs: Array
     }
   },
   methods: {
@@ -44,6 +45,69 @@ export default {
     },
     closeCrewInfo:function() {
       this.$refs["crewinfopane"].style = "visibility: hidden;";
+    },
+    deleteBot: function(i) {
+      this.route.splice(i, 1);
+      // TODO: Guaranteed_route must cross-reference previous guaranteed route
+      let guaranteed_route = JSON.stringify(this.route.slice(0,i));
+      let data = {"description": guaranteed_route, "properties": {"route": this.route}};
+
+      var xhttp2 = new XMLHttpRequest();
+      xhttp2.onreadystatechange = (function (crewInfoThis) {
+          return function() {
+          if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+            crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+          } else if (this.readyState == 4) {
+            alert("Failed to update route. Please refresh and try again.");
+          }
+        }
+      })(this);
+      xhttp2.open("PATCH", "http://routescout.sensorup.com/v1.0/Things(" + this.iotid + ")", true);
+      xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+      xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+      xhttp2.send(JSON.stringify(data));
+    },
+    addBotForm: function(i) {
+      let inputVal = parseInt(this.formInputs[i]);
+      var crewInfoThis = this;
+      var xhttp = new XMLHttpRequest();
+      xhttp.onreadystatechange = (function(crewInfoThis, id, index) {
+          return function() {
+          if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+            crewInfoThis.route.splice(index+1, 0, id);
+
+            // TODO: Guaranteed_route must cross-reference previous guaranteed route
+            let guaranteed_route = JSON.stringify(crewInfoThis.route.slice(0,index+2));
+            let data = {"description": guaranteed_route, "properties": {"route": crewInfoThis.route}};
+
+            var xhttp2 = new XMLHttpRequest();
+            xhttp2.onreadystatechange = (function (crewInfoThis) {
+                return function() {
+                if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
+                  crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+                } else if (this.readyState == 4) {
+                  alert("Failed to update route. Please refresh and try again.");
+                }
+              }
+            })(crewInfoThis);
+            xhttp2.open("PATCH", "http://routescout.sensorup.com/v1.0/Things(" + crewInfoThis.iotid + ")", true);
+            xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+            xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            xhttp2.send(JSON.stringify(data));
+
+          } else if (this.readyState == 4) {
+            alert("iotid " + id + " is not a valid iotid.");
+          }
+        }
+      })(crewInfoThis, inputVal, i);
+
+      xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things(" + inputVal + ")", true);
+      xhttp.send();
+    }
+  },
+  watch: {
+    route: function(newVal, oldVal) {
+
     }
   }
 }
