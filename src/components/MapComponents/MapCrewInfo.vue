@@ -48,9 +48,23 @@ export default {
     },
     deleteBot: function(i) {
       this.route.splice(i, 1);
-      // TODO: Guaranteed_route must cross-reference previous guaranteed route
-      let guaranteed_route = JSON.stringify(this.route.slice(0,i));
-      let data = {"description": guaranteed_route, "properties": {"route": this.route}};
+
+      let guaranteed_route_prev = JSON.parse(this.feature.description);
+      let guaranteed_route_curr = this.route.slice(0,i);
+      console.log("Old:");
+      console.log(guaranteed_route_prev);
+      console.log("Temp:");
+      console.log(guaranteed_route_curr);
+      let guaranteed_route;
+      if (guaranteed_route_curr.length > guaranteed_route_prev.length) {
+        guaranteed_route = guaranteed_route_curr;
+      } else {
+        guaranteed_route = guaranteed_route_curr.concat(guaranteed_route_prev.slice(i+1,guaranteed_route_prev.length));
+      }
+      console.log("New:");
+      console.log(guaranteed_route);
+      this.feature.description = JSON.stringify(guaranteed_route);
+      let data = {"description": this.feature.description, "properties": {"route": this.route}};
 
       var xhttp2 = new XMLHttpRequest();
       xhttp2.onreadystatechange = (function (crewInfoThis) {
@@ -76,9 +90,23 @@ export default {
           if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
             crewInfoThis.route.splice(index+1, 0, id);
 
-            // TODO: Guaranteed_route must cross-reference previous guaranteed route
-            let guaranteed_route = JSON.stringify(crewInfoThis.route.slice(0,index+2));
-            let data = {"description": guaranteed_route, "properties": {"route": crewInfoThis.route}};
+            let guaranteed_route_prev = JSON.parse(crewInfoThis.feature.description);
+            let guaranteed_route_curr = crewInfoThis.route.slice(0,index+2);
+            console.log("Old:");
+            console.log(guaranteed_route_prev);
+            console.log("Temp:");
+            console.log(guaranteed_route_curr);
+
+            let guaranteed_route;
+            if (guaranteed_route_curr.length > guaranteed_route_prev.length) {
+              guaranteed_route = guaranteed_route_curr;
+            } else {
+              guaranteed_route = guaranteed_route_curr.concat(guaranteed_route_prev.slice(index+1,guaranteed_route_prev.length));
+            }
+            crewInfoThis.feature.description = JSON.stringify(guaranteed_route);
+            let data = {"description": crewInfoThis.feature.description, "properties": {"route": crewInfoThis.route}};
+            console.log("New:");
+            console.log(guaranteed_route);
 
             var xhttp2 = new XMLHttpRequest();
             xhttp2.onreadystatechange = (function (crewInfoThis) {

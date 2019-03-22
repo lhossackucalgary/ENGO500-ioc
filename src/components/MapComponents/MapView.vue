@@ -159,7 +159,7 @@ export default {
             popup.setPosition(feature["values_"]["geometry"]["flatCoordinates"]);
           } else if (typeof(feature["values_"]["properties"]["route"]) !== "undefined") {
             // Crew
-            let obj_ = {"name": feature["values_"]["name"], "iotid": feature["values_"]["@iot.id"], "properties": feature["values_"]["properties"], "geometry": toLonLat(feature["values_"]["geometry"]["flatCoordinates"])}
+            let obj_ = {"name": feature["values_"]["name"], "description": feature["values_"]["description"], "iotid": feature["values_"]["@iot.id"], "properties": feature["values_"]["properties"], "geometry": toLonLat(feature["values_"]["geometry"]["flatCoordinates"])}
 
             popupStr += "Name: " + feature["values_"]["name"];
             popupStr += "<br\>IotId: " + feature["values_"]["@iot.id"];
