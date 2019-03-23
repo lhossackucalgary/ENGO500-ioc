@@ -4,7 +4,12 @@
     <p>Iot ID: {{iotid}}</p>
     <p>Location: ({{geometry[0].toFixed(6)}}, {{geometry[1].toFixed(6)}})</p>
     <ol>Route:
-      <li v-for="(i, index) in route"><button v-on:click="deleteBot(route.indexOf(i))">x</button>{{i}}<input v-model="formInputs[index]" type="text" style="width: 50px;"></input><button v-on:click="addBotForm(index)">+</button></li>
+      <li v-for="(i, index) in route" :key="index">
+        <button v-on:click="deleteBot(route.indexOf(i))">x</button>
+        {{i}}
+        <input onfocus="this.value='';" v-model="formInputs[index]" type="text" style="width: 50px;"></input>
+        <button v-on:click="addBotForm(index)">+</button>
+      </li>
     </ol>
 
     <button id="closecrewinfopanebtn" name="button" v-on:click="closeCrewInfo">&rarr;</button>
@@ -31,7 +36,7 @@ export default {
       iotid: Number,
       name: String,
       route: Array,
-      formInputs: Array
+      formInputs: new Array()
     }
   },
   methods: {
@@ -42,6 +47,9 @@ export default {
       this.iotid = e.detail.iotid;
       this.name = e.detail.name;
       this.route = e.detail.properties.route;
+      for (let i = 0; i < this.formInputs.length; i++) {
+        this.formInputs[i] = '';
+      }
     },
     closeCrewInfo:function() {
       this.$refs["crewinfopane"].style = "visibility: hidden;";
