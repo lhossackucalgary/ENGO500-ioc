@@ -118,13 +118,13 @@ export default {
             url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png'
           })
         }),
+        this.crews_layer,
+        this.routes_layer,
         this.bots_healthy_layer,
         this.bots_warning_layer,
         this.bots_urgent_layer,
         this.bots_unknown_layer,
-        this.bots_needsparts_layer,
-        this.crews_layer,
-        this.routes_layer
+        this.bots_needsparts_layer
       ],
       view: new View({
         center: fromLonLat([-114,51]),
