@@ -4,15 +4,21 @@
     <p>Iot ID: {{iotid}}</p>
     <p>Location: ({{geometry[0].toFixed(6)}}, {{geometry[1].toFixed(6)}})</p>
     <ol>Route:
-      <li class="parent_hidden_obj" v-for="(i, index) in route" :key="index">
-        {{i}}
-        <button v-if="index != 0" v-on:click="deleteBot(route.indexOf(i))">x</button>
-        <br>
-        <div class="hideme">
-          <input v-model="formInputs[index]" type="text" style="width: 50px;"></input>
-          <button v-on:click="addBotForm(index)">+</button>
-        </div>
-      </li>
+      <div v-if="route.length == 0">
+        <input v-model="formInputs[0]" type="text" style="width: 50px;"></input>
+        <button v-on:click="addBotForm(0)">+</button>
+      </div>
+      <div v-if="route.length > 0">
+        <li class="parent_hidden_obj" v-for="(i, index) in route" :key="index">
+          {{i}}
+          <button v-if="index != 0" v-on:click="deleteBot(route.indexOf(i))">x</button>
+          <br>
+          <div class="hideme">
+            <input v-model="formInputs[index]" type="text" style="width: 50px;"></input>
+            <button v-on:click="addBotForm(index)">+</button>
+          </div>
+        </li>
+      </div>
     </ol>
 
     <button id="closecrewinfopanebtn" name="button" v-on:click="closeCrewInfo">&rarr;</button>
