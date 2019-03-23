@@ -79,6 +79,18 @@ export default {
     addBotForm: function(i) {
       let inputVal = parseInt(this.formInputs[i]);
       var crewInfoThis = this;
+
+      let in_route = false;
+      // Check robot not already in route..
+      for (let j = 0; j < this.route.length; j++) {
+        if (this.route[j] == this.formInputs[i]) {
+          in_route = true;
+        }
+      }
+      if (in_route) {
+        alert("Robot id " + this.formInputs[i] + " is already in this crew's route.");
+        return;
+      }
       var xhttp = new XMLHttpRequest();
       xhttp.onreadystatechange = (function(crewInfoThis, id, index) {
           return function() {
