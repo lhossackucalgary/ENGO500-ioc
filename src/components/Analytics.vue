@@ -26,7 +26,8 @@
 <script>
 import * as d3 from 'd3'
 
-const ROBOT_HEALTH = [
+var ROBOT_HEALTH = [];
+/*const ROBOT_HEALTH = [
     { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
     { "robot" : "robot_2", "health" : 20, "pressure" : 70, "temperature" : 50},
     { "robot" : "robot_3", "health" : 60, "pressure" : 50, "temperature" : 25},
@@ -37,7 +38,7 @@ const ROBOT_HEALTH = [
     { "robot" : "robot_8", "health" : 65, "pressure" : 50, "temperature" : 26},
     { "robot" : "robot_9", "health" : 100, "pressure" : 20, "temperature" : 20},
     { "robot" : "robot_10", "health" : 5, "pressure" : 80, "temperature" : 60},
-];
+];*/
 
 const SAMPLE_DATA = [
     { "month" : "January", "point" : [5, 20], "r" : 10 },
@@ -249,7 +250,17 @@ function loadThing_Datastreams_Obs(dsobs){
 
                 //create new obj_th_ds_obs to hold all of the thing info
                 var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
-                
+                /*
+                for (var m = 0; m < thds.length; m++) {
+                    if (thds[m].type = 'T') {
+                        thdsob.dsT = thds[m];
+                    } else if (thds[m].type = 'P') {
+                        thdsob.dsP = thds[m];
+                    } else if (thds[m].type = 'H') {
+                        thdsob.dsH = thds[m];
+                    }
+                }
+                */
                 //append to final list of all things
                 thdsobs.push(thdsob);
             }
@@ -279,45 +290,59 @@ function getData(){
         if (th.length > 0) {
             console.log(th);
             //console.log(th[5].ds[1].id);
+            saveData(th);
         } else {
             setTimeout(th_data_check, 500);
         }
     }
     th_data_check();
     
-    //get health percentage data
-    //first get iotid of all HP datastreams
-    /*
-    var HP_id = [];
-    for (var i = 0; i < ds.length; i++) {
-        var desc = ds[i]['description'];
-        var id = ds[i]['@iot.id'];
-        if (desc === "Health percentage") {
-            HP_id.append(id);
+    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+    
+}
+
+function saveData(th) {
+    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+    ROBOT_HEALTH = [];
+    var obj_rb = function(robot, health) {
+        this.robot = robot;
+        this.health = health;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        //console.log(name);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var health = null;
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'H') {
+                    health = ds[j].obids[0].result;
+                }
+            }
+            var rb = new obj_rb(th[i].name, health);
+            ROBOT_HEALTH.push(rb);
         }
     }
-
-    //then get the ID of the obs of the HP datastreams
-    for (var i = 0; i < HP_id.length; i++) {
-        
-    }
-    */
 }
 
 // code modified from Scott Murray's example
 // https://alignedleft.com/tutorials/d3/scales
 function setupVis1(){
-    _vis1 = new Healthplot();
-    _vis1.svg = d3.select("#vis1");
-    //match size of svg container in html
-    _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
-        _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
-    _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
+    if (ROBOT_HEALTH.length > 0) {
+        _vis1 = new Healthplot();
+        _vis1.svg = d3.select("#vis1");
+        //match size of svg container in html
+        _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
+            _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
+        _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
 
-    _vis1.data = ROBOT_HEALTH;
-    _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
-    _vis1.setupAxis();
-    _vis1.createBars();
+        _vis1.data = ROBOT_HEALTH;
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+    } else {
+        setTimeout(setupVis1, 500);
+    }
 }
 
 var Healthplot = function(){
@@ -819,13 +844,13 @@ function setupVis6(){
 export default {
   name: 'Analytics',
   mounted () {
+    getData();
     setupVis1();
     setupVis2();
     setupVis3();
     setupVis4();
     setupVis5();
-    setupVis6();
-    getData();
+    setupVis6();  
   },
   data () {
     return {
