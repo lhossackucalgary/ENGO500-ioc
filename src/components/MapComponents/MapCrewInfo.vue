@@ -4,11 +4,14 @@
     <p>Iot ID: {{iotid}}</p>
     <p>Location: ({{geometry[0].toFixed(6)}}, {{geometry[1].toFixed(6)}})</p>
     <ol>Route:
-      <li v-for="(i, index) in route" :key="index">
-        <button v-on:click="deleteBot(route.indexOf(i))">x</button>
+      <li class="parent_hidden_obj" v-for="(i, index) in route" :key="index">
         {{i}}
-        <input onfocus="this.value='';" v-model="formInputs[index]" type="text" style="width: 50px;"></input>
-        <button v-on:click="addBotForm(index)">+</button>
+        <button v-if="index != 0" v-on:click="deleteBot(route.indexOf(i))">x</button>
+        <br>
+        <div class="hideme">
+          <input v-model="formInputs[index]" type="text" style="width: 50px;"></input>
+          <button v-on:click="addBotForm(index)">+</button>
+        </div>
       </li>
     </ol>
 
@@ -167,6 +170,12 @@ export default {
   position: absolute;
   left: 3px;
   top: 3px;
+}
+.hideme {
+  display:none;
+}
+.parent_hidden_obj:hover .hideme {
+  display: block;
 }
 h1, h2 {
   font-weight: normal;
