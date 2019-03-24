@@ -4,21 +4,35 @@
     <ul>
       <li>Robot
         <ul>
-          <li><label><input type="checkbox" v-on:click="toggleHealthy" checked>Healthy</label></li>
-          <li><label><input type="checkbox" v-on:click="toggleWarning" checked>Warning</label></li>
-          <li><label><input type="checkbox" v-on:click="toggleUrgent" checked>Urgent</label></li>
-          <li><label><input type="checkbox" v-on:click="toggleUnknown" checked>Unknown</label></li>
-          <li><label><input type="checkbox" v-on:click="toggleNeedsParts" checked>Needs Parts</label></li>
+          <li><label><img v-bind:src="require('@/assets/Healthy.png')" alt="Healthy" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleHealthy" checked>Healthy</label>
+          </li>
+          <li><label><img :src="require('@/assets/Warning.png')" alt="Warning" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleWarning" checked>Warning</label>
+          </li>
+          <li><label><img :src="require('@/assets/Urgent.png')" alt="Urgent" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleUrgent" checked>Urgent</label>
+          </li>
+          <li><label><img :src="require('@/assets/Unknown.png')" alt="Unknown" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleUnknown" checked>Unknown</label>
+          </li>
+          <li><label><img :src="require('@/assets/NeedsParts.png')" alt="Needs Parts" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleNeedsParts" checked>Needs Parts</label>
+          </li>
         </ul>
       </li>
       <li>Maintenance Crew
         <ul>
-          <li><label><input type="checkbox" v-on:click="toggleCrews" checked>Crews</label></li>
+          <li><label><img :src="require('@/assets/Crew.png')" alt="Needs Parts" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleCrews" checked>Crews</label>
+          </li>
         </ul>
       </li>
       <li>Route
         <ul>
-          <li><label><input type="checkbox" v-on:click="toggleRoutes" checked>Routes</label></li>
+          <li><label><img :src="require('@/assets/Route.png')" alt="Needs Parts" style="height:1.5em">
+            <input type="checkbox" v-on:click="toggleRoutes" checked>Routes</label>
+          </li>
         </ul>
       </li>
     </ul>
@@ -105,10 +119,14 @@ export default {
 <style scoped>
 h1, h2 {
   font-weight: normal;
+  margin-top: 5px;
+  margin-bottom: 5px;
 }
 ul {
   list-style-type: none;
   padding-left: 30px;
+  margin-top: 5px;
+  margin-bottom:5px;
   text-align: left;
 }
 a {
