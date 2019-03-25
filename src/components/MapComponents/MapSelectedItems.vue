@@ -1,7 +1,7 @@
 <template>
   <div class="">
-    <h2>Selected Robots</h2>
-    <button name="button">Compare!</button>
+    <h2>Selected Robots </h2>
+    <button name="button" v-on:click="compareBots()">Compare!</button>
     <ul>
       <li
         is="selected-item"
@@ -31,6 +31,18 @@ export default {
     }
   },
   methods: {
+    compareBots:function() {
+      let tmp = new Array();
+      for (let i = 0; i < this.selected.length; i++) {
+        tmp.push(this.selected[i].iotid);
+      }
+      if (tmp.length == 0) {
+        alert("No robots selected to compare.");
+        return;
+      }
+      this.$store.commit('updateSelectedItems', tmp);
+      this.$router.push('/comparebots');
+    },
     addBotCmp:function(e) {
       let inSet = false;
       for (let i = 0; i < this.selected.length; i++) {
