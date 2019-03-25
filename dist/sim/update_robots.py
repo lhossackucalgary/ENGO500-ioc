@@ -68,89 +68,90 @@ def update_robots():
         
         col = None 
         rmax = None 
-        if (desc == "Datastream for recording pressure"):
-            col = 0
-            rmax = 17
-        if (desc == "Datastream for recording temperature"):
-            col = 1
-            rmax = 24
-
-        """check if ds belongs to robot with warning status"""
-        if id in warningds:
+        if (desc != "Health percentage"):
             if (desc == "Datastream for recording pressure"):
-                col = 4
+                col = 0
                 rmax = 17
             if (desc == "Datastream for recording temperature"):
-                col = 5
+                col = 1
                 rmax = 24
 
-        """check if ds belongs to robot with urgent status"""         
-        if id in urgentds:
-            if (desc == "Datastream for recording pressure"):
-                col = 4
-                rmax = 17
-            if (desc == "Datastream for recording temperature"):
-                col = 5
-                rmax = 24
+            """check if ds belongs to robot with warning status"""
+            if id in warningds:
+                if (desc == "Datastream for recording pressure"):
+                    col = 4
+                    rmax = 17
+                if (desc == "Datastream for recording temperature"):
+                    col = 5
+                    rmax = 24
 
-        """check if ds belongs to robot with unknown status"""
-        if id in unknownds:
-            if (desc == "Datastream for recording pressure"):
-                col = 4
-                rmax = 17
-            if (desc == "Datastream for recording temperature"):
-                col = 5
-                rmax = 24
+            """check if ds belongs to robot with urgent status"""         
+            if id in urgentds:
+                if (desc == "Datastream for recording pressure"):
+                    col = 4
+                    rmax = 17
+                if (desc == "Datastream for recording temperature"):
+                    col = 5
+                    rmax = 24
 
-        psn = None
-        i = 0
-        for ds in ds_list:
-            #get current position of datastream
-            if (ds["iotid"] == id):
-                psn = ds["psn"]
+            """check if ds belongs to robot with unknown status"""
+            if id in unknownds:
+                if (desc == "Datastream for recording pressure"):
+                    col = 4
+                    rmax = 17
+                if (desc == "Datastream for recording temperature"):
+                    col = 5
+                    rmax = 24
 
-                #update datastream index position
-                if (psn >= rmax):
-                    ds["psn"] = 0
-                else:
-                    ds["psn"] = psn + 1
-                ds_list[i] = ds
+            psn = None
+            i = 0
+            for ds in ds_list:
+                #get current position of datastream
+                if (ds["iotid"] == id):
+                    psn = ds["psn"]
 
-            i = i + 1
-        if (psn == None):
-            print("could not find ds:%d" %id)
-            exit()
+                    #update datastream index position (might want to switch this later to check psn value first)
+                    if (psn >= rmax):
+                        ds["psn"] = 0
+                    else:
+                        ds["psn"] = psn + 1
+                    ds_list[i] = ds
 
-        val = re.findall("-?\d+\.\d+", sid[psn][col])
-        if val:
-            val = list(map(float, val))
-            #print(val[0])
-        else:
-            print("error: val not decimal at [%d][%d]" %psn %col)
-            exit()
+                i = i + 1
+            if (psn == None):
+                print("could not find ds:%d" %id)
+                exit()
 
-        data = {
-            "phenomenonTime": "%s.000Z" %time,
-            "resultTime" : "%s.000Z" %time,
-            "result" : val[0],
-            "Datastream":{"@iot.id":id}
-        }
-        #print("time(%s) id(%d) result(%d)" %(time, id, sid[rand]))
+            val = re.findall("-?\d+\.\d+", sid[psn][col])
+            if val:
+                val = list(map(float, val))
+                #print(val[0])
+            else:
+                print("error: val not decimal at [%d][%d]" %psn %col)
+                exit()
 
-        """
-        post datastream observation
-        """
-        try:
-            r = requests.post(url = "http://routescout.sensorup.com/v1.0/Observations", json = data, headers = headers)
-            logging.debug(r.json())
-            if (r.status_code >= 200) and (r.status_code < 300):
-                ds = r.json()["Datastream"]
-                #print(ds)
-                logging.debug("Obs created for datastream id: %s" % ds)
-        except:
-            #print("error: could not post observation of value: %d to datastream id: %d" %(sid[rand], id))
-            #error occurs because feature of interest is not defined (is mandatory but has default value)
-            logging.debug("Obs created for datastream id: %s but contains error (no feature of interest?)" % id)
+            data = {
+                "phenomenonTime": "%s.000Z" %time,
+                "resultTime" : "%s.000Z" %time,
+                "result" : val[0],
+                "Datastream":{"@iot.id":id}
+            }
+            #print("time(%s) id(%d) result(%d)" %(time, id, sid[rand]))
+
+            """
+            post datastream observation
+            """
+            try:
+                r = requests.post(url = "http://routescout.sensorup.com/v1.0/Observations", json = data, headers = headers)
+                logging.debug(r.json())
+                if (r.status_code >= 200) and (r.status_code < 300):
+                    ds = r.json()["Datastream"]
+                    #print(ds)
+                    logging.debug("Obs created for datastream id: %s" % ds)
+            except:
+                #print("error: could not post observation of value: %d to datastream id: %d" %(sid[rand], id))
+                #error occurs because feature of interest is not defined (is mandatory but has default value)
+                logging.debug("Obs created for datastream id: %s but contains error (no feature of interest?)" % id)
 
     print(ds_list)
     with open(r'data/dataSim.data', 'wb') as f:

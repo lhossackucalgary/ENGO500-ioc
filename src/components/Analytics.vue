@@ -26,8 +26,8 @@
 <script>
 import * as d3 from 'd3'
 
-
-const ROBOT_HEALTH = [
+var ROBOT_HEALTH = [];
+/*const ROBOT_HEALTH = [
     { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
     { "robot" : "robot_2", "health" : 20, "pressure" : 70, "temperature" : 50},
     { "robot" : "robot_3", "health" : 60, "pressure" : 50, "temperature" : 25},
@@ -38,7 +38,7 @@ const ROBOT_HEALTH = [
     { "robot" : "robot_8", "health" : 65, "pressure" : 50, "temperature" : 26},
     { "robot" : "robot_9", "health" : 100, "pressure" : 20, "temperature" : 20},
     { "robot" : "robot_10", "health" : 5, "pressure" : 80, "temperature" : 60},
-];
+];*/
 
 const SAMPLE_DATA = [
     { "month" : "January", "point" : [5, 20], "r" : 10 },
@@ -129,21 +129,220 @@ var _vis6;
 var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
 //var data = [10, 20, 30 , 40, 50];
+var th;
+
+function loadObservation(obid){
+    //create object to hold observation id, result, and time
+    var obj_obs = function(id, result, time) {
+        this.id = id;
+        this.result = result;
+        this.time = time;
+    }
+    //create an object with null values to hold resulting obs
+    var obs = new obj_obs(null, null, null);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var r = JSON.parse(xhttp.responseText);
+
+            obs.id = r['@iot.id'];
+            obs.result = r['result'];
+            obs.time = r['resultTime'];
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations("+obid+")", true);
+    xhttp.send();
+    return obs;
+}
+
+function loadDatastreams_Obs(){
+    var dsobs = [];
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        
+        if (this.readyState == 4 && this.status == 200) {
+            var r = JSON.parse(xhttp.responseText).value;
+
+            //object to hold datastream:id, type, and list of observation ids
+            var Obj_ds_ob = function(a, b, c){
+                this.id = a;
+                this.type = b //either T, P, or H (temp, pressure, or HP)
+                this.obids = c;
+            }
+
+            for (var i = 0; i < r.length; i++) {
+                var dsid = r[i]['@iot.id']; //datastream id at i
+                
+                var desc = r[i]['description'];
+
+                //get type of the datastream at i
+                var type = null; 
+                if (desc === "Datastream for recording pressure") {
+                    type = 'P';
+                } else if (desc === "Datastream for recording temperature") {
+                    type = 'T';
+                } else if (desc === "Health percentage") {
+                    type = 'H';
+                } else {
+                    console.error("datastream does not have valid type: " + desc);
+                }
+
+                //get observations from datastream at i
+                var obs = r[i]['Observations'];//obs array at i
+                var obids = [];
+                for (var j = 0; j < obs.length; j++) {
+                    var obid = obs[j]['@iot.id'];//obid at datastream i, 
+
+                    //get the info of the obs
+                    var obs_info = loadObservation(obid);
+
+                    //push to obids, which now contains obs info (id, result, time)
+                    obids.push(obs_info);
+                }
+
+                //create new obj_ds_ob to hold all of the data
+                var dsob = new Obj_ds_ob(dsid,type,obids);
+                //add to array of datastream w obs
+                dsobs.push(dsob);
+            }
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", true);
+    xhttp.send();
+    return dsobs;
+}
+
+function loadThing_Datastreams_Obs(dsobs){
+    var thdsobs = [];
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var r = JSON.parse(xhttp.responseText).value;
+
+            //object to hold thing: id, name, desc, status, and list of ds objects
+            var obj_th_ds_obs = function(id, name, desc, stat, ds) {
+                this.id = id;
+                this.name = name;
+                this.desc = desc;
+                this.status = stat;
+                this.ds = ds;
+            }
+
+            for (var i = 0; i < r.length; i++) {
+                var thid = r[i]['@iot.id'];
+                var thname = r[i]['name'];
+                var thdesc = r[i]['description'];
+                var thstat = r[i]['properties']['status'];
+                var thds = [];
+
+                //get all datastreams of thing at i
+                var allds = r[i]['Datastreams'];
+                for (var j = 0; j < allds.length; j++) {
+                    var dsid = allds[j]['@iot.id'];
+
+                    //loop through dsobs to find the dsob matching the current dsid
+                    for (var k = 0; k < dsobs.length; k++) {
+                        if (dsid == dsobs[k].id) {
+                            thds.push(dsobs[k]);
+                        }
+                    }
+                }
+
+                //create new obj_th_ds_obs to hold all of the thing info
+                var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
+                /*
+                for (var m = 0; m < thds.length; m++) {
+                    if (thds[m].type = 'T') {
+                        thdsob.dsT = thds[m];
+                    } else if (thds[m].type = 'P') {
+                        thdsob.dsP = thds[m];
+                    } else if (thds[m].type = 'H') {
+                        thdsob.dsH = thds[m];
+                    }
+                }
+                */
+                //append to final list of all things
+                thdsobs.push(thdsob);
+            }
+        }
+    };
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$expand=Datastreams", true);
+    xhttp.send();
+    return thdsobs;
+}
+
+function getData(){
+    var ds = loadDatastreams_Obs();
+    th = [];
+
+    //check that ds is defined before running loadThing_Datastreams_Obs(ds)
+    function ds_data_check() {
+        if (ds.length > 0) {
+            th = loadThing_Datastreams_Obs(ds);
+        } else {
+            setTimeout(ds_data_check, 500);
+        }
+    }
+    ds_data_check();
+    
+    
+    function th_data_check() {
+        if (th.length > 0) {
+            console.log(th);
+            //console.log(th[5].ds[1].id);
+            saveData(th);
+        } else {
+            setTimeout(th_data_check, 500);
+        }
+    }
+    th_data_check();
+    
+    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+    
+}
+
+function saveData(th) {
+    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+    ROBOT_HEALTH = [];
+    var obj_rb = function(robot, health) {
+        this.robot = robot;
+        this.health = health;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        //console.log(name);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var health = null;
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'H') {
+                    health = ds[j].obids[0].result;
+                }
+            }
+            var rb = new obj_rb(th[i].name, health);
+            ROBOT_HEALTH.push(rb);
+        }
+    }
+}
 
 // code modified from Scott Murray's example
 // https://alignedleft.com/tutorials/d3/scales
 function setupVis1(){
-    _vis1 = new Healthplot();
-    _vis1.svg = d3.select("#vis1");
-    //match size of svg container in html
-    _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
-        _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
-    _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
+    if (ROBOT_HEALTH.length > 0) {
+        _vis1 = new Healthplot();
+        _vis1.svg = d3.select("#vis1");
+        //match size of svg container in html
+        _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
+            _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
+        _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
 
-    _vis1.data = ROBOT_HEALTH;
-    _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
-    _vis1.setupAxis();
-    _vis1.createBars();
+        _vis1.data = ROBOT_HEALTH;
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+    } else {
+        setTimeout(setupVis1, 500);
+    }
 }
 
 var Healthplot = function(){
@@ -645,12 +844,13 @@ function setupVis6(){
 export default {
   name: 'Analytics',
   mounted () {
+    getData();
     setupVis1();
     setupVis2();
     setupVis3();
     setupVis4();
     setupVis5();
-    setupVis6();
+    setupVis6();  
   },
   data () {
     return {

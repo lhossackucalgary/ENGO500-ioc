@@ -48,6 +48,19 @@ def init_datastreams(id):
             "Thing":{"@iot.id":id},
             "ObservedProperty":{"@iot.id":849},
             "Sensor":{"@iot.id":847}
+        },
+        {
+            "name": "HP_stream_%d" %id,
+            "description": "Health percentage",
+            "observationType": "application/pdf",
+            "unitOfMeasurement": {
+                "name": "percentage",
+                "symbol": "%",
+                "definition": "https://en.wikipedia.org/wiki/Percentage"
+            },
+            "Thing":{"@iot.id":id},
+            "ObservedProperty":{"@iot.id":9854},
+            "Sensor":{"@iot.id":9851}
         }
     ]
 
@@ -76,6 +89,12 @@ def init_sensors():
             "description": "BAROMETER pressure sensor in kPa",
             "encodingType": "application/pdf",
             "metadata": "https://en.wikipedia.org/wiki/Barometer"
+        },
+        {
+            "name": "HP",
+            "description": "HEALTH PERCENTAGE calculated by monitor",
+            "encodingType": "application/pdf",
+            "metadata": "https://en.wikipedia.org/wiki/Percentage"
         }
     ]
 
@@ -102,6 +121,11 @@ def init_observedProperties():
             "name": "Air pressure",
             "description": "The degree or intensity of pressure in the air",
             "definition": "https://en.wikipedia.org/wiki/Atmospheric_pressure"
+        },
+        {
+            "name": "Robot Health",
+            "description": "The percentage health of a robot",
+            "definition": "https://en.wikipedia.org/wiki/Percentage"
         }
     ]
 
@@ -195,7 +219,8 @@ def initSimData():
     for datastream in datastreams:
         #get id of datastream
         id = datastream["@iot.id"]
-        ds = {"iotid": id, "psn": 0 }
+        rand = random.randint(0,17)
+        ds = {"iotid": id, "psn": rand }
         ds_list.append(ds)
     
     #print(ds_list)
@@ -258,6 +283,7 @@ def main():
     initSimData()
     initRobotStatusData()
     initRobotStatus()
+
     
 
 

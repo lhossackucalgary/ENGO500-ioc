@@ -131,10 +131,104 @@ def getWarningRobots():
     #print(warningBots)
     return warningBots
 
+def getRobotDatastreams(id):
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)      
+        #print("getting datastreams")
+    except:
+        print("error: datastreams at 1")
+        exit()
+
+    #get all datastreams in json form
+    datastreams = rd.json()["value"]
+    return datastreams
+
+def getDatastreamObs(id):
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations" %id, headers = headers)      
+    except:
+        print("error: getting datastream obs in getDatastreamObs(id) for %d" %id)
+        exit()
+
+    #get all obs in json form
+    obs = rd.json()["value"]
+    return obs
+
+def getObsResult(id):
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)" %id, headers = headers)      
+    except:
+        print("error: getting result in getObsResult(id) for %d" %id)
+        exit()
+
+    #get all obs in json form
+    obs = float(rd.json()["result"])
+    return obs
+
 def calcRobotHP():
     #before writing, need to create datastream and obsType for health
-    """
-    """
+    time = datetime.datetime.now().replace(microsecond=0).isoformat()
+    """ get list of all robots """
+    robotStats = load_data(r'../sim/data/robotStatus.data')
+    """ for each robot, get list of datastreams """
+    for bot in robotStats:
+        datastreams = getRobotDatastreams(bot["iotid"])
+        """ for each datastream, check type of sensor (pressure, temp, etc) """
+        hp_total = None
+        hp_temp = None
+        hp_pres = None
+        HP_id = None
+        for datastream in datastreams:
+            desc = datastream["description"]
+            id = datastream["@iot.id"]
+            if (desc == "Datastream for recording pressure"):
+                obs = getDatastreamObs(id)
+                r = getObsResult(obs[0]["@iot.id"])
+                """ calculate hp for pressure """
+                """ compare to ideal pressure/temp value to get a percentage """
+                a = 5.0 #ideal value
+                b = 36.0 #nonideal value
+                hp_pres = (( b - a) - abs(r - a))/(b - a)*100.0
+
+            if (desc == "Datastream for recording temperature"):
+                obs = getDatastreamObs(id)
+                r = getObsResult(obs[0]["@iot.id"])
+                """ calculate hp for pressure """
+                """ compare to ideal pressure/temp value to get a percentage """
+                a = 20.0
+                b = 36.0
+                hp_temp = ((b-a) - abs(r-a))/(b-a)*100.0
+            
+            if (desc == "Health percentage"):
+                HP_id = id
+        
+        """ average all percentages from all datastreams from the robot """
+        hp_total = (hp_pres + hp_temp)/2
+        if (hp_total < 0):
+            hp_total = 0
+        #print(hp_total)
+        
+        if (HP_id != None):
+            """ post resulting percentage as HP of robot as Observation """
+            data = {
+                    "phenomenonTime": "%s.000Z" %time,
+                    "resultTime" : "%s.000Z" %time,
+                    "result" : hp_total,
+                    "Datastream":{"@iot.id":HP_id}
+                }
+            try:
+                r = requests.post(url = "http://routescout.sensorup.com/v1.0/Observations", json = data, headers = headers)
+                logging.debug(r.json())
+                if (r.status_code >= 200) and (r.status_code < 300):
+                    ds = r.json()["Datastream"]
+                    #print(ds)
+                    logging.debug("Obs created for datastream id: %s" % ds)
+            except:
+                #print("error: could not post observation of value: %d to datastream id: %d" %(sid[rand], id))
+                #error occurs because feature of interest is not defined (is mandatory but has default value)
+                logging.debug("Obs created for datastream id: %s but contains error (no feature of interest?)" % HP_id)
+        else:
+            print("error retreiving HP datastream iotid for %d" %bot["iotid"])
 
 def main():
     """ break some bots (Please improve when... possible) """
@@ -158,6 +252,10 @@ def main():
     grabAllRobotStatus()
     """run this to reset robot status to healthy"""
     #resetRobotStatus()
+    """caclulate health of robots as observation"""
+    """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
+    calcRobotHP()
+    exit()
     """make some robots sick"""
     updateRobotStatus()
 

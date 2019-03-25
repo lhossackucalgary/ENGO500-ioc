@@ -7,6 +7,34 @@ import math
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
+def CalcDist(bot_list, crew_list, routes):
+    cb_dist = []
+    for crew in crew_list:
+        for bot in bot_list:
+            dist = geopy.distance.distance(bot['coord'],crew['coord']).m
+            cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
+
+    cb_dist = sorted(cb_dist, key=lambda k: k['dist'])
+    min_dist = math.inf
+    for crew in crew_list:
+        if len(crew['route']) < min_dist:
+            min_dist = len(crew['route'])
+
+
+    for route in cb_dist:
+        for crew in crew_list:
+            if (route['crewid'] == crew['iotid']) and (len(crew['route']) < (min_dist*2+1)):
+                crew['route'].append(route['robotid'])
+                crew['coord'] = route['botcoord']
+                bot_list = [bot for bot in bot_list if bot['iotid'] != route['robotid']]
+                return bot_list
+                break
+        else:
+            continue
+        break
+
+
+
 def main():
     """
     Crew data from monitor_out.data
@@ -43,6 +71,7 @@ def main():
                     crew_error.append(index['iotid'])
                 else:
                     index['coord'] = responseJSON['value'][0]['location']['coordinates']
+                    index['route'] = []
             else:
                 print("there was an error")
         except:
@@ -90,45 +119,14 @@ def main():
         else:
             continue
 
+
     while bot_urgent != []:
-        cb_dist = []
-        for crew in crew_list:
-            for bot in bot_urgent:
-                dist = geopy.distance.distance(bot['coord'],crew['coord']).m
-                cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
-
-        min_dist = math.inf
-        for route in cb_dist:
-            if route['dist'] < min_dist:
-                min_dist = route['dist']
-                min_route = route
-
-        for crew in crew_list:
-            if crew['iotid'] == min_route['crewid']:
-                crew['coord'] = min_route['botcoord']
-
-        bot_urgent = [bot for bot in bot_urgent if bot['iotid'] != min_route['robotid']]
-        routes.append(min_route)
+        bot_urgent = CalcDist(bot_urgent, crew_list, routes)
 
     while bot_warning != []:
-        cb_dist = []
-        for crew in crew_list:
-            for bot in bot_warning:
-                dist = geopy.distance.distance(bot['coord'],crew['coord']).m
-                cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
+        bot_warning = CalcDist(bot_warning, crew_list, routes)
 
-        min_dist = math.inf
-        for route in cb_dist:
-            if route['dist'] < min_dist:
-                min_dist = route['dist']
-                min_route = route
 
-        for crew in crew_list:
-            if crew['iotid'] == min_route['crewid']:
-                crew['coord'] = min_route['botcoord']
-
-        bot_warning = [bot for bot in bot_warning if bot['iotid'] != min_route['robotid']]
-        routes.append(min_route)
 
 
     """
@@ -137,10 +135,15 @@ def main():
     crew_id = []
     for crew in crew_list:
         crew_id.append(crew['iotid'])
-
+        
     crew_routes = [[] for _ in range(0,len(crew_list))]
-    for r in routes:
-        crew_routes[crew_id.index(r['crewid'])].append(r['robotid'])
+    ind = 0
+    for crew in crew_list:
+        crew_routes[ind] = crew['route']
+        ind = ind + 1
+
+    print(crew_list)
+    print(crew_routes)
 
 
     """
