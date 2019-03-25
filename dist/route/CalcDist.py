@@ -88,18 +88,21 @@ def main():
     """
     Calculate Distance
     """
+    total_dist = 0
     for crew in crew_list:
-        total_dist = 0
+        crew_dist = 0
         for botid in crew['route']:
-            print(botid)
             for bot in broken_bots:
-                print(bot)
                 if botid == bot['iotid']:
-                    total_dist = total_dist + geopy.distance.distance(bot['coord'],crew['coord']).km
+                    crew_dist = crew_dist + geopy.distance.distance(bot['coord'],crew['coord']).km
                     crew['coord'] = bot['coord']
                     break
-        crew['dist'] = total_dist
+        crew['dist'] = crew_dist
+        total_dist = total_dist + crew_dist
+        print(crew)
+    print('Total Dist: ' + str(total_dist))
 
-    print(crew_list)
+
+
 if __name__ == "__main__":
     main()
