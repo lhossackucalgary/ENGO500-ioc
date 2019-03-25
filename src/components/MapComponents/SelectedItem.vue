@@ -4,6 +4,9 @@
       Name: {{feature.name}} <br>
       Iot Id: {{feature.iotid}} <br>
       Status: {{feature.properties.status}} <br>
+      <div v-if="feature.properties.comment != ''">
+        Comment: {{feature.properties.comment}} <br>
+      </div>
       <button v-on:click="$emit('remove')">x</button>
     </div>
   </li>
