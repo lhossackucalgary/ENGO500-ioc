@@ -255,7 +255,6 @@ def main():
     """caclulate health of robots as observation"""
     """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
     calcRobotHP()
-    exit()
     """make some robots sick"""
     updateRobotStatus()
 

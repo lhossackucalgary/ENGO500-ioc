@@ -186,6 +186,22 @@ def create_robots():
     with open(r'data/robot.data', 'wb') as fout:
         pickle.dump(robot_list, fout)
 
+def getData():
+    data_list = []
+    ds_obs = []
+    
+    try:
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", headers = headers)
+        if (r.status_code >= 200) and (r.status_code < 300):
+            responseJSON = r.json()
+            ds_obs = responseJSON["value"]
+    except:
+        logging.exception("Request to get datastreams and obs failed")
+    
+    for ds in ds_obs:
+        dsid = ds["@iotid"]
+        dstype = ds["description"]
+        
 
 def main():
     create_crews()

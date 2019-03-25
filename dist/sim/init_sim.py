@@ -24,7 +24,7 @@ def init_datastreams(id):
     #print("creating datastream for %d" %id)
     datas = [
         {
-            "name": "TEMP_stream_%d" %id,
+            "name": "CPU_TEMP_stream_%d" %id,
             "description": "Datastream for recording temperature",
             "observationType": "application/pdf",
             "unitOfMeasurement": {
@@ -37,7 +37,7 @@ def init_datastreams(id):
             "Sensor":{"@iot.id":846}
         },
         {
-            "name": "PRES_stream_%d" %id,
+            "name": "POWER_DRAW_stream_%d" %id,
             "description": "Datastream for recording pressure",
             "observationType": "application/pdf",
             "unitOfMeasurement": {
