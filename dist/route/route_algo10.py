@@ -145,6 +145,7 @@ def main():
     """
     Updating 'Thing' description
     """
+    print(crew_list)
     for crew in crew_list:
         if not crew['desc']:
             crew['desc'] = '[' + str(crew['route'][0]) + ']'
