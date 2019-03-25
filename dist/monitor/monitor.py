@@ -133,7 +133,7 @@ def getWarningRobots():
 
 def getRobotDatastreams(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -145,7 +145,7 @@ def getRobotDatastreams(id):
 
 def getDatastreamObs(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations" %id, headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations" %id, headers = headers)
     except:
         print("error: getting datastream obs in getDatastreamObs(id) for %d" %id)
         exit()
@@ -156,7 +156,7 @@ def getDatastreamObs(id):
 
 def getObsResult(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)" %id, headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)" %id, headers = headers)
     except:
         print("error: getting result in getObsResult(id) for %d" %id)
         exit()
@@ -198,16 +198,16 @@ def calcRobotHP():
                 a = 20.0
                 b = 36.0
                 hp_temp = ((b-a) - abs(r-a))/(b-a)*100.0
-            
+
             if (desc == "Health percentage"):
                 HP_id = id
-        
+
         """ average all percentages from all datastreams from the robot """
         hp_total = (hp_pres + hp_temp)/2
         if (hp_total < 0):
             hp_total = 0
         #print(hp_total)
-        
+
         if (HP_id != None):
             """ post resulting percentage as HP of robot as Observation """
             data = {
@@ -255,7 +255,6 @@ def main():
     """caclulate health of robots as observation"""
     """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
     calcRobotHP()
-    exit()
     """make some robots sick"""
     updateRobotStatus()
 
