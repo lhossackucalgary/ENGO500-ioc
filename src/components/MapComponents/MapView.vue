@@ -104,7 +104,8 @@ export default {
       source: this.routes_source,
       style: new Style({
         stroke: new Stroke({
-          color: 'green',
+          color: 'black',
+          lineDash: [0.1, 5],
           width: 3
         })
       })
