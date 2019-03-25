@@ -7,36 +7,35 @@ import geopy.distance
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def main():
-    """
-    Crew & Broken Bots
-    """
-    with open('./monitor_out.data', 'rb') as fin:
-        data_in = pickle.load(fin)
-    crew_data = data_in["crew_list"]
 
+    """
+    Obtain crew id
+    """
     crew_list = []
-    for crew in crew_data:
-        crew_list.append({'iotid': crew})
+    try:
+        crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        if (crew_loc.status_code >= 200) and (crew_loc.status_code < 300):
+            responseJSON = crew_loc.json()
+            for thing in responseJSON['value']:
+                if 'route' in thing['properties']:
+                    crew_list.append({'iotid': thing['@iot.id']})
+    except:
+        logging.exception("Failed getting list of crew id")
+
 
     """
     Obtain crew location from server
     """
-    crew_error = []
     for crew in crew_list:
         try:
             crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(crew['iotid']) + ")/Locations", headers = headers)
             if (crew_loc.status_code >= 200) and (crew_loc.status_code < 300):
                 responseJSON = crew_loc.json()
-                if responseJSON['@iot.count'] == 0:
-                    crew_error.append(crew['iotid'])
-                else:
-                    crew['coord'] = responseJSON['value'][0]['location']['coordinates']
+                crew['coord'] = responseJSON['value'][0]['location']['coordinates']
             else:
                 print("there was an error getting crew coordinate")
         except:
             logging.exception("Failed getting list of crew coordinates")
-
-    crew_list = [crew for crew in crew_list if crew['iotid'] not in crew_error]
 
     """
     Obtain crew route from server
