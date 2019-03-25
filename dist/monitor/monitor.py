@@ -177,6 +177,7 @@ def calcRobotHP():
         hp_total = None
         hp_temp = None
         hp_pres = None
+        HP_id = None
         for datastream in datastreams:
             desc = datastream["description"]
             id = datastream["@iot.id"]
@@ -197,28 +198,37 @@ def calcRobotHP():
                 a = 20.0
                 b = 36.0
                 hp_temp = ((b-a) - abs(r-a))/(b-a)*100.0
+            
+            if (desc == "Health percentage"):
+                HP_id = id
         
         """ average all percentages from all datastreams from the robot """
         hp_total = (hp_pres + hp_temp)/2
-
-        """ post resulting percentage as HP of robot as Observation """
-        data = {
-                "phenomenonTime": "%s.000Z" %time,
-                "resultTime" : "%s.000Z" %time,
-                "result" : hp_total,
-                "Datastream":{"@iot.id":id}
-            }
-        try:
-            r = requests.post(url = "http://routescout.sensorup.com/v1.0/Observations", json = data, headers = headers)
-            logging.debug(r.json())
-            if (r.status_code >= 200) and (r.status_code < 300):
-                ds = r.json()["Datastream"]
-                #print(ds)
-                logging.debug("Obs created for datastream id: %s" % ds)
-        except:
-            #print("error: could not post observation of value: %d to datastream id: %d" %(sid[rand], id))
-            #error occurs because feature of interest is not defined (is mandatory but has default value)
-            logging.debug("Obs created for datastream id: %s but contains error (no feature of interest?)" % id)
+        if (hp_total < 0):
+            hp_total = 0
+        #print(hp_total)
+        
+        if (HP_id != None):
+            """ post resulting percentage as HP of robot as Observation """
+            data = {
+                    "phenomenonTime": "%s.000Z" %time,
+                    "resultTime" : "%s.000Z" %time,
+                    "result" : hp_total,
+                    "Datastream":{"@iot.id":HP_id}
+                }
+            try:
+                r = requests.post(url = "http://routescout.sensorup.com/v1.0/Observations", json = data, headers = headers)
+                logging.debug(r.json())
+                if (r.status_code >= 200) and (r.status_code < 300):
+                    ds = r.json()["Datastream"]
+                    #print(ds)
+                    logging.debug("Obs created for datastream id: %s" % ds)
+            except:
+                #print("error: could not post observation of value: %d to datastream id: %d" %(sid[rand], id))
+                #error occurs because feature of interest is not defined (is mandatory but has default value)
+                logging.debug("Obs created for datastream id: %s but contains error (no feature of interest?)" % HP_id)
+        else:
+            print("error retreiving HP datastream iotid for %d" %bot["iotid"])
 
 def main():
     """ break some bots (Please improve when... possible) """
@@ -245,6 +255,7 @@ def main():
     """caclulate health of robots as observation"""
     """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
     calcRobotHP()
+    exit()
     """make some robots sick"""
     updateRobotStatus()
 
