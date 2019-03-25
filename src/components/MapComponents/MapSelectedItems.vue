@@ -51,6 +51,8 @@ export default {
 h1, h2 {
   font-weight: normal;
   margin-bottom: 0px;
+  margin-top: 0px;
+
 }
 ul {
   list-style-type: none;
