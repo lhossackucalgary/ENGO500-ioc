@@ -57,6 +57,7 @@ const SAMPLE_DATA = [
     { "month" : "December", "point" : [400, 4], "r" : 7 },
 ];
 
+var CURRENT_DATA = [];
 const PRESSURE_DATA = [
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 40 },
@@ -81,7 +82,8 @@ const PRESSURE_DATA = [
 ]
 
 
-var TEMPERATURE_DATA = [
+var TEMPERATURE_DATA = [];
+/*[
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 33 },
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 35 },
@@ -102,7 +104,7 @@ var TEMPERATURE_DATA = [
     { "robot" : "robot_2", "date" : "2019-02-07T18:02:12.000Z", "result" : 29 },
     { "robot" : "robot_2", "date" : "2019-02-07T18:02:13.000Z", "result" : 30 },
     { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 32 },
-]
+]*/
 
 /* constants */
 const WIDTH = 1000; //800
@@ -312,10 +314,11 @@ function getData(){
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/* ---------------------------------- API DATA TO ROBOT HEALTH --------------------------------- */
+/* ------------------------------ API DATA TO OBSERVATION DATA --------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
 function saveData(th) {
+    //extract latest health observation
     //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
     ROBOT_HEALTH = [];
     var obj_rb = function(robot, health) {
@@ -339,6 +342,7 @@ function saveData(th) {
         }
     }
 
+    //extract all temperature observations
     //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
     TEMPERATURE_DATA = [];
     var obj_temp = function(robot, date, result) {
@@ -360,7 +364,7 @@ function saveData(th) {
                     // loop through all obs of the temp ds
                     for (var k = 0; k < ds[j].obids.length; k++) {
                         result = ds[j].obids[k].result;
-                        date = ds[j].obids[k].resultTime;
+                        date = ds[j].obids[k].time;
                         var t_obs = new obj_temp(rname, date, result);
                         TEMPERATURE_DATA.push(t_obs);
                     }
@@ -368,6 +372,37 @@ function saveData(th) {
             }
         }
     }
+
+    //extract all current (previously pressure) observations
+    CURRENT_DATA = [];
+    var obj_curr = function(robot, date, result) {
+        this.robot = robot;
+        this.date = date;
+        this.result = result;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var result = null;
+            var date = null;
+            var rname = th[i].name;
+            // loop through all ds of the robot
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'P') {
+                    //console.log(ds[j].id);
+                    // loop through all obs of the temp ds
+                    for (var k = 0; k < ds[j].obids.length; k++) {
+                        result = ds[j].obids[k].result;
+                        date = ds[j].obids[k].time;
+                        var c_obs = new obj_curr(rname, date, result);
+                        CURRENT_DATA.push(c_obs);
+                    }
+                }
+            }
+        }
+    }
+    /*
     function temp_data_check() {
         if (TEMPERATURE_DATA.length > 0) {
             console.log(TEMPERATURE_DATA);
@@ -376,7 +411,8 @@ function saveData(th) {
         }
     }
     temp_data_check();
-
+    */
+    
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -648,28 +684,32 @@ var singleLineGraph = function () {
 /* --------------------------------------------------------------------------------------------- */
 
 function setupVis2(){
-    _vis2 = new singleLineGraph();
-    _vis2.svg = d3.select("#vis2");
-    //match size of svg container in html
-    _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
-        _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
-    _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+    if (CURRENT_DATA.length > 0) {
+        _vis2 = new singleLineGraph();
+        _vis2.svg = d3.select("#vis2");
+        //match size of svg container in html
+        _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
+            _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
+        _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
 
-    var data2 = [];
-    var count = 0;
+        var data2 = [];
+        var count = 0;
 
-    for (let i = 0; i < PRESSURE_DATA.length; i++) {
-        if (PRESSURE_DATA[i].robot === "robot_1") {
-            //console.log(PRESSURE_DATA[i].robot);
-            data2.push(PRESSURE_DATA[i]);
-            count++;
+        for (let i = 0; i < CURRENT_DATA.length; i++) {
+            if (CURRENT_DATA[i].robot === "robot1") {
+                //console.log(PRESSURE_DATA[i].robot);
+                data2.push(CURRENT_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis2.data = data2;
-    _vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left], _vis2.data.length);
-    //_vis2.setupAxis();
-    _vis2.createLine();
+        _vis2.data = data2;
+        _vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left], _vis2.data.length);
+        //_vis2.setupAxis();
+        _vis2.createLine();
+    } else {
+        setTimeout(setupVis2, 500);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -677,28 +717,32 @@ function setupVis2(){
 /* --------------------------------------------------------------------------------------------- */
 
 function setupVis3(){
-    _vis3 = new singleLineGraph();
-    _vis3.svg = d3.select("#vis3");
-    //match size of svg container in html
-    _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
-        _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
-    _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
+    if (CURRENT_DATA.length > 0) {
+        _vis3 = new singleLineGraph();
+        _vis3.svg = d3.select("#vis3");
+        //match size of svg container in html
+        _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
+            _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
+        _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
 
-    var data3 = [];
-    var count = 0;
+        var data3 = [];
+        var count = 0;
 
-    for (let i = 0; i < PRESSURE_DATA.length; i++) {
-        if (PRESSURE_DATA[i].robot === "robot_2") {
-            //console.log(PRESSURE_DATA[i].robot);
-            data3.push(PRESSURE_DATA[i]);
-            count++;
+        for (let i = 0; i < CURRENT_DATA.length; i++) {
+            if (CURRENT_DATA[i].robot === "robot2") {
+                //console.log(PRESSURE_DATA[i].robot);
+                data3.push(CURRENT_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis3.data = data3;
-    _vis3.setupScales([_vis3.height - _margin.bottom, _margin.top], [0, 100], [0, _vis3.width - _margin.left], _vis3.data.length);
-    //_vis2.setupAxis();
-    _vis3.createLine();
+        _vis3.data = data3;
+        _vis3.setupScales([_vis3.height - _margin.bottom, _margin.top], [0, 100], [0, _vis3.width - _margin.left], _vis3.data.length);
+        //_vis2.setupAxis();
+        _vis3.createLine();
+    } else {
+        setTimeout(setupVis3, 500);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -777,28 +821,34 @@ function setupVis4(){
 
 // code modified from Jerome Freye's example @ http://bl.ocks.org/jfreyre/b1882159636cc9e1283a
 function setupVis5(){
-    _vis5 = new singleLineGraph();
-    _vis5.svg = d3.select("#vis5");
-    //match size of svg container in html
-    _vis5.width = _vis5.svg.node().getBoundingClientRect().width != undefined ?
-        _vis5.svg.node().getBoundingClientRect().width : _vis5.width; //if undefined
-    _vis5.height = _vis5.svg.node().getBoundingClientRect().height;
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis5 = new singleLineGraph();
+        _vis5.svg = d3.select("#vis5");
+        //match size of svg container in html
+        _vis5.width = _vis5.svg.node().getBoundingClientRect().width != undefined ?
+            _vis5.svg.node().getBoundingClientRect().width : _vis5.width; //if undefined
+        _vis5.height = _vis5.svg.node().getBoundingClientRect().height;
 
-    var data3 = [];
-    var count = 0;
+        var data3 = [];
+        var count = 0;
 
-    for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
-        if (TEMPERATURE_DATA[i].robot === "robot_1") {
-            // console.log(TEMPERATURE_DATA[i].robot);
-            data3.push(TEMPERATURE_DATA[i]);
-            count++;
+        for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
+            if (TEMPERATURE_DATA[i].robot === "robot1") {
+                // console.log(TEMPERATURE_DATA[i].robot);
+                data3.push(TEMPERATURE_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis5.data = data3;
-    _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
-    //_vis2.setupAxis();
-    _vis5.createLine();
+        _vis5.data = data3;
+        console.log(data3);
+        _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
+        //_vis2.setupAxis();
+        _vis5.createLine();
+    } else {
+        setTimeout(setupVis5, 500);
+    }
+    
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -806,28 +856,32 @@ function setupVis5(){
 /* --------------------------------------------------------------------------------------------- */
 
 function setupVis6(){
-    _vis6 = new singleLineGraph();
-    _vis6.svg = d3.select("#vis6");
-    //match size of svg container in html
-    _vis6.width = _vis6.svg.node().getBoundingClientRect().width != undefined ?
-        _vis6.svg.node().getBoundingClientRect().width : _vis6.width; //if undefined
-    _vis6.height = _vis6.svg.node().getBoundingClientRect().height;
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis6 = new singleLineGraph();
+        _vis6.svg = d3.select("#vis6");
+        //match size of svg container in html
+        _vis6.width = _vis6.svg.node().getBoundingClientRect().width != undefined ?
+            _vis6.svg.node().getBoundingClientRect().width : _vis6.width; //if undefined
+        _vis6.height = _vis6.svg.node().getBoundingClientRect().height;
 
-    var data3 = [];
-    var count = 0;
+        var data3 = [];
+        var count = 0;
 
-    for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
-        if (TEMPERATURE_DATA[i].robot === "robot_2") {
-            // console.log(TEMPERATURE_DATA[i].robot);
-            data3.push(TEMPERATURE_DATA[i]);
-            count++;
+        for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
+            if (TEMPERATURE_DATA[i].robot === "robot2") {
+                // console.log(TEMPERATURE_DATA[i].robot);
+                data3.push(TEMPERATURE_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis6.data = data3;
-    _vis6.setupScales([_vis6.height - _margin.bottom, _margin.top], [0, 100], [0, _vis6.width - _margin.left], _vis6.data.length);
-    //_vis2.setupAxis();
-    _vis6.createLine();
+        _vis6.data = data3;
+        _vis6.setupScales([_vis6.height - _margin.bottom, _margin.top], [0, 100], [0, _vis6.width - _margin.left], _vis6.data.length);
+        //_vis2.setupAxis();
+        _vis6.createLine();
+    } else {
+        setTimeout(setupVis6, 500);
+    }
 }
 
 /* --------------------------------------------------------------------------------------------- */
