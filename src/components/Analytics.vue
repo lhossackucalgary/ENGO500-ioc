@@ -11,13 +11,13 @@
                 <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
             </div>
             <div class="spacer"></div>
-            <h3>Barometer_123: Robot_1</h3>
+            <h3>CPU Power Draw</h3>
             <div id="vis2box" class="vis_div">
                 <svg id="vis2" class="svg_boxes"></svg>
             </div>
             <div id="vis2btn" class="vis_btn">
                 <p>Enter robot names: </p>
-                <textarea id="vis2textbox" v-model="message" placeholder="add multiple lines"></textarea>
+                <textarea id="vis2textbox" v-model="message" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
                 <p style="white-space: pre-line;">{{ message }}</p>
@@ -58,53 +58,8 @@ const SAMPLE_DATA = [
 ];
 
 var CURRENT_DATA = [];
-const PRESSURE_DATA = [
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 40 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 20 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:08.000Z", "result" : 10 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:09.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:10.000Z", "result" : 60 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:11.000Z", "result" : 50 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:12.000Z", "result" : 80 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:13.000Z", "result" : 20 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:14.000Z", "result" : 10 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:05.000Z", "result" : 40 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:06.000Z", "result" : 60 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:07.000Z", "result" : 20 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:08.000Z", "result" : 80 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:09.000Z", "result" : 10 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:10.000Z", "result" : 50 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:11.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:12.000Z", "result" : 20 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:13.000Z", "result" : 60 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 40 },
-]
-
 
 var TEMPERATURE_DATA = [];
-/*[
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 33 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 35 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:08.000Z", "result" : 37 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:09.000Z", "result" : 32 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:10.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:11.000Z", "result" : 33 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:12.000Z", "result" : 29 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:13.000Z", "result" : 34 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:14.000Z", "result" : 35 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:05.000Z", "result" : 40 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:06.000Z", "result" : 39 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:07.000Z", "result" : 38 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:08.000Z", "result" : 35 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:09.000Z", "result" : 32 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:10.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:11.000Z", "result" : 31 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:12.000Z", "result" : 29 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:13.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 32 },
-]*/
 
 /* constants */
 const WIDTH = 1000; //800
@@ -555,13 +510,17 @@ var singleLineGraph = function () {
 
     this.parseTime;
     this.xAxisScale;
+
     this.xScale;
     this.yScale;
+
     this.yRange;
 
     this.xAxis;
     this.yAxis;
     this.gx;
+
+    this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
 
     this.setupScales = function(yRange, yDomain, xRange){
         //kind of like the min and max value of range in last tut
@@ -633,6 +592,44 @@ var singleLineGraph = function () {
 
     }
 
+    this.multiLine = function(lineData, i) {
+
+        this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
+
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, function(d) { return d.result; })])
+            .range(this.yRange);
+
+        var xScale = d3.scaleTime()
+            .domain(d3.extent(this.data, function(d) { return d.date; }))
+            .range([_margin.right, this.width - _margin.left]);
+
+        var valueline = d3.line()
+            .x(function(d) { return xScale(d.date)})
+            .y(function(d) { return yScale(d.result)});
+
+        var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'];
+        this.svg
+                .attr("width", this.width + _margin.left + _margin.right)
+                .attr("height", this.height + _margin.top + _margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+
+        //scale range of data
+        // console.log(this.data);
+        console.log(colors[i]);
+        // Add the valueline path.
+        this.svg.append("path")
+            .attr("class", "line")
+            .attr("d", valueline(lineData.values))
+            .attr("stroke", colors[i])
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .append("svg:title");
+
+    }
+
     function drawLine(lineData,lineColor,lineLabel,lineId)
     {
             // append line to svg
@@ -676,6 +673,53 @@ var singleLineGraph = function () {
     .attr('fill', lineColor);
 
     return group;
+    }
+
+    this.update = function(rbt_names) {
+        var all_rbt_obs = [];
+        for (var i = 0; i < rbt_names.length; i++) {
+            for (var j = 0; j < CURRENT_DATA.length; j++) {
+                if (rbt_names[i] == CURRENT_DATA[j].robot) {
+                    all_rbt_obs.push(CURRENT_DATA[j]);
+                }
+            }
+        }
+
+        this.data = all_rbt_obs;
+        //console.log(all_rbt_obs);
+
+        //separate by robot names using dataNest
+        var dataNest = d3.nest()
+            .key(function(d) {return d.robot;})
+            .entries(all_rbt_obs);
+        //console.log(dataNest);
+
+        
+        //remove old data
+        this.svg.selectAll("*")
+            .remove();    
+        
+        this.setupScales([this.height - _margin.bottom, _margin.top], [0, 100], [0, this.width - _margin.left]);
+
+        // Add the X Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
+            .call(d3.axisBottom(this.xScale));
+
+        // Add the Y Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .call(d3.axisLeft(this.yScale));
+        
+        for (var i = 0; i < dataNest.length; i++) {
+            this.multiLine(dataNest[i], i);
+        }
+        /*
+        //add new data
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+        */
     }
 }
 
@@ -953,7 +997,8 @@ export default {
                 var temp2 = temp[i].split(/\r?\n/);
                 rbt_names = rbt_names.concat(temp2);
             }
-            console.log(rbt_names);
+            //console.log(rbt_names);
+            _vis2.update(rbt_names);
         }
   },
   route: {
@@ -1039,7 +1084,7 @@ div#div_visuals {
     /*max-height: 550px;*/
     box-sizing: border-box;
     /*padding: 10px;*/
-    overflow:scroll;
+    overflow-y:scroll;
     position:fixed !important;
     position:absolute;
     top:60px;
@@ -1061,6 +1106,10 @@ div.vis_div {
     width: 85%;
     height: 430px;
     overflow-y: scroll;
+    overflow-x:hidden !important;
+}
+#vis2box {
+    overflow-x:hidden;
 }
 div.vis_btn {
     float: left;
@@ -1103,6 +1152,7 @@ button:focus {
     min-height: 400px;
     /*box-sizing: border-box;*/
     margin: 10px auto;
+    overflow-x:hidden;
 }
 
 #vis4 {
