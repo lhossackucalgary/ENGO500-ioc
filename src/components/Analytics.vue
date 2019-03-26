@@ -10,9 +10,18 @@
                 <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
                 <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
             </div>
-          <h1>   </h1>
-          <h3>Barometer_123: Robot_1</h3>
-          <svg id="vis2" class="svg_boxes"></svg>
+            <div class="spacer"></div>
+            <h3>Barometer_123: Robot_1</h3>
+            <div id="vis2box" class="vis_div">
+                <svg id="vis2" class="svg_boxes"></svg>
+            </div>
+            <div id="vis2btn" class="vis_btn">
+                <p>Enter robot names: </p>
+                <textarea id="vis2textbox" v-model="message" placeholder="add multiple lines"></textarea>
+                <br>
+                <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+                <p style="white-space: pre-line;">{{ message }}</p>
+            </div>
           <h3>Barometer_123: Robot_2</h3>
           <svg id="vis3" class="svg_boxes"></svg>
           <h3>Thermometer_236: Robot_1</h3>
@@ -71,7 +80,8 @@ const PRESSURE_DATA = [
     { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 40 },
 ]
 
-const TEMPERATURE_DATA = [
+
+var TEMPERATURE_DATA = [
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 33 },
     { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 35 },
@@ -328,6 +338,45 @@ function saveData(th) {
             ROBOT_HEALTH.push(rb);
         }
     }
+
+    //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
+    TEMPERATURE_DATA = [];
+    var obj_temp = function(robot, date, result) {
+        this.robot = robot;
+        this.date = date;
+        this.result = result;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var result = null;
+            var date = null;
+            var rname = th[i].name;
+            // loop through all ds of the robot
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'T') {
+                    //console.log(ds[j].id);
+                    // loop through all obs of the temp ds
+                    for (var k = 0; k < ds[j].obids.length; k++) {
+                        result = ds[j].obids[k].result;
+                        date = ds[j].obids[k].resultTime;
+                        var t_obs = new obj_temp(rname, date, result);
+                        TEMPERATURE_DATA.push(t_obs);
+                    }
+                }
+            }
+        }
+    }
+    function temp_data_check() {
+        if (TEMPERATURE_DATA.length > 0) {
+            console.log(TEMPERATURE_DATA);
+        } else {
+            setTimeout(temp_data_check, 500);
+        }
+    }
+    temp_data_check();
+
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -495,7 +544,7 @@ var singleLineGraph = function () {
 
         this.xScale = d3.scaleTime()
             .domain(d3.extent(this.data, function(d) { return d.date; }))
-            .range([_margin.right, this.width - _margin.left]);
+            .range([_margin.right, this.width - _margin.left - 10]);
 
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
@@ -592,61 +641,11 @@ var singleLineGraph = function () {
 
     return group;
     }
-
-
-    /*
-    this.update = function() {
-        console.log(_vis1.data[0].robot);
-        const t = d3.transition()
-            .duration(750);
-
-        this.svg.selectAll("rect")
-            .order()
-            .transition(t)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "blue")
-            .attr("x", function(d, i) { return _vis1.xScale(i); });
-
-        this.gx.transition(t)
-            .call(this.xAxisScale)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "red");
-    }*/
 }
 
-/**
- * Function changeHealthBarHeights: changes the heights of the bars in our visualization with values
- * from a given data attribute
- * @param attr the data attribute containing the value to be applied to each bar's height
- * @param maxAttrValue the maximum value the attribute can have
- * assume the min value is 0
- */
-function changeHealthBarHeights(attr, maxAttrValue){
-    for (var i = 0; i < _data1.length; i++){
-        var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);
-        var bar = document.getElementById("column_" + i);
-
-        var oldY = bar.getAttribute("y");
-        var oldHeight = bar.getAttribute("height");
-        var newY = _vis_height - PADDING_FOR_LABELS - newHeight;
-
-        bar.setAttribute("y", oldY);
-        bar.setAttribute("height", oldHeight);
-
-        var animate = "<animate id='animate_bar_" + i + "' attributeName='y' from='" + oldY + "' " +
-            "to='" + newY + "' dur='1s' begin='indefinite'" +
-            "repeatCount='1' fill='freeze'></animate>" +
-            "<animate attributeName='height' from='"+ oldHeight +"' to='"+ newHeight +"' dur='1s' " +
-            "begin='animate_bar_"+ i +".begin' fill='freeze'></animate>" +
-            "<title>"+ _data1[i][attr] +"</title>";
-        bar.innerHTML = animate;
-        document.getElementById('animate_bar_' + i).beginElement();
-    }
-}
-
-function mapValue(value, origMin, origMax, newMin, newMax){
-    return (value - origMin) * (newMax - newMin) / (origMax - origMin) + newMin;
-}
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 2 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis2(){
     _vis2 = new singleLineGraph();
@@ -673,6 +672,10 @@ function setupVis2(){
     _vis2.createLine();
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 3 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 function setupVis3(){
     _vis3 = new singleLineGraph();
     _vis3.svg = d3.select("#vis3");
@@ -697,6 +700,10 @@ function setupVis3(){
     //_vis2.setupAxis();
     _vis3.createLine();
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 4 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis4(){
   let xScale = d3.scaleLinear()
@@ -764,6 +771,10 @@ function setupVis4(){
         .style("alignment-baseline", "middle");
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 5 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 // code modified from Jerome Freye's example @ http://bl.ocks.org/jfreyre/b1882159636cc9e1283a
 function setupVis5(){
     _vis5 = new singleLineGraph();
@@ -790,6 +801,10 @@ function setupVis5(){
     _vis5.createLine();
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 6 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 function setupVis6(){
     _vis6 = new singleLineGraph();
     _vis6.svg = d3.select("#vis6");
@@ -815,6 +830,10 @@ function setupVis6(){
     _vis6.createLine();
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------------- EXPORT ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 export default {
   name: 'Analytics',
   mounted () {
@@ -832,7 +851,8 @@ export default {
       _data1: this._data1,
       _vis_height: this._vis_height,
       _vis_width: this._vis_width,
-      PADDING_FOR_LABELS: this.PADDING_FOR_LABELS
+      PADDING_FOR_LABELS: this.PADDING_FOR_LABELS,
+      message: null
     }
   },
   methods: {
@@ -872,6 +892,15 @@ export default {
             _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
             _vis1.update();
         },
+        vis2_update() {
+            var temp = this.message.split(" ");
+            var rbt_names = [];
+            for (var i = 0; i < temp.length; i++) {
+                var temp2 = temp[i].split(/\r?\n/);
+                rbt_names = rbt_names.concat(temp2);
+            }
+            console.log(rbt_names);
+        }
   },
   route: {
       activate() {
@@ -879,6 +908,7 @@ export default {
       }
   }
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -1038,6 +1068,15 @@ button:focus {
     height: 60px;
     float: left;
     margin: 1px;
+}
+#vis2textbox {
+    min-height: 200px;
+}
+
+.spacer {
+    height: 200px;
+    float: left;
+    width: 100%;
 }
 </style>
 
