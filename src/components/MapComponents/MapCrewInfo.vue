@@ -41,6 +41,7 @@ export default {
   },
   data() {
     return {
+      eventbkp: Object,
       feature: Object,
       geometry: Array,
       iotid: Number,
@@ -55,20 +56,24 @@ export default {
         this.active_el = el;
     },
     crewShowMore:function(e) {
+      this.eventbkp = e;
       this.$refs["crewinfopane"].style = "visibility: visible;";
       this.feature = e.detail;
       this.geometry = e.detail.geometry;
       this.iotid = e.detail.iotid;
       this.name = e.detail.name;
       this.route = e.detail.properties.route;
+      this.active_el = -1;
       for (let i = 0; i < this.formInputs.length; i++) {
         this.formInputs[i] = '';
       }
     },
     closeCrewInfo:function() {
+      this.active_el = -1;
       this.$refs["crewinfopane"].style = "visibility: hidden;";
     },
     deleteBot: function(i) {
+      this.active_el = -1;
       this.route.splice(i, 1);
 
       let guaranteed_route_prev = JSON.parse(this.feature.description);
@@ -118,7 +123,7 @@ export default {
           return function() {
           if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
             crewInfoThis.route.splice(index+1, 0, id);
-            
+
             let guaranteed_route_prev = JSON.parse(crewInfoThis.feature.description);
             let guaranteed_route_curr = crewInfoThis.route.slice(0,index+2);
             let guaranteed_route;
@@ -135,6 +140,8 @@ export default {
                 return function() {
                 if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
                   crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+                  crewInfoThis.active_el = -1;
+                  crewInfoThis.crewShowMore(crewInfoThis.eventbkp);
                 } else if (this.readyState == 4) {
                   alert("Failed to update route. Please refresh and try again.");
                 }
