@@ -11,29 +11,39 @@
                 <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
             </div>
             <div class="spacer"></div>
-            <h3>CPU Power Draw</h3>
             <div id="vis2box" class="vis_div">
+                <h3>Sensor807: Motor Power Draw</h3>
                 <svg id="vis2" class="svg_boxes"></svg>
             </div>
             <div id="vis2btn" class="vis_btn">
                 <p>Enter robot names: </p>
-                <textarea id="vis2textbox" v-model="message" placeholder="robot1 robot2 ..."></textarea>
+                <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
-                <p style="white-space: pre-line;">{{ message }}</p>
             </div>
-          <h3>Barometer_123: Robot_2</h3>
-          <svg id="vis3" class="svg_boxes"></svg>
-          <h3>Thermometer_236: Robot_1</h3>
-          <svg id="vis5" class="svg_boxes"></svg>
-          <h3>Thermometer_236: Robot_2</h3>
-          <svg id="vis6" class="svg_boxes"></svg>
-          <h3>Historical Data</h3>
-          <svg id="vis4" class="svg_boxes"></svg>
+            <div class="spacer"></div>
+            <div id="vis3box" class="vis_div">
+                <h3>Sensor876: CPU Temperature</h3>
+                <svg id="vis3" class="svg_boxes"></svg>
+            </div>
+            <div id="vis3btn" class="vis_btn">
+                <p>Enter robot names: </p>
+                <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                <br>
+                <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+            </div>
+            <h3>Thermometer_236: Robot_1</h3>
+            <svg id="vis5" class="svg_boxes"></svg>
+            <h3>Thermometer_236: Robot_2</h3>
+            <svg id="vis6" class="svg_boxes"></svg>
+            <h3>Historical Data</h3>
+            <svg id="vis4" class="svg_boxes"></svg>
       </div>
 </template>
 
 <script>
+//<p style="white-space: pre-line;">{{ message }}</p>
+
 import * as d3 from 'd3'
 
 /* --------------------------------------------------------------------------------------------- */
@@ -88,8 +98,12 @@ var _vis5;
 var _vis6;
 var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
+var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
+    '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
+    '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 //var data = [10, 20, 30 , 40, 50];
 var th;
+var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
 
 var HPyRange;
 var HPyDomain;
@@ -515,12 +529,14 @@ var singleLineGraph = function () {
     this.yScale;
 
     this.yRange;
+    this.yLabel;
 
     this.xAxis;
     this.yAxis;
     this.gx;
 
-    this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
+    this.dataNestLength;
+    this.legendSpace = {x:70, y:18};
 
     this.setupScales = function(yRange, yDomain, xRange){
         //kind of like the min and max value of range in last tut
@@ -544,6 +560,21 @@ var singleLineGraph = function () {
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
             .domain(this.data.map(function(d){ return d.robot; }));
+        
+        // x-axis label
+        this.svg.append("text")
+            .attr("x", this.width / 2)
+            .attr("y", this.height - _margin.bottom / 2 + 15)
+            .style("text-anchor", "middle")
+            .text("Time");
+
+        // y-axis label
+        this.svg.append("text")
+            .attr("x", _margin.left)
+            .attr("y", this.height/2)
+            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
+            .style("text-anchor", "middle")
+            .text(this.yLabel);
 
     }
 
@@ -572,13 +603,49 @@ var singleLineGraph = function () {
 
         // Add the valueline path.
         this.svg.append("path")
+            .data(this.data)
             .attr("class", "line")
             .attr("d", valueline(this.data))
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
             .attr("stroke", "blue")
             .attr("stroke-width", 2)
             .attr("fill", "none")
             .attr("transform", `translate(${_margin.left}, 0)`)
-            .append("svg:title");
+            .append("svg:title")
+            .text(function(d) {return d.robot;});
+
+        // Add the Legend
+        this.svg.append("rect")
+            .data(this.data)
+            .attr("x", _margin.left + 5)
+            .attr("y", this.height + (_margin.bottom/2) )
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+            })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(this.data)
+            .attr("class", "legend_text")
+            .attr("x", _margin.left + 20)  // space legend
+            .attr("y", this.height + (_margin.bottom/2)+ 10)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
 
         // Add the X Axis
         this.svg.append("g")
@@ -608,7 +675,6 @@ var singleLineGraph = function () {
             .x(function(d) { return xScale(d.date)})
             .y(function(d) { return yScale(d.result)});
 
-        var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#ffffff', '#000000'];
         this.svg
                 .attr("width", this.width + _margin.left + _margin.right)
                 .attr("height", this.height + _margin.top + _margin.bottom)
@@ -617,84 +683,94 @@ var singleLineGraph = function () {
 
         //scale range of data
         // console.log(this.data);
-        console.log(colors[i]);
         // Add the valueline path.
         this.svg.append("path")
+            .data(lineData.values)
             .attr("class", "line")
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
             .attr("d", valueline(lineData.values))
             .attr("stroke", colors[i])
             .attr("stroke-width", 2)
             .attr("fill", "none")
             .attr("transform", `translate(${_margin.left}, 0)`)
-            .append("svg:title");
+            .append("svg:title")
+            .text(lineData.key);
 
-    }
+        // Add the Legend
+        var legendMax = parseInt((this.width/1.3)/this.legendSpace.x, 10);
+        if (i == 0) var j = 0;
+        else j = parseInt((i)/legendMax); 
 
-    function drawLine(lineData,lineColor,lineLabel,lineId)
-    {
-            // append line to svg
-        var group = this.svg.append("g")
-                        .attr('class', lineId);
+        var k = i - j * legendMax;
+        //console.log(legendMax+" "+i+" "+j+" "+k);
+        var rect_x = this.legendSpace.x * (k+1) + 25*k;
+        var text_x = (this.legendSpace.x + 25)*(k+1);
+        //console.log(rect_x + ", " + text_x);
 
-            group.append("svg:path")
-                    .attr('d', lineSelection(lineData))
-                    .attr('stroke', lineColor)
-                    .attr('stroke-width', 2)
-                    .attr('fill', 'none');
-
-        // prepare label for line
-        group.append("rect")
-            .attr("width", chartConfig.lineLabel.width)
-            .attr("height", chartConfig.lineLabel.height)
-            .attr("x", xScale(lineData[0].year)-100)
-            .attr("y", yScale(lineData[0].sale)-
-            (chartConfig.lineLabel.height/2))
-            .attr("stroke", lineColor)
-            .attr("fill", lineColor)
-            .attr("stroke-width", 1);
-
-    // draw line label text
-    group.append("text")
-            .attr("dx", xScale(lineData[0].year)-(chartConfig.lineConnectorLength+7))
-        .attr("dy", yScale(lineData[0].sale)+4) // 4 is padding
-            .attr("text-anchor", "end")
-        .attr("class", "lineLabel")
-            .style("fill", "white")
-            .text(lineLabel);
-
-    // line to label connector
-    group.append("line")
-    .attr({
-    x1: xScale(lineData[0].year), y1: yScale(lineData[0].sale), //start of the line
-    x2: xScale(lineData[0].year)-chartConfig.lineConnectorLength, y2: yScale(lineData[0].sale)  //end of the line
+        this.svg.append("rect")
+            .data(lineData.values)
+            .attr("x", this.legendSpace.x * (k+1) + 15*k)
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j - 5)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", colors[i])
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
             })
-    .attr('stroke', lineColor)
-    .attr('stroke-width', 2)
-    .attr('fill', lineColor);
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(lineData.values)
+            .attr("class", "legend_text")
+            .attr("x", (this.legendSpace.x + 15)*(k+1))  // space legend
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j + 5)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "black")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
 
-    return group;
     }
 
-    this.update = function(rbt_names) {
-        var all_rbt_obs = [];
-        for (var i = 0; i < rbt_names.length; i++) {
-            for (var j = 0; j < CURRENT_DATA.length; j++) {
-                if (rbt_names[i] == CURRENT_DATA[j].robot) {
-                    all_rbt_obs.push(CURRENT_DATA[j]);
+    this.update = function(rbt_names, datatype) {
+        var all_rbt_obs = []; 
+        if (datatype == "current") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < CURRENT_DATA.length; j++) {
+                    if (rbt_names[i] == CURRENT_DATA[j].robot) {
+                        all_rbt_obs.push(CURRENT_DATA[j]);
+                    }
+                }
+            }
+        } else if (datatype == "temperature") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < TEMPERATURE_DATA.length; j++) {
+                    if (rbt_names[i] == TEMPERATURE_DATA[j].robot) {
+                        all_rbt_obs.push(TEMPERATURE_DATA[j]);
+                    }
                 }
             }
         }
 
         this.data = all_rbt_obs;
-        //console.log(all_rbt_obs);
+        console.log(all_rbt_obs);
 
         //separate by robot names using dataNest
         var dataNest = d3.nest()
             .key(function(d) {return d.robot;})
             .entries(all_rbt_obs);
         //console.log(dataNest);
+        this.dataNestLength = dataNest.length;
 
-        
         //remove old data
         this.svg.selectAll("*")
             .remove();    
@@ -735,22 +811,19 @@ function setupVis2(){
         _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
             _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
         _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+        _vis2.yLabel = "Current (Ampere)";
 
-        var data2 = [];
-        var count = 0;
-
-        for (let i = 0; i < CURRENT_DATA.length; i++) {
-            if (CURRENT_DATA[i].robot === "robot1") {
-                //console.log(PRESSURE_DATA[i].robot);
-                data2.push(CURRENT_DATA[i]);
-                count++;
-            }
+        var temp = msg_vis2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
         }
 
-        _vis2.data = data2;
-        _vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left], _vis2.data.length);
+        //_vis2.data = data2;
+        //_vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left]);
         //_vis2.setupAxis();
-        _vis2.createLine();
+        _vis2.update(rbt_names, "current");
     } else {
         setTimeout(setupVis2, 500);
     }
@@ -761,29 +834,23 @@ function setupVis2(){
 /* --------------------------------------------------------------------------------------------- */
 
 function setupVis3(){
-    if (CURRENT_DATA.length > 0) {
+    if (TEMPERATURE_DATA.length > 0) {
         _vis3 = new singleLineGraph();
         _vis3.svg = d3.select("#vis3");
         //match size of svg container in html
         _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
             _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
         _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
+        _vis3.yLabel = "Temperature (Celcius)";
 
-        var data3 = [];
-        var count = 0;
-
-        for (let i = 0; i < CURRENT_DATA.length; i++) {
-            if (CURRENT_DATA[i].robot === "robot2") {
-                //console.log(PRESSURE_DATA[i].robot);
-                data3.push(CURRENT_DATA[i]);
-                count++;
-            }
+        var temp = msg_vis2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
         }
 
-        _vis3.data = data3;
-        _vis3.setupScales([_vis3.height - _margin.bottom, _margin.top], [0, 100], [0, _vis3.width - _margin.left], _vis3.data.length);
-        //_vis2.setupAxis();
-        _vis3.createLine();
+        _vis3.update(rbt_names, "temperature");
     } else {
         setTimeout(setupVis3, 500);
     }
@@ -950,7 +1017,8 @@ export default {
       _vis_height: this._vis_height,
       _vis_width: this._vis_width,
       PADDING_FOR_LABELS: this.PADDING_FOR_LABELS,
-      message: null
+      message_v2: "robot1\nrobot2\nrobot3\nrobot4",
+      message_v3: "robot1\nrobot2\nrobot3\nrobot4"
     }
   },
   methods: {
@@ -991,14 +1059,24 @@ export default {
             _vis1.update();
         },
         vis2_update() {
-            var temp = this.message.split(" ");
+            var temp = this.message_v2.split(" ");
             var rbt_names = [];
             for (var i = 0; i < temp.length; i++) {
                 var temp2 = temp[i].split(/\r?\n/);
                 rbt_names = rbt_names.concat(temp2);
             }
             //console.log(rbt_names);
-            _vis2.update(rbt_names);
+            _vis2.update(rbt_names, "current");
+        },
+        vis3_update() {
+            var temp = this.message_v3.split(" ");
+            var rbt_names = [];
+            for (var i = 0; i < temp.length; i++) {
+                var temp2 = temp[i].split(/\r?\n/);
+                rbt_names = rbt_names.concat(temp2);
+            }
+            //console.log(rbt_names);
+            _vis3.update(rbt_names, "temperature");
         }
   },
   route: {
@@ -1104,13 +1182,14 @@ div#div_buttons {
 div.vis_div {
     float: left;
     width: 85%;
-    height: 430px;
+    height: 470px;
     overflow-y: scroll;
     overflow-x:hidden !important;
 }
 #vis2box {
     overflow-x:hidden;
 }
+
 div.vis_btn {
     float: left;
     width: 15%;
@@ -1174,11 +1253,21 @@ button:focus {
     margin: 1px;
 }
 #vis2textbox {
-    min-height: 200px;
+    min-height: 350px;
+}
+#vis3textbox {
+    min-height: 350px;
+}
+
+#vis2box {
+    min-height: 600px;
+}
+#vis3box {
+    min-height: 600px;
 }
 
 .spacer {
-    height: 200px;
+    height: 100px;
     float: left;
     width: 100%;
 }
