@@ -443,7 +443,7 @@ var Healthplot = function(){
             .padding(0.1);
 
         this.xAxisScale = d3.scaleBand()
-            .range([0, this.width - _margin.left])
+            .rangeRound(xRange) //[0, this.width - _margin.left]
             .domain(this.data.map(function(d){ return d.robot; }));
 
     };
