@@ -15,12 +15,12 @@
                 <router-link class="nav-left-link" to="/analytics">Analytics</router-link>
                 </nav>
             </div>
-            <div class="nav-right">
+            <!-- <div class="nav-right">
                 <nav>
                 <router-link class="nav-right-link" to="/login">Login</router-link>
                 <router-link class="nav-right-link" to="/accountmanager">Account Manager</router-link>
                 </nav>
-            </div>
+            </div> -->
         </div>
         <div class="router-view-wrapper">
             <div class="router-view">
@@ -34,7 +34,7 @@
 
 export default {
   name: 'App'
-  
+
 }
 </script>
 

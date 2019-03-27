@@ -10,6 +10,7 @@
                 <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
                 <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
             </div>
+          <h1>   </h1>
           <h3>Barometer_123: Robot_1</h3>
           <svg id="vis2" class="svg_boxes"></svg>
           <h3>Barometer_123: Robot_2</h3>
@@ -26,19 +27,11 @@
 <script>
 import * as d3 from 'd3'
 
+/* --------------------------------------------------------------------------------------------- */
+/* ------------------------------- INITIALIZE GLOBAL VARIABLES --------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 var ROBOT_HEALTH = [];
-/*const ROBOT_HEALTH = [
-    { "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20},
-    { "robot" : "robot_2", "health" : 20, "pressure" : 70, "temperature" : 50},
-    { "robot" : "robot_3", "health" : 60, "pressure" : 50, "temperature" : 25},
-    { "robot" : "robot_4", "health" : 40, "pressure" : 60, "temperature" : 30},
-    { "robot" : "robot_5", "health" : 30, "pressure" : 65, "temperature" : 50},
-    { "robot" : "robot_6", "health" : 80, "pressure" : 24, "temperature" : 28},
-    { "robot" : "robot_7", "health" : 50, "pressure" : 35, "temperature" : 45},
-    { "robot" : "robot_8", "health" : 65, "pressure" : 50, "temperature" : 26},
-    { "robot" : "robot_9", "health" : 100, "pressure" : 20, "temperature" : 20},
-    { "robot" : "robot_10", "health" : 5, "pressure" : 80, "temperature" : 60},
-];*/
 
 const SAMPLE_DATA = [
     { "month" : "January", "point" : [5, 20], "r" : 10 },
@@ -130,6 +123,16 @@ var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
 //var data = [10, 20, 30 , 40, 50];
 var th;
+
+var HPyRange;
+var HPyDomain;
+var HPxRange;
+var HPxLength;
+
+
+/* --------------------------------------------------------------------------------------------- */
+/* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function loadObservation(obid){
     //create object to hold observation id, result, and time
@@ -296,10 +299,11 @@ function getData(){
         }
     }
     th_data_check();
-    
-    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
-    
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------- API DATA TO ROBOT HEALTH --------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function saveData(th) {
     //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
@@ -314,16 +318,21 @@ function saveData(th) {
         if (name === "robot") {
             var ds = th[i].ds;
             var health = null;
+            var rnum = "r"+th[i].name.slice(5);
             for (var j = 0; j < ds.length; j++) {
                 if (ds[j].type == 'H') {
                     health = ds[j].obids[0].result;
                 }
             }
-            var rb = new obj_rb(th[i].name, health);
+            var rb = new obj_rb(rnum, health);
             ROBOT_HEALTH.push(rb);
         }
     }
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* ------------------------------------- HEALTH BAR CHART -------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 // code modified from Scott Murray's example
 // https://alignedleft.com/tutorials/d3/scales
@@ -347,6 +356,7 @@ function setupVis1(){
 
 var Healthplot = function(){
     this.data;
+    this.olddata;
     this.width = WIDTH;
     this.height = HEIGHT;
 
@@ -362,6 +372,12 @@ var Healthplot = function(){
     this.gx;
 
     this.setupScales = function(yRange, yDomain, xRange, xLength){
+
+        HPyRange = yRange;
+        HPyDomain = yDomain;
+        HPxRange = xRange;
+        HPxLength = xLength;
+
         //kind of like the min and max value of range in last tut
         this.yScale = d3.scaleLinear()
             .domain(yDomain)
@@ -369,7 +385,7 @@ var Healthplot = function(){
 
         this.xScale = d3.scaleBand()
             .domain(d3.range(0, xLength))
-            .range(xRange)
+            .rangeRound(xRange)
             .padding(0.1);
 
         this.xAxisScale = d3.scaleBand()
@@ -412,7 +428,7 @@ var Healthplot = function(){
     }
 
     this.createBars = function() {
-    this.svg.selectAll("rect")
+    this.bar = this.svg.selectAll("rect")
             .data(this.data)
             .enter()
             .append("rect")
@@ -425,35 +441,25 @@ var Healthplot = function(){
                 .attr("transform", `translate(${_margin.left}, 0)`)
                 .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
                 .text(function(d) {
-                return d.robot; });
+                return d.health; });
                 // same as return d["robot"];
     }
 
     this.update = function() {
-        // console.log(this.data[0].robot);
-        // console.log(_vis1.data[0].robot);
-        const t = d3.transition()
-            .duration(750);
+        //remove old data
+        _vis1.svg.selectAll("*")
+            .remove();    
 
-        this.svg.selectAll(".bar")
-            .order()
-            .transition(t)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "blue")
-            .attr("x", function(d, i) { return _vis1.xScale(i); });
-
-        this.svg.selectAll(".bar")
-            .exit().remove();
-
-        this.createBars();
-
-        this.gx.transition(t)
-            .call(this.xAxisScale)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "red");
+        //add new data
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
     }
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------- LINE GRAPH ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 var singleLineGraph = function () {
     this.data;
     this.width = WIDTH;
@@ -496,39 +502,7 @@ var singleLineGraph = function () {
             .domain(this.data.map(function(d){ return d.robot; }));
 
     }
-    /*
-    this.setupAxis = function(yLabel){
-        this.yAxis = d3.axisLeft(this.yScale)
-            .tickSize(-this.width);
 
-        this.xAxis = d3.axisBottom(this.xAxisScale);
-
-        this.svg.append("g")
-            .attr("transform", `translate(${_margin.left}, 0)`)
-            .attr("class", "y axis")
-            .call(this.yAxis);
-
-        this.gx = this.svg.append("g")
-            .attr("transform", `translate(${_margin.left}, ${_vis1.height - _margin.bottom})`)
-            .attr("class", "x axis")
-            .call(this.xAxis);
-
-        // x-axis label
-        this.svg.append("text")
-            .attr("x", this.width / 2)
-            .attr("y", this.height - _margin.bottom / 2 + 15)
-            .style("text-anchor", "middle")
-            .text("Robot Name");
-
-        // y-axis label
-        this.svg.append("text")
-            .attr("x", _margin.left)
-            .attr("y", this.height/2)
-            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
-            .style("text-anchor", "middle")
-            .text("Health (%)");
-
-    }*/
 
     this.createLine = function() {
         var yScale = d3.scaleLinear()
@@ -885,9 +859,16 @@ export default {
             }
         },
         vis1_switch(order) {
-            if (order === "name-ascending") _vis1.data.sort((a, b) => d3.ascending(a.robot, b.robot));
-            if (order === "value-ascending") _vis1.data.sort((a, b) => a.health - b.health);
-            if (order === "value-descending") _vis1.data.sort((a, b) => b.health - a.health);
+            if (order === "name-ascending") {
+                _vis1.data.sort((a, b) => d3.ascending(parseInt(a.robot.slice(1),10), parseInt(b.robot.slice(1),10)));
+            }
+            if (order === "value-ascending") {
+                _vis1.data.sort((a, b) => a.health - b.health);
+            }
+            if (order === "value-descending") {
+                _vis1.data.sort((a, b) => b.health - a.health);
+                console.log(_vis1.data);
+            }
             _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
             _vis1.update();
         },
@@ -994,13 +975,13 @@ div#div_buttons {
 div.vis_div {
     float: left;
     width: 85%;
-    height: 330px;
+    height: 430px;
     overflow-y: scroll;
 }
 div.vis_btn {
     float: left;
     width: 15%;
-    height: 330px;
+    height: 430px;
     background: white;
 }
 
@@ -1035,7 +1016,7 @@ button:focus {
     display: block;
     width: 95%;
     min-width: 800px;
-    min-height: 300px;
+    min-height: 400px;
     /*box-sizing: border-box;*/
     margin: 10px auto;
 }

@@ -5,6 +5,7 @@ import Map from '@/components/Map'
 import Analytics from '@/components/Analytics'
 import Login from '@/components/Login'
 import AccountManager from '@/components/AccountManager'
+import CompareBots from '@/components/CompareBots'
 
 Vue.use(Router)
 
@@ -34,6 +35,11 @@ export default new Router({
       path: '/accountmanager',
       name: 'Account Manager',
       component: AccountManager
+    },
+    {
+      path: '/comparebots',
+      name: 'Compare Bots',
+      component: CompareBots
     }
   ]
 })
