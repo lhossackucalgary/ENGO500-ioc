@@ -9,10 +9,10 @@
         <button v-on:click="addBotForm(0)">+</button>
       </div>
       <div v-if="route.length > 0">
-        <li class="parent_hidden_obj" v-for="(i, index) in route" :key="index">
-          {{i}}
+        <li @click="activate(i)" :class="{ active : active_el == i }" class="parent_hidden_obj" v-for="(i, index) in route" :key="index">
+          <span></span>
+          <span>{{i}}</span>
           <button v-if="index != 0" v-on:click="deleteBot(route.indexOf(i))">x</button>
-          <br>
           <div class="hideme">
             <input v-model="formInputs[index]" type="text" style="width: 50px;"></input>
             <button v-on:click="addBotForm(index)">+</button>
@@ -36,34 +36,44 @@ export default {
     this.iotid = -1;
     this.name = "";
     this.route = [];
+    this.active_el = -1;
     document.addEventListener('crewShowMore', this.crewShowMore);
   },
   data() {
     return {
+      eventbkp: Object,
       feature: Object,
       geometry: Array,
       iotid: Number,
       name: String,
       route: Array,
-      formInputs: new Array()
+      formInputs: new Array(),
+      active_el: Number
     }
   },
   methods: {
+    activate:function(el){
+        this.active_el = el;
+    },
     crewShowMore:function(e) {
+      this.eventbkp = e;
       this.$refs["crewinfopane"].style = "visibility: visible;";
       this.feature = e.detail;
       this.geometry = e.detail.geometry;
       this.iotid = e.detail.iotid;
       this.name = e.detail.name;
       this.route = e.detail.properties.route;
+      this.active_el = -1;
       for (let i = 0; i < this.formInputs.length; i++) {
         this.formInputs[i] = '';
       }
     },
     closeCrewInfo:function() {
+      this.active_el = -1;
       this.$refs["crewinfopane"].style = "visibility: hidden;";
     },
     deleteBot: function(i) {
+      this.active_el = -1;
       this.route.splice(i, 1);
 
       let guaranteed_route_prev = JSON.parse(this.feature.description);
@@ -116,7 +126,6 @@ export default {
 
             let guaranteed_route_prev = JSON.parse(crewInfoThis.feature.description);
             let guaranteed_route_curr = crewInfoThis.route.slice(0,index+2);
-
             let guaranteed_route;
             if (guaranteed_route_curr.length > guaranteed_route_prev.length) {
               guaranteed_route = guaranteed_route_curr;
@@ -131,6 +140,8 @@ export default {
                 return function() {
                 if (this.readyState == 4 && this.status >= 200 && this.status < 300) {
                   crewInfoThis.$emit('crewRouteUpdated', {iotid: crewInfoThis.iotid, route: crewInfoThis.route});
+                  crewInfoThis.active_el = -1;
+                  crewInfoThis.crewShowMore(crewInfoThis.eventbkp);
                 } else if (this.readyState == 4) {
                   alert("Failed to update route. Please refresh and try again.");
                 }
@@ -171,11 +182,13 @@ export default {
   background-color: white;
   text-align: left;
 }
-
 #closecrewinfopanebtn {
   position: absolute;
   left: 3px;
   top: 3px;
+}
+.active .hideme {
+  display:block;
 }
 .hideme {
   display:none;
