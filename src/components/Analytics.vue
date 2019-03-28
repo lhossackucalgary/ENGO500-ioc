@@ -1,46 +1,63 @@
 /* eslint-disable */
 <template>
         <div id="div_visuals">
-            <h3>Robot Summary</h3>
-            <div id="vis7" class="vis_div"></div>
-            <div id="vis1box" class="vis_div">
-                <h3 class="head">Robot Health</h3>
-                <svg id="vis1" class="svg_boxes"></svg>
+            <div>
+                <h3>Robot Summary</h3>
+                <div id="vis7" class="vis_div"></div>
             </div>
-            <div id="vis1btn" class="vis_btn">
-                <div class="spacer"></div>
-                <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
-                <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
-                <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
-            </div>
-            <div class="spacer"></div>
-            <div id="vis2box" class="vis_div">
-                <h3>Sensor807: Motor Power Draw</h3>
-                <svg id="vis2" class="svg_boxes"></svg>
-            </div>
-            <div id="vis2btn" class="vis_btn">
-                <p>Enter list of robot names: </p>
-                <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
-                <br>
-                <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+            <div>
+                <div id="vis1box" class="vis_div">
+                    <h3 class="head">Robot Health</h3>
+                    <svg id="vis1" class="svg_boxes"></svg>
+                </div>
+                <div id="vis1btn" class="vis_btn">
+                    <div class="spacer"></div>
+                    <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
+                    <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
+                    <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+                </div>
             </div>
             <div class="spacer"></div>
-            <div id="vis3box" class="vis_div">
-                <h3>Sensor876: CPU Temperature</h3>
-                <svg id="vis3" class="svg_boxes"></svg>
+            <div>
+                <div id="vis2box" class="vis_div">
+                    <h3>Sensor807: Motor Power Draw</h3>
+                    <svg id="vis2" class="svg_boxes"></svg>
+                </div>
+                <div id="vis2btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+                </div>
             </div>
-            <div id="vis3btn" class="vis_btn">
-                <p>Enter list of robot names: </p>
-                <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
-                <br>
-                <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+            <div class="spacer"></div>
+            <div>
+                <div id="vis3box" class="vis_div">
+                    <h3>Sensor876: CPU Temperature</h3>
+                    <svg id="vis3" class="svg_boxes"></svg>
+                </div>
+                <div id="vis3btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+                </div>
             </div>
-            <h3>Thermometer_236: Robot_1</h3>
-            <svg id="vis5" class="svg_boxes"></svg>
-            <h3>Thermometer_236: Robot_2</h3>
-            <svg id="vis6" class="svg_boxes"></svg>
-            <h3>Historical Data</h3>
-            <svg id="vis4" class="svg_boxes"></svg>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_1</h3>
+                <svg id="vis5" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_2</h3>
+                <svg id="vis6" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Historical Data</h3>
+                <svg id="vis4" class="svg_boxes"></svg>
+            </div>
       </div>
 </template>
 
@@ -110,7 +127,6 @@ var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
     '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 //var data = [10, 20, 30 , 40, 50];
 var th;
-var allobs;
 var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
 
 var HPyRange;
@@ -259,7 +275,6 @@ function loadThing_Datastreams_Obs(dsobs){
 }
 
 function getData(){
-    allobs = [];
     var obs = loadObservations();
 
     var ds = [];
@@ -286,8 +301,7 @@ function getData(){
     
     function th_data_check() {
         if (th.length > 0) {
-            console.log(th);
-            //console.log(th[5].ds[1].id);
+            //console.log(th);
             saveData(th);
         } else {
             setTimeout(th_data_check, 500);
@@ -938,87 +952,10 @@ function setupDotChart(){
         }
     ]
     }
+    console.log("vega done");
 
-    /*
-    var spec = {
-        "$schema": "https://vega.github.io/schema/vega/v5.json",
-        "width": 1200,
-        "height": 400,
-        "padding": {"left": 30, "right": 5, "top": 40, "bottom": 20},
-        "autosize": "none",
-
-        "signals": [
-            { "name": "cx", "update": "width / 2" },
-            { "name": "cy", "update": "height / 2" },
-            { "name": "radius", "value": 6, "bind": {"input": "range", "min": 2, "max": 15, "step": 1} },
-            { "name": "collide", "value": 1, "bind": {"input": "range", "min": 1, "max": 10, "step": 1} },
-            { "name": "gravityX", "value": 0.2, "bind": {"input": "range", "min": 0, "max": 1} },
-            { "name": "gravityY", "value": 0.1, "bind": {"input": "range", "min": 0, "max": 1} },
-            { "name": "static", "value": false, "bind": {"input": "checkbox"} }
-        ],
-
-        "scales": [
-            {
-                "name": "xscale",
-                "type": "band",
-                "domain": {
-                    "data": "robots",
-                    "field": "status",
-                    "sort": true
-                },
-                "range": "width"
-            },
-            {
-                "name": "color",
-                "type": "ordinal",
-                "domain": {"data": "robots", "field": "status"},
-                "range": {"scheme": "category10"}
-            }
-        ],
-
-        "axes": [
-            { "orient": "bottom", "scale": "xscale" }
-        ],
-
-        "marks": [
-            {
-                "name": "nodes",
-                "type": "symbol",
-                "from": {"data": "robots"},
-                "encode": {
-                    "enter": {
-                        "fill": {"scale": "color", "field": "status"},
-                        "xfocus": {"scale": "xscale", "field": "status", "band": 0.5},
-                    },
-                    "update": {
-                        "size": {"signal": "pow(2 * radius, 2)"},
-                        "stroke": {"value": "white"},
-                        "strokeWidth": {"value": 1},
-                        "zindex": {"value": 0}
-                    },
-                    "hover": {
-                        "stroke": {"value": "purple"},
-                        "strokeWidth": {"value": 3},
-                        "zindex": {"value": 1}
-                    }
-                },
-                "transform": [
-                    {
-                        "type": "force",
-                        "iterations": 300,
-                        "static": {"signal": "static"},
-                        "forces": [
-                            {"force": "collide", "iterations": {"signal": "collide"}, "radius": {"signal": "radius"}},
-                            {"force": "x", "x": "xfocus", "strength": {"signal": "gravityX"}},
-                            {"force": "y", "y": "yfocus", "strength": {"signal": "gravityY"}}
-                        ]
-                    }
-                ]
-            }
-        ],
-        "data": _vis7data
-    };*/
     vegaEmbed('#vis7', spec).then(function(result) {
+        
         // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
     }).catch(console.error);
 }
