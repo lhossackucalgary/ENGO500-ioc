@@ -11,6 +11,7 @@ import SysSummary from '@/components/AnalyticsComponents/SysSummary'
 import RobotHealth from '@/components/AnalyticsComponents/RobotHealth'
 import CPUTemp from '@/components/AnalyticsComponents/CPUTemp'
 import PowerDraw from '@/components/AnalyticsComponents/PowerDraw'
+import HistData from '@/components/AnalyticsComponents/HistData'
 
 Vue.use(Router)
 
@@ -46,6 +47,10 @@ export default new Router({
         {
           path: 'power-draw',
           component: PowerDraw
+        },
+        {
+          path: 'hist-data',
+          component: HistData
         }
       ]
     },
