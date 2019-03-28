@@ -204,6 +204,7 @@ def calcRobotHP():
         
         """ average all percentages from all datastreams from the robot """
         hp_total = (hp_pres + hp_temp)/2
+        hp_total =float("{0:.2f}".format(hp_total))
         if (hp_total < 0):
             hp_total = 0
         #print(hp_total)
