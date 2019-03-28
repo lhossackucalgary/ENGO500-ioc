@@ -1,6 +1,11 @@
 /* eslint-disable */
 <template>
         <div id="div_visuals">
+          <router-link to="/analytics/sys-summary">System Summary</router-link>
+          <router-link to="/analytics/robot-health">Robot Health</router-link>
+          <router-link to="/analytics/cpu-temp">CPU Temperature</router-link>
+          <router-link to="/analytics/power-draw">Power Draw</router-link>
+          <router-view></router-view>
             <h3>Robot Summary</h3>
             <div id="vis7" class="vis_div"></div>
             <div id="vis1box" class="vis_div">
