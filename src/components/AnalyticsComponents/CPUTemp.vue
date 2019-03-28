@@ -230,6 +230,44 @@ export default {
       _vis3: this._vis3,
       message: "robot1\nrobot2\nrobot3\nrobot4"
     }
+  },
+  methods: {
+    setupVis3(){
+      if (this.$store.state.TEMPERATURE_DATA.length > 0) {
+          TEMPERATURE_DATA = this.$store.state.TEMPERATURE_DATA;
+          this._vis3 = new singleLineGraph();
+          this._vis3.svg = d3.select("#vis3");
+          //match size of svg container in html
+          this._vis3.width = this._vis3.svg.node().getBoundingClientRect().width != undefined ?
+              this._vis3.svg.node().getBoundingClientRect().width : this._vis3.width; //if undefined
+          this._vis3.height = this._vis3.svg.node().getBoundingClientRect().height;
+          this._vis3.yLabel = "Temperature (Celcius)";
+
+          var temp = this.message.split(" ");
+          var rbt_names = [];
+          for (var i = 0; i < temp.length; i++) {
+              var temp2 = temp[i].split(/\r?\n/);
+              rbt_names = rbt_names.concat(temp2);
+          }
+
+          this._vis3.update(rbt_names, "temperature");
+      } else {
+          setTimeout(this.setupVis3, 500);
+      }
+    },
+    vis3_update() {
+        var temp = this.message.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
+        }
+        //console.log(rbt_names);
+        this._vis3.update(rbt_names, "temperature");
+    }
+  },
+  mounted() {
+    this.setupVis3();
   }
 }
 </script>
@@ -249,5 +287,58 @@ li {
 }
 a {
   color: #42b983;
+}
+div.vis_div {
+    float: left;
+    width: 85%;
+    height: 470px;
+    overflow-y: scroll;
+    overflow-x:hidden !important;
+}
+div.vis_btn {
+    float: left;
+    width: 15%;
+    height: 430px;
+    background: white;
+}
+
+button.cat {
+    display: block;
+}
+button {
+    background: white;
+    border: none;
+    height: 30px;
+    padding: 0px 10px;
+
+    font-family: "Sarabun", sans-serif;
+    font-weight: 400;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+}
+button:hover {
+    background: darkturquoise;
+    cursor: pointer;
+}
+button:focus {
+    outline: 0;
+}
+.svg_boxes {
+    background: white;
+    /*border: 1px solid lightgrey;*/
+    display: block;
+    width: 95%;
+    min-width: 800px;
+    min-height: 400px;
+    /*box-sizing: border-box;*/
+    margin: 10px auto;
+    overflow-x:hidden;
+}
+#vis3textbox {
+    min-height: 300px;
+}
+#vis3box {
+    overflow-x:hidden;
+    min-height: 600px;
 }
 </style>

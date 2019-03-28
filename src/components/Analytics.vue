@@ -863,16 +863,7 @@ export default {
         }
 
     },
-        vis3_update() {
-            var temp = this.message_v3.split(" ");
-            var rbt_names = [];
-            for (var i = 0; i < temp.length; i++) {
-                var temp2 = temp[i].split(/\r?\n/);
-                rbt_names = rbt_names.concat(temp2);
-            }
-            //console.log(rbt_names);
-            _vis3.update(rbt_names, "temperature");
-        }
+        
   },
   route: {
       activate() {
