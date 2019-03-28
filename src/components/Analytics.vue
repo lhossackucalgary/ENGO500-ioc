@@ -19,7 +19,7 @@
                 <svg id="vis2" class="svg_boxes"></svg>
             </div>
             <div id="vis2btn" class="vis_btn">
-                <p>Enter robot names: </p>
+                <p>Enter list of robot names: </p>
                 <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
@@ -30,7 +30,7 @@
                 <svg id="vis3" class="svg_boxes"></svg>
             </div>
             <div id="vis3btn" class="vis_btn">
-                <p>Enter robot names: </p>
+                <p>Enter list of robot names: </p>
                 <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
@@ -110,6 +110,7 @@ var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
     '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 //var data = [10, 20, 30 , 40, 50];
 var th;
+var allobs;
 var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
 
 var HPyRange;
@@ -122,7 +123,7 @@ var HPxLength;
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
-function loadObservation(obid){
+function loadObservations(){
     //create object to hold observation id, result, and time
     var obj_obs = function(id, result, time) {
         this.id = id;
@@ -130,30 +131,30 @@ function loadObservation(obid){
         this.time = time;
     }
     //create an object with null values to hold resulting obs
-    var obs = new obj_obs(null, null, null);
+    var obs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText);
-
-            obs.id = r['@iot.id'];
-            obs.result = r['result'];
-            obs.time = r['resultTime'];
+            var r = JSON.parse(xhttp.responseText).value;
+            r.forEach(result => {
+                var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
+                obs.push(ob);
+            });
+        
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations("+obid+")", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
     xhttp.send();
     return obs;
 }
 
-function loadDatastreams_Obs(){
+function loadDatastreams_Obs(obs_all){
     var dsobs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         
         if (this.readyState == 4 && this.status == 200) {
             var r = JSON.parse(xhttp.responseText).value;
-
             //object to hold datastream:id, type, and list of observation ids
             var Obj_ds_ob = function(a, b, c){
                 this.id = a;
@@ -185,10 +186,12 @@ function loadDatastreams_Obs(){
                     var obid = obs[j]['@iot.id'];//obid at datastream i, 
 
                     //get the info of the obs
-                    var obs_info = loadObservation(obid);
-
-                    //push to obids, which now contains obs info (id, result, time)
-                    obids.push(obs_info);
+                    obs_all.forEach(res => {
+                        if (obid == res.id) {
+                            //push to obids, which now contains obs info (id, result, time)
+                            obids.push(res);
+                        }
+                    })
                 }
 
                 //create new obj_ds_ob to hold all of the data
@@ -198,7 +201,9 @@ function loadDatastreams_Obs(){
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return dsobs;
 }
@@ -241,31 +246,33 @@ function loadThing_Datastreams_Obs(dsobs){
 
                 //create new obj_th_ds_obs to hold all of the thing info
                 var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
-                /*
-                for (var m = 0; m < thds.length; m++) {
-                    if (thds[m].type = 'T') {
-                        thdsob.dsT = thds[m];
-                    } else if (thds[m].type = 'P') {
-                        thdsob.dsP = thds[m];
-                    } else if (thds[m].type = 'H') {
-                        thdsob.dsH = thds[m];
-                    }
-                }
-                */
                 //append to final list of all things
                 thdsobs.push(thdsob);
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$expand=Datastreams", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return thdsobs;
 }
 
 function getData(){
-    var ds = loadDatastreams_Obs();
-    th = [];
+    allobs = [];
+    var obs = loadObservations();
 
+    var ds = [];
+    function obs_data_check() {
+        if (obs.length > 0) {
+            ds = loadDatastreams_Obs(obs);
+        } else {
+            setTimeout(obs_data_check, 500);
+        }
+    }
+    obs_data_check();
+
+    th = [];
     //check that ds is defined before running loadThing_Datastreams_Obs(ds)
     function ds_data_check() {
         if (ds.length > 0) {
@@ -769,7 +776,6 @@ var singleLineGraph = function () {
         }
 
         this.data = all_rbt_obs;
-        console.log(all_rbt_obs);
 
         //separate by robot names using dataNest
         var dataNest = d3.nest()
@@ -834,7 +840,6 @@ function setUpVis7() {
             "name": "robots",
             "values": newData
         }]
-        console.log(_vis7data);
         setupDotChart();
     } else {
         setTimeout(setUpVis7, 500)
@@ -1171,7 +1176,6 @@ function setupVis5(){
         }
 
         _vis5.data = data3;
-        console.log(data3);
         _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
         //_vis2.setupAxis();
         _vis5.createLine();
@@ -1474,10 +1478,10 @@ button:focus {
     margin: 1px;
 }
 #vis2textbox {
-    min-height: 350px;
+    min-height: 300px;
 }
 #vis3textbox {
-    min-height: 350px;
+    min-height: 300px;
 }
 
 #vis1box {
