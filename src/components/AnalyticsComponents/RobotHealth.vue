@@ -1,7 +1,7 @@
 <template>
   <div>
+      <h3 class="head">Robot Health</h3>
       <div id="vis1box" class="vis_div">
-          <h3 class="head">Robot Health</h3>
           <svg id="vis1" class="svg_boxes"></svg>
       </div>
       <div id="vis1btn" class="vis_btn">
@@ -18,12 +18,7 @@
 import * as d3 from 'd3'
 
 /* constants */
-const WIDTH = 1000; //800
-const HEIGHT = 300; //100
-const PAD = 10;
-const MARGIN = 50;
 const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
-const PADDING_FOR_LABELS = 90;
 
 var _vis1;
 
@@ -224,10 +219,6 @@ div#vis1box {
     overflow-y: scroll;
 }
 
-div#div_buttons {
-    padding: 20px;
-}
-
 div.vis_div {
     float: left;
     width: 85%;
@@ -280,5 +271,10 @@ button:focus {
 }
 #vis1box {
     min-height: 600px;
+}
+.spacer {
+    height: 100px;
+    float: left;
+    width: 100%;
 }
 </style>

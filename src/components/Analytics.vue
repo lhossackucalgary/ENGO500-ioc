@@ -776,9 +776,11 @@ export default {
     /* --------------------------------------------------------------------------------------------- */
 
     saveData(th) {
-        //extract latest health observation
-        //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
-
+        //clear old values from store
+        this.$store.commit('clearRobotHealth');
+        this.$store.commit('clearTemperatureData');
+        this.$store.commit('clearCurrentData');
+        //extract latest health observation   
         var obj_rb = function(robot, health) {
             this.robot = robot;
             this.health = health;
@@ -825,7 +827,7 @@ export default {
                             result = ds[j].obids[k].result;
                             date = ds[j].obids[k].time;
                             var t_obs = new obj_temp(rname, date, result);
-                            TEMPERATURE_DATA.push(t_obs);
+                            this.$store.commit('pushTemperatureData', t_obs);
                         }
                     }
                 }
@@ -833,7 +835,6 @@ export default {
         }
 
         //extract all current (previously pressure) observations
-        CURRENT_DATA = [];
         var obj_curr = function(robot, date, result) {
             this.robot = robot;
             this.date = date;
@@ -849,77 +850,19 @@ export default {
                 // loop through all ds of the robot
                 for (var j = 0; j < ds.length; j++) {
                     if (ds[j].type == 'P') {
-                        //console.log(ds[j].id);
                         // loop through all obs of the temp ds
                         for (var k = 0; k < ds[j].obids.length; k++) {
                             result = ds[j].obids[k].result;
                             date = ds[j].obids[k].time;
                             var c_obs = new obj_curr(rname, date, result);
-                            CURRENT_DATA.push(c_obs);
+                            this.$store.commit('pushCurrentData', c_obs);
                         }
                     }
                 }
             }
         }
-        /*
-        function temp_data_check() {
-            if (TEMPERATURE_DATA.length > 0) {
-                console.log(TEMPERATURE_DATA);
-            } else {
-                setTimeout(temp_data_check, 500);
-            }
-        }
-        temp_data_check();
-        */
 
     },
-
-        changeHealthBarHeights(attr, maxAttrValue) {
-            for (var i = 0; i < _data1.length; i++){
-                var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);
-                var bar = document.getElementById("column_" + i);
-
-                var oldY = bar.getAttribute("y");
-                var oldHeight = bar.getAttribute("height");
-                var newY = _vis_height - PADDING_FOR_LABELS - newHeight;
-
-                bar.setAttribute("y", oldY);
-                bar.setAttribute("height", oldHeight);
-
-                var animate = "<animate id='animate_bar_" + i + "' attributeName='y' from='" + oldY + "' " +
-                    "to='" + newY + "' dur='1s' begin='indefinite'" +
-                    "repeatCount='1' fill='freeze'></animate>" +
-                    "<animate attributeName='height' from='"+ oldHeight +"' to='"+ newHeight +"' dur='1s' " +
-                    "begin='animate_bar_"+ i +".begin' fill='freeze'></animate>" +
-                    "<title>"+ _data1[i][attr] +"</title>";
-                bar.innerHTML = animate;
-                document.getElementById('animate_bar_' + i).beginElement();
-            }
-        },
-        vis1_switch(order) {
-            if (order === "name-ascending") {
-                _vis1.data.sort((a, b) => d3.ascending(parseInt(a.robot.slice(1),10), parseInt(b.robot.slice(1),10)));
-            }
-            if (order === "value-ascending") {
-                _vis1.data.sort((a, b) => a.health - b.health);
-            }
-            if (order === "value-descending") {
-                _vis1.data.sort((a, b) => b.health - a.health);
-                console.log(_vis1.data);
-            }
-            _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
-            _vis1.update();
-        },
-        vis2_update() {
-            var temp = this.message_v2.split(" ");
-            var rbt_names = [];
-            for (var i = 0; i < temp.length; i++) {
-                var temp2 = temp[i].split(/\r?\n/);
-                rbt_names = rbt_names.concat(temp2);
-            }
-            //console.log(rbt_names);
-            _vis2.update(rbt_names, "current");
-        },
         vis3_update() {
             var temp = this.message_v3.split(" ");
             var rbt_names = [];
@@ -1113,10 +1056,6 @@ button:focus {
 }
 
 #vis1box {
-    min-height: 600px;
-}
-
-#vis2box {
     min-height: 600px;
 }
 #vis3box {
