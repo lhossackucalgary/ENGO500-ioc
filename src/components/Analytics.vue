@@ -30,11 +30,17 @@
 
 import * as d3 from 'd3'
 
+
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------- INITIALIZE GLOBAL VARIABLES --------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
-var ROBOT_HEALTH = [];
+const WIDTH = 1000; //800
+const HEIGHT = 300; //100
+const PAD = 10;
+const MARGIN = 50;
+const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
+const PADDING_FOR_LABELS = 90;
 
 const SAMPLE_DATA = [
     { "month" : "January", "point" : [5, 20], "r" : 10 },
@@ -54,14 +60,6 @@ const SAMPLE_DATA = [
 var CURRENT_DATA = [];
 
 var TEMPERATURE_DATA = [];
-
-/* constants */
-const WIDTH = 1000; //800
-const HEIGHT = 300; //100
-const PAD = 10;
-const MARGIN = 50;
-const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
-const PADDING_FOR_LABELS = 90;
 
 /* global variables */
 var _vis;
@@ -87,7 +85,7 @@ var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
     '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
     '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 //var data = [10, 20, 30 , 40, 50];
-var th;
+
 var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
 
 var HPyRange;
@@ -95,240 +93,6 @@ var HPyDomain;
 var HPxRange;
 var HPxLength;
 
-
-/* --------------------------------------------------------------------------------------------- */
-/* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-
-/* --------------------------------------------------------------------------------------------- */
-/* ------------------------------ API DATA TO OBSERVATION DATA --------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-function saveData(th) {
-    //extract latest health observation
-    //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
-    ROBOT_HEALTH = [];
-    var obj_rb = function(robot, health) {
-        this.robot = robot;
-        this.health = health;
-    }
-    for (var i = 0; i < th.length; i++) {
-        var name = th[i].name.slice(0,5);
-        //console.log(name);
-        if (name === "robot") {
-            var ds = th[i].ds;
-            var health = null;
-            var rnum = "r"+th[i].name.slice(5);
-            for (var j = 0; j < ds.length; j++) {
-                if (ds[j].type == 'H') {
-                    health = ds[j].obids[0].result;
-                }
-            }
-            var rb = new obj_rb(rnum, health);
-            ROBOT_HEALTH.push(rb);
-        }
-    }
-
-    //extract all temperature observations
-    //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-    TEMPERATURE_DATA = [];
-    var obj_temp = function(robot, date, result) {
-        this.robot = robot;
-        this.date = date;
-        this.result = result;
-    }
-    for (var i = 0; i < th.length; i++) {
-        var name = th[i].name.slice(0,5);
-        if (name === "robot") {
-            var ds = th[i].ds;
-            var result = null;
-            var date = null;
-            var rname = th[i].name;
-            // loop through all ds of the robot
-            for (var j = 0; j < ds.length; j++) {
-                if (ds[j].type == 'T') {
-                    //console.log(ds[j].id);
-                    // loop through all obs of the temp ds
-                    for (var k = 0; k < ds[j].obids.length; k++) {
-                        result = ds[j].obids[k].result;
-                        date = ds[j].obids[k].time;
-                        var t_obs = new obj_temp(rname, date, result);
-                        TEMPERATURE_DATA.push(t_obs);
-                    }
-                }
-            }
-        }
-    }
-
-    //extract all current (previously pressure) observations
-    CURRENT_DATA = [];
-    var obj_curr = function(robot, date, result) {
-        this.robot = robot;
-        this.date = date;
-        this.result = result;
-    }
-    for (var i = 0; i < th.length; i++) {
-        var name = th[i].name.slice(0,5);
-        if (name === "robot") {
-            var ds = th[i].ds;
-            var result = null;
-            var date = null;
-            var rname = th[i].name;
-            // loop through all ds of the robot
-            for (var j = 0; j < ds.length; j++) {
-                if (ds[j].type == 'P') {
-                    //console.log(ds[j].id);
-                    // loop through all obs of the temp ds
-                    for (var k = 0; k < ds[j].obids.length; k++) {
-                        result = ds[j].obids[k].result;
-                        date = ds[j].obids[k].time;
-                        var c_obs = new obj_curr(rname, date, result);
-                        CURRENT_DATA.push(c_obs);
-                    }
-                }
-            }
-        }
-    }
-    /*
-    function temp_data_check() {
-        if (TEMPERATURE_DATA.length > 0) {
-            console.log(TEMPERATURE_DATA);
-        } else {
-            setTimeout(temp_data_check, 500);
-        }
-    }
-    temp_data_check();
-    */
-
-}
-
-/* --------------------------------------------------------------------------------------------- */
-/* ------------------------------------- HEALTH BAR CHART -------------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-// code modified from Scott Murray's example
-// https://alignedleft.com/tutorials/d3/scales
-function setupVis1(){
-    if (ROBOT_HEALTH.length > 0) {
-        _vis1 = new Healthplot();
-        _vis1.svg = d3.select("#vis1");
-        //match size of svg container in html
-        _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
-            _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
-        _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
-
-        _vis1.data = ROBOT_HEALTH;
-        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
-        _vis1.setupAxis();
-        _vis1.createBars();
-    } else {
-        setTimeout(setupVis1, 500);
-    }
-}
-
-var Healthplot = function(){
-    this.data;
-    this.olddata;
-    this.width = WIDTH;
-    this.height = HEIGHT;
-
-    this.svg;
-    this.bar;
-
-    this.xAxisScale;
-    this.xScale;
-    this.yScale;
-
-    this.xAxis;
-    this.yAxis;
-    this.gx;
-
-    this.setupScales = function(yRange, yDomain, xRange, xLength){
-
-        HPyRange = yRange;
-        HPyDomain = yDomain;
-        HPxRange = xRange;
-        HPxLength = xLength;
-
-        //kind of like the min and max value of range in last tut
-        this.yScale = d3.scaleLinear()
-            .domain(yDomain)
-            .range(yRange);
-
-        this.xScale = d3.scaleBand()
-            .domain(d3.range(0, xLength))
-            .rangeRound(xRange)
-            .padding(0.1);
-
-        this.xAxisScale = d3.scaleBand()
-            .rangeRound(xRange) //[0, this.width - _margin.left]
-            .domain(this.data.map(function(d){ return d.robot; }));
-
-    };
-
-    this.setupAxis = function(){
-        this.yAxis = d3.axisLeft(this.yScale)
-            .tickSize(-this.width);
-
-        this.xAxis = d3.axisBottom(this.xAxisScale);
-
-        this.svg.append("g")
-            .attr("transform", `translate(${_margin.left}, 0)`)
-            .attr("class", "y axis")
-            .call(this.yAxis);
-
-        this.gx = this.svg.append("g")
-            .attr("transform", `translate(${_margin.left}, ${_vis1.height - _margin.bottom})`)
-            .attr("class", "x axis")
-            .call(this.xAxis);
-
-        // x-axis label
-        this.svg.append("text")
-            .attr("x", this.width / 2)
-            .attr("y", this.height - _margin.bottom / 2 + 15)
-            .style("text-anchor", "middle")
-            .text("Robot Name");
-
-        // y-axis label
-        this.svg.append("text")
-            .attr("x", _margin.left)
-            .attr("y", this.height/2)
-            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
-            .style("text-anchor", "middle")
-            .text("Health (%)");
-
-    }
-
-    this.createBars = function() {
-    this.bar = this.svg.selectAll("rect")
-            .data(this.data)
-            .enter()
-            .append("rect")
-                .attr("class", "bar")
-                .style("fill","lightgreen")
-                .attr("width", _vis1.xScale.bandwidth())
-                .attr("height", function(d) { return (_vis1.height - _margin.bottom - _vis1.yScale(d.health)); })
-                .attr("x", function(d, i) { return _vis1.xScale(i); })
-                .attr("y", function(d) { return _vis1.yScale(d.health); })
-                .attr("transform", `translate(${_margin.left}, 0)`)
-                .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
-                .text(function(d) {
-                return d.health; });
-                // same as return d["robot"];
-    }
-
-    this.update = function() {
-        //remove old data
-        _vis1.svg.selectAll("*")
-            .remove();
-
-        //add new data
-        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
-        _vis1.setupAxis();
-        _vis1.createBars();
-    }
-}
 
 /* --------------------------------------------------------------------------------------------- */
 /* ---------------------------------------- LINE GRAPH ----------------------------------------- */
@@ -820,7 +584,6 @@ export default {
   name: 'Analytics',
   mounted () {
     this.getData();
-    setupVis1();
     setupVis2();
     setupVis3();
     setupVis4();
@@ -838,7 +601,7 @@ export default {
       message_v3: "robot1\nrobot2\nrobot3\nrobot4",
       obs: [],
       ds: [],
-      th: []
+      th: [],
     }
   },
   methods: {
@@ -993,7 +756,7 @@ export default {
     th_data_check() {
         if (this.th.length > 0) {
             //console.log(th);
-            saveData(this.th);
+            this.saveData(this.th);
             this.$store.commit('updateTh', this.th);
         } else {
             setTimeout(this.th_data_check, 500);
@@ -1007,6 +770,108 @@ export default {
 
         this.ds_data_check();
         this.th_data_check();
+    },
+    /* --------------------------------------------------------------------------------------------- */
+    /* ------------------------------ API DATA TO OBSERVATION DATA --------------------------------- */
+    /* --------------------------------------------------------------------------------------------- */
+
+    saveData(th) {
+        //extract latest health observation
+        //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+
+        var obj_rb = function(robot, health) {
+            this.robot = robot;
+            this.health = health;
+        }
+        for (var i = 0; i < th.length; i++) {
+            var name = th[i].name.slice(0,5);
+            //console.log(name);
+            if (name === "robot") {
+                var ds = th[i].ds;
+                var health = null;
+                var rnum = "r"+th[i].name.slice(5);
+                for (var j = 0; j < ds.length; j++) {
+                    if (ds[j].type == 'H') {
+                        health = ds[j].obids[0].result;
+                    }
+                }
+                var rb = new obj_rb(rnum, health);
+                this.$store.commit('pushRobotHealth', rb);
+
+            }
+        }
+
+        //extract all temperature observations
+        //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
+        TEMPERATURE_DATA = [];
+        var obj_temp = function(robot, date, result) {
+            this.robot = robot;
+            this.date = date;
+            this.result = result;
+        }
+        for (var i = 0; i < th.length; i++) {
+            var name = th[i].name.slice(0,5);
+            if (name === "robot") {
+                var ds = th[i].ds;
+                var result = null;
+                var date = null;
+                var rname = th[i].name;
+                // loop through all ds of the robot
+                for (var j = 0; j < ds.length; j++) {
+                    if (ds[j].type == 'T') {
+                        //console.log(ds[j].id);
+                        // loop through all obs of the temp ds
+                        for (var k = 0; k < ds[j].obids.length; k++) {
+                            result = ds[j].obids[k].result;
+                            date = ds[j].obids[k].time;
+                            var t_obs = new obj_temp(rname, date, result);
+                            TEMPERATURE_DATA.push(t_obs);
+                        }
+                    }
+                }
+            }
+        }
+
+        //extract all current (previously pressure) observations
+        CURRENT_DATA = [];
+        var obj_curr = function(robot, date, result) {
+            this.robot = robot;
+            this.date = date;
+            this.result = result;
+        }
+        for (var i = 0; i < th.length; i++) {
+            var name = th[i].name.slice(0,5);
+            if (name === "robot") {
+                var ds = th[i].ds;
+                var result = null;
+                var date = null;
+                var rname = th[i].name;
+                // loop through all ds of the robot
+                for (var j = 0; j < ds.length; j++) {
+                    if (ds[j].type == 'P') {
+                        //console.log(ds[j].id);
+                        // loop through all obs of the temp ds
+                        for (var k = 0; k < ds[j].obids.length; k++) {
+                            result = ds[j].obids[k].result;
+                            date = ds[j].obids[k].time;
+                            var c_obs = new obj_curr(rname, date, result);
+                            CURRENT_DATA.push(c_obs);
+                        }
+                    }
+                }
+            }
+        }
+        /*
+        function temp_data_check() {
+            if (TEMPERATURE_DATA.length > 0) {
+                console.log(TEMPERATURE_DATA);
+            } else {
+                setTimeout(temp_data_check, 500);
+            }
+        }
+        temp_data_check();
+        */
+
     },
 
         changeHealthBarHeights(attr, maxAttrValue) {

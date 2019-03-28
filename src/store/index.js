@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     selected_items: [],
-    th: []
+    th: [],
+    ROBOT_HEALTH: []
   },
   getters: {
 
@@ -20,6 +21,9 @@ export default new Vuex.Store({
     },
     updateTh(state, newTh) {
       state.th = newTh;
+    },
+    pushRobotHealth(state, newItem) {
+      state.ROBOT_HEALTH.push(newItem);
     }
   }
 })

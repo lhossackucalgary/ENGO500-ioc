@@ -14,12 +14,50 @@
 </template>
 
 <script>
+/* constants */
+const WIDTH = 1000; //800
+const HEIGHT = 300; //100
+const PAD = 10;
+const MARGIN = 50;
+const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
+const PADDING_FOR_LABELS = 90;
+
+
 export default {
   name: 'RobotHealth',
   data () {
     return {
-      msg: 'no msg'
+      _vis1: []
     }
+  },
+  methods: {
+
+    /* --------------------------------------------------------------------------------------------- */
+    /* ------------------------------------- HEALTH BAR CHART -------------------------------------- */
+    /* --------------------------------------------------------------------------------------------- */
+
+    // code modified from Scott Murray's example
+    // https://alignedleft.com/tutorials/d3/scales
+    setupVis1(){
+        if (this.$store.state.ROBOT_HEALTH.length > 0) {
+            this._vis1 = new Healthplot();
+            this._vis1.svg = d3.select("#vis1");
+            //match size of svg container in html
+            this._vis1.width = this._vis1.svg.node().getBoundingClientRect().width != undefined ?
+                this._vis1.svg.node().getBoundingClientRect().width : this._vis1.width; //if undefined
+            this._vis1.height = this._vis1.svg.node().getBoundingClientRect().height;
+
+            this._vis1.data = this.$store.state.ROBOT_HEALTH;
+            this._vis1.setupScales([this._vis1.height - _margin.bottom, _margin.top], [0, 100], [0, this._vis1.width - _margin.left], this._vis1.data.length);
+            this._vis1.setupAxis();
+            this._vis1.createBars();
+        } else {
+            setTimeout(this.setupVis1, 500);
+        }
+    }
+  },
+  mounted() {
+    this.setupVis1();
   }
 }
 </script>
