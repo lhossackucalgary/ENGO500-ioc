@@ -6,46 +6,63 @@
           <router-link to="/analytics/cpu-temp">CPU Temperature</router-link>
           <router-link to="/analytics/power-draw">Power Draw</router-link>
           <router-view></router-view>
-            <h3>Robot Summary</h3>
-            <div id="vis7" class="vis_div"></div>
-            <div id="vis1box" class="vis_div">
-                <h3 class="head">Robot Health</h3>
-                <svg id="vis1" class="svg_boxes"></svg>
+            <div>
+                <h3>Robot Summary</h3>
+                <div id="vis7" class="vis_div"></div>
             </div>
-            <div id="vis1btn" class="vis_btn">
-                <div class="spacer"></div>
-                <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
-                <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
-                <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
-            </div>
-            <div class="spacer"></div>
-            <div id="vis2box" class="vis_div">
-                <h3>Sensor807: Motor Power Draw</h3>
-                <svg id="vis2" class="svg_boxes"></svg>
-            </div>
-            <div id="vis2btn" class="vis_btn">
-                <p>Enter robot names: </p>
-                <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
-                <br>
-                <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+            <div>
+                <div id="vis1box" class="vis_div">
+                    <h3 class="head">Robot Health</h3>
+                    <svg id="vis1" class="svg_boxes"></svg>
+                </div>
+                <div id="vis1btn" class="vis_btn">
+                    <div class="spacer"></div>
+                    <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
+                    <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
+                    <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+                </div>
             </div>
             <div class="spacer"></div>
-            <div id="vis3box" class="vis_div">
-                <h3>Sensor876: CPU Temperature</h3>
-                <svg id="vis3" class="svg_boxes"></svg>
+            <div>
+                <div id="vis2box" class="vis_div">
+                    <h3>Sensor807: Motor Power Draw</h3>
+                    <svg id="vis2" class="svg_boxes"></svg>
+                </div>
+                <div id="vis2btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+                </div>
             </div>
-            <div id="vis3btn" class="vis_btn">
-                <p>Enter robot names: </p>
-                <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
-                <br>
-                <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+            <div class="spacer"></div>
+            <div>
+                <div id="vis3box" class="vis_div">
+                    <h3>Sensor876: CPU Temperature</h3>
+                    <svg id="vis3" class="svg_boxes"></svg>
+                </div>
+                <div id="vis3btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+                </div>
             </div>
-            <h3>Thermometer_236: Robot_1</h3>
-            <svg id="vis5" class="svg_boxes"></svg>
-            <h3>Thermometer_236: Robot_2</h3>
-            <svg id="vis6" class="svg_boxes"></svg>
-            <h3>Historical Data</h3>
-            <svg id="vis4" class="svg_boxes"></svg>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_1</h3>
+                <svg id="vis5" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_2</h3>
+                <svg id="vis6" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Historical Data</h3>
+                <svg id="vis4" class="svg_boxes"></svg>
+            </div>
       </div>
 </template>
 
@@ -127,7 +144,7 @@ var HPxLength;
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
-function loadObservation(obid){
+function loadObservations(){
     //create object to hold observation id, result, and time
     var obj_obs = function(id, result, time) {
         this.id = id;
@@ -135,30 +152,30 @@ function loadObservation(obid){
         this.time = time;
     }
     //create an object with null values to hold resulting obs
-    var obs = new obj_obs(null, null, null);
+    var obs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText);
+            var r = JSON.parse(xhttp.responseText).value;
+            r.forEach(result => {
+                var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
+                obs.push(ob);
+            });
 
-            obs.id = r['@iot.id'];
-            obs.result = r['result'];
-            obs.time = r['resultTime'];
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations("+obid+")", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
     xhttp.send();
     return obs;
 }
 
-function loadDatastreams_Obs(){
+function loadDatastreams_Obs(obs_all){
     var dsobs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
-        
+
         if (this.readyState == 4 && this.status == 200) {
             var r = JSON.parse(xhttp.responseText).value;
-
             //object to hold datastream:id, type, and list of observation ids
             var Obj_ds_ob = function(a, b, c){
                 this.id = a;
@@ -168,11 +185,11 @@ function loadDatastreams_Obs(){
 
             for (var i = 0; i < r.length; i++) {
                 var dsid = r[i]['@iot.id']; //datastream id at i
-                
+
                 var desc = r[i]['description'];
 
                 //get type of the datastream at i
-                var type = null; 
+                var type = null;
                 if (desc === "Datastream for recording pressure") {
                     type = 'P';
                 } else if (desc === "Datastream for recording temperature") {
@@ -187,13 +204,15 @@ function loadDatastreams_Obs(){
                 var obs = r[i]['Observations'];//obs array at i
                 var obids = [];
                 for (var j = 0; j < obs.length; j++) {
-                    var obid = obs[j]['@iot.id'];//obid at datastream i, 
+                    var obid = obs[j]['@iot.id'];//obid at datastream i,
 
                     //get the info of the obs
-                    var obs_info = loadObservation(obid);
-
-                    //push to obids, which now contains obs info (id, result, time)
-                    obids.push(obs_info);
+                    obs_all.forEach(res => {
+                        if (obid == res.id) {
+                            //push to obids, which now contains obs info (id, result, time)
+                            obids.push(res);
+                        }
+                    })
                 }
 
                 //create new obj_ds_ob to hold all of the data
@@ -203,7 +222,9 @@ function loadDatastreams_Obs(){
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return dsobs;
 }
@@ -246,31 +267,32 @@ function loadThing_Datastreams_Obs(dsobs){
 
                 //create new obj_th_ds_obs to hold all of the thing info
                 var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
-                /*
-                for (var m = 0; m < thds.length; m++) {
-                    if (thds[m].type = 'T') {
-                        thdsob.dsT = thds[m];
-                    } else if (thds[m].type = 'P') {
-                        thdsob.dsP = thds[m];
-                    } else if (thds[m].type = 'H') {
-                        thdsob.dsH = thds[m];
-                    }
-                }
-                */
                 //append to final list of all things
                 thdsobs.push(thdsob);
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$expand=Datastreams", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return thdsobs;
 }
 
 function getData(){
-    var ds = loadDatastreams_Obs();
-    th = [];
+    var obs = loadObservations();
 
+    var ds = [];
+    function obs_data_check() {
+        if (obs.length > 0) {
+            ds = loadDatastreams_Obs(obs);
+        } else {
+            setTimeout(obs_data_check, 500);
+        }
+    }
+    obs_data_check();
+
+    th = [];
     //check that ds is defined before running loadThing_Datastreams_Obs(ds)
     function ds_data_check() {
         if (ds.length > 0) {
@@ -280,12 +302,11 @@ function getData(){
         }
     }
     ds_data_check();
-    
-    
+
+
     function th_data_check() {
         if (th.length > 0) {
-            console.log(th);
-            //console.log(th[5].ds[1].id);
+            //console.log(th);
             saveData(th);
         } else {
             setTimeout(th_data_check, 500);
@@ -393,7 +414,7 @@ function saveData(th) {
     }
     temp_data_check();
     */
-    
+
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -514,7 +535,7 @@ var Healthplot = function(){
     this.update = function() {
         //remove old data
         _vis1.svg.selectAll("*")
-            .remove();    
+            .remove();
 
         //add new data
         _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
@@ -572,7 +593,7 @@ var singleLineGraph = function () {
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
             .domain(this.data.map(function(d){ return d.robot; }));
-        
+
         // x-axis label
         this.svg.append("text")
             .attr("x", this.width / 2)
@@ -711,7 +732,7 @@ var singleLineGraph = function () {
         // Add the Legend
         var legendMax = parseInt((this.width/1.3)/this.legendSpace.x, 10);
         if (i == 0) var j = 0;
-        else j = parseInt((i)/legendMax); 
+        else j = parseInt((i)/legendMax);
 
         var k = i - j * legendMax;
         //console.log(legendMax+" "+i+" "+j+" "+k);
@@ -754,7 +775,7 @@ var singleLineGraph = function () {
     }
 
     this.update = function(rbt_names, datatype) {
-        var all_rbt_obs = []; 
+        var all_rbt_obs = [];
         if (datatype == "current") {
             for (var i = 0; i < rbt_names.length; i++) {
                 for (var j = 0; j < CURRENT_DATA.length; j++) {
@@ -774,7 +795,6 @@ var singleLineGraph = function () {
         }
 
         this.data = all_rbt_obs;
-        console.log(all_rbt_obs);
 
         //separate by robot names using dataNest
         var dataNest = d3.nest()
@@ -785,8 +805,8 @@ var singleLineGraph = function () {
 
         //remove old data
         this.svg.selectAll("*")
-            .remove();    
-        
+            .remove();
+
         this.setupScales([this.height - _margin.bottom, _margin.top], [0, 100], [0, this.width - _margin.left]);
 
         // Add the X Axis
@@ -798,7 +818,7 @@ var singleLineGraph = function () {
         this.svg.append("g")
             .attr("transform", `translate(${_margin.left}, 0)`)
             .call(d3.axisLeft(this.yScale));
-        
+
         for (var i = 0; i < dataNest.length; i++) {
             this.multiLine(dataNest[i], i);
         }
@@ -839,7 +859,6 @@ function setUpVis7() {
             "name": "robots",
             "values": newData
         }]
-        console.log(_vis7data);
         setupDotChart();
     } else {
         setTimeout(setUpVis7, 500)
@@ -938,87 +957,10 @@ function setupDotChart(){
         }
     ]
     }
+    console.log("vega done");
 
-    /*
-    var spec = {
-        "$schema": "https://vega.github.io/schema/vega/v5.json",
-        "width": 1200,
-        "height": 400,
-        "padding": {"left": 30, "right": 5, "top": 40, "bottom": 20},
-        "autosize": "none",
-
-        "signals": [
-            { "name": "cx", "update": "width / 2" },
-            { "name": "cy", "update": "height / 2" },
-            { "name": "radius", "value": 6, "bind": {"input": "range", "min": 2, "max": 15, "step": 1} },
-            { "name": "collide", "value": 1, "bind": {"input": "range", "min": 1, "max": 10, "step": 1} },
-            { "name": "gravityX", "value": 0.2, "bind": {"input": "range", "min": 0, "max": 1} },
-            { "name": "gravityY", "value": 0.1, "bind": {"input": "range", "min": 0, "max": 1} },
-            { "name": "static", "value": false, "bind": {"input": "checkbox"} }
-        ],
-
-        "scales": [
-            {
-                "name": "xscale",
-                "type": "band",
-                "domain": {
-                    "data": "robots",
-                    "field": "status",
-                    "sort": true
-                },
-                "range": "width"
-            },
-            {
-                "name": "color",
-                "type": "ordinal",
-                "domain": {"data": "robots", "field": "status"},
-                "range": {"scheme": "category10"}
-            }
-        ],
-
-        "axes": [
-            { "orient": "bottom", "scale": "xscale" }
-        ],
-
-        "marks": [
-            {
-                "name": "nodes",
-                "type": "symbol",
-                "from": {"data": "robots"},
-                "encode": {
-                    "enter": {
-                        "fill": {"scale": "color", "field": "status"},
-                        "xfocus": {"scale": "xscale", "field": "status", "band": 0.5},
-                    },
-                    "update": {
-                        "size": {"signal": "pow(2 * radius, 2)"},
-                        "stroke": {"value": "white"},
-                        "strokeWidth": {"value": 1},
-                        "zindex": {"value": 0}
-                    },
-                    "hover": {
-                        "stroke": {"value": "purple"},
-                        "strokeWidth": {"value": 3},
-                        "zindex": {"value": 1}
-                    }
-                },
-                "transform": [
-                    {
-                        "type": "force",
-                        "iterations": 300,
-                        "static": {"signal": "static"},
-                        "forces": [
-                            {"force": "collide", "iterations": {"signal": "collide"}, "radius": {"signal": "radius"}},
-                            {"force": "x", "x": "xfocus", "strength": {"signal": "gravityX"}},
-                            {"force": "y", "y": "yfocus", "strength": {"signal": "gravityY"}}
-                        ]
-                    }
-                ]
-            }
-        ],
-        "data": _vis7data
-    };*/
     vegaEmbed('#vis7', spec).then(function(result) {
+
         // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
     }).catch(console.error);
 }
@@ -1176,14 +1118,13 @@ function setupVis5(){
         }
 
         _vis5.data = data3;
-        console.log(data3);
         _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
         //_vis2.setupAxis();
         _vis5.createLine();
     } else {
         setTimeout(setupVis5, 500);
     }
-    
+
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1233,7 +1174,7 @@ export default {
     setupVis4();
     setupVis5();
     setupVis6();
-    setUpVis7();  
+    setUpVis7();
   },
   data () {
     return {
@@ -1479,10 +1420,10 @@ button:focus {
     margin: 1px;
 }
 #vis2textbox {
-    min-height: 350px;
+    min-height: 300px;
 }
 #vis3textbox {
-    min-height: 350px;
+    min-height: 300px;
 }
 
 #vis1box {
