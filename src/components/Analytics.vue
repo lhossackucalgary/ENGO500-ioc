@@ -584,11 +584,11 @@ export default {
   name: 'Analytics',
   mounted () {
     this.getData();
-    setupVis2();
-    setupVis3();
-    setupVis4();
-    setupVis5();
-    setupVis6();
+    //setupVis2();
+    //setupVis3();
+    //setupVis4();
+    //setupVis5();
+    //setupVis6();
   },
   data () {
     return {
