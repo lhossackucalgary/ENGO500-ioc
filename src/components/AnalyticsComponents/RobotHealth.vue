@@ -270,7 +270,7 @@ button:focus {
     overflow-x:hidden;
 }
 #vis1box {
-    min-height: 600px;
+    min-height: 800px;
 }
 .spacer {
     height: 100px;

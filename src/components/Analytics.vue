@@ -1,15 +1,21 @@
 /* eslint-disable */
 <template>
+    <div>
         <div id="div_visuals">
-          <router-link to="/analytics/sys-summary">System Summary</router-link>
-          <router-link to="/analytics/robot-health">Robot Health</router-link>
-          <router-link to="/analytics/cpu-temp">CPU Temperature</router-link>
-          <router-link to="/analytics/power-draw">Power Draw</router-link>
-          <router-link to="/analytics/hist-data">Historical Data</router-link>
-          <router-view></router-view>
-
-            <div class="spacer"></div>
-      </div>
+            <div class="analytics-nav">
+                <div class="an-nav-center">
+                    <router-link to="/analytics/sys-summary" class="an-nav-link">System Summary</router-link>
+                    <router-link to="/analytics/robot-health" class="an-nav-link">Robot Health</router-link>
+                    <router-link to="/analytics/cpu-temp" class="an-nav-link">CPU Temperature</router-link>
+                    <router-link to="/analytics/power-draw" class="an-nav-link">Power Draw</router-link>
+                    <router-link to="/analytics/hist-data" class="an-nav-link">Historical Data</router-link>
+                </div>
+            </div>
+            <div class="analytics-vis">
+                <router-view></router-view>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -17,138 +23,8 @@
 
 import * as d3 from 'd3'
 
-
-/* --------------------------------------------------------------------------------------------- */
-/* ------------------------------- INITIALIZE GLOBAL VARIABLES --------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-const WIDTH = 1000; //800
-const HEIGHT = 300; //100
-const PAD = 10;
-const MARGIN = 50;
-const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
-const PADDING_FOR_LABELS = 90;
-
-const SAMPLE_DATA = [
-    { "month" : "January", "point" : [5, 20], "r" : 10 },
-    { "month" : "February", "point" : [480, 90], "r" : 1 },
-    { "month" : "March", "point" : [250, 50], "r" : 3 },
-    { "month" : "April", "point" : [100, 33], "r" : 3 },
-    { "month" : "May", "point" : [330, 95], "r" : 4 },
-    { "month" : "June", "point" : [300, 40], "r" : 8 },
-    { "month" : "July", "point" : [410, 35], "r" : 6 },
-    { "month" : "August", "point" : [475, 44], "r" : 4 },
-    { "month" : "September", "point" : [25, 67], "r" : 1 },
-    { "month" : "October", "point" : [85, 21], "r" : 5 },
-    { "month" : "November", "point" : [220, 88], "r" : 10 },
-    { "month" : "December", "point" : [400, 4], "r" : 7 },
-];
-
-var CURRENT_DATA = [];
-
 var TEMPERATURE_DATA = [];
-
-/* global variables */
-var _data1;
-var _vis_width = 1000;
-var _vis_height = 300;
-var svg1;
-var bar1;
-var _bar1_width = 30;
-var _bar1_offset = 5;
-var vis1_x;
-var vis1_y;
-var _vis1;
-var _vis2;
-var _vis3;
-var _vis4;
-var _vis5;
-var _vis6;
-
-var parseTime = d3.timeParse("%H:%M %p");
-var parseDate = d3.timeParse("%Y-%m-%d");
-var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
-    '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
-    '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
-//var data = [10, 20, 30 , 40, 50];
-
-var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
-
-var HPyRange;
-var HPyDomain;
-var HPxRange;
-var HPxLength;
-
-/* --------------------------------------------------------------------------------------------- */
-/* -------------------------------------- SET UP VIS 4 ----------------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-function setupVis4(){
-  let xScale = d3.scaleLinear()
-        .domain([0, d3.max(SAMPLE_DATA, function(d) { return d.point[0]; })])
-        .range([MARGIN, WIDTH-MARGIN]);
-
-    let yScale = d3.scaleLinear()
-        .domain([0, d3.max(SAMPLE_DATA, function(d) { return d.point[1]; })])
-        .range([MARGIN, HEIGHT-MARGIN]);
-
-    // Create a scale using d3.scaleQuantize to bin values from the domain
-    // into categories coloured as deeppink, pink, paleturquoise, and darkturquoise
-    // the values are divided equally to each category
-    // e.g., if the upper limit to the domain is 100, and we specified 4 categories,
-    // then the first category will have values between 0 and 25, then 25 and 50, etc.
-    let colorScale = d3.scaleQuantize()
-        .domain([0, d3.max(SAMPLE_DATA, function(d) { return d.r; })])
-        .range(["deeppink", "pink", "paleturquoise", "darkturquoise"]);
-
-    let sizeScale = d3.scalePow()
-        .exponent(2)
-        .domain([0, d3.max(SAMPLE_DATA, function(d) { return d.r; })])
-        .range([5, 50]); // 0 to 50 pixels
-
-    //Create SVG element
-    let svg = d3.select("#vis4")
-        .attr("width", WIDTH)
-        .attr("height", HEIGHT);
-
-    svg.selectAll("circle")
-        .data(SAMPLE_DATA)
-        .enter()
-        .append("circle")
-        .attr("cx", function(d) {
-            return xScale(d.point[0]);
-        })
-        .attr("cy", function(d) {
-            return yScale(d.point[1]);
-        })
-        .attr("r", function(d){
-            return sizeScale(d.r);
-        })
-        .style("fill", function(d){
-            return colorScale(d.r);
-        })
-        .style("stroke", "none");
-
-    svg.selectAll("text")
-        .data(SAMPLE_DATA)
-        .enter()
-        .append("text")
-        .text(function(d) {
-            return d.month;
-        })
-        .attr("x", function(d) {
-            return xScale(d.point[0]) + sizeScale(d.r) + (PAD/2);
-        })
-        .attr("y", function(d) {
-            return yScale(d.point[1]);
-        })
-        .attr("font-family", "sans-serif")
-        .attr("font-size", "11px")
-        .attr("fill", "teal")
-        .style("text-anchor", "start")
-        .style("alignment-baseline", "middle");
-}
-
+var CURRENT_DATA = [];
 /* --------------------------------------------------------------------------------------------- */
 /* -------------------------------------------- EXPORT ----------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
@@ -157,11 +33,6 @@ export default {
   name: 'Analytics',
   mounted () {
     this.getData();
-    //setupVis2();
-    //setupVis3();
-    setupVis4();
-    //setupVis5();
-    //setupVis6();
   },
   data () {
     return {
@@ -496,7 +367,40 @@ h3 {
     width: 90%;
     margin: 20px auto;
 }
-
+.analytics-nav {
+    background: lightgrey;
+    height: 60px;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+}
+.an-nav-center {
+    float: center;
+    
+    width: 100%;
+    height: 60px;
+    padding: 12px;
+    text-align: center;
+}
+.an-nav-link {
+    padding: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    text-align:center;
+}
+.an-nav-link:hover {
+    text-decoration: underline;
+    color:#2c3e50;
+}
+.analytics-vis {
+    position: fixed;
+    top: 120px;
+    width: 100%;
+}
 /* styling an element through its ID */
 div#div_page_desc {
     margin: 10px;
