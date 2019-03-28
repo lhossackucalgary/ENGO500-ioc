@@ -37,6 +37,8 @@ export default {
     this.name = "";
     this.route = [];
     this.active_el = -1;
+  },
+  mounted() {
     document.addEventListener('crewShowMore', this.crewShowMore);
   },
   data() {

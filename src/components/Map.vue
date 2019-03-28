@@ -26,7 +26,7 @@
           <map-selected-items></map-selected-items>
         </div>
       </div>
-      <div id="maintcontainer">
+      <div style="display: none;" id="maintcontainer">
         <map-maint-summary></map-maint-summary>
       </div>
       <div id="crewinfo">
