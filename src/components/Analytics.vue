@@ -1,31 +1,73 @@
 /* eslint-disable */
 <template>
         <div id="div_visuals">
-            <h3 class="head">Robot Health</h3>
-            <div id="vis1box" class="vis_div">
-                <svg id="vis1" class="svg_boxes"></svg>
+            <div>
+                <h3>Robot Summary</h3>
+                <div id="vis7" class="vis_div"></div>
             </div>
-            <div id="vis1btn" class="vis_btn">
-                <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
-                <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
-                <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+            <div>
+                <div id="vis1box" class="vis_div">
+                    <h3 class="head">Robot Health</h3>
+                    <svg id="vis1" class="svg_boxes"></svg>
+                </div>
+                <div id="vis1btn" class="vis_btn">
+                    <div class="spacer"></div>
+                    <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
+                    <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
+                    <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+                </div>
             </div>
-          <h1>   </h1>
-          <h3>Barometer_123: Robot_1</h3>
-          <svg id="vis2" class="svg_boxes"></svg>
-          <h3>Barometer_123: Robot_2</h3>
-          <svg id="vis3" class="svg_boxes"></svg>
-          <h3>Thermometer_236: Robot_1</h3>
-          <svg id="vis5" class="svg_boxes"></svg>
-          <h3>Thermometer_236: Robot_2</h3>
-          <svg id="vis6" class="svg_boxes"></svg>
-          <h3>Historical Data</h3>
-          <svg id="vis4" class="svg_boxes"></svg>
+            <div class="spacer"></div>
+            <div>
+                <div id="vis2box" class="vis_div">
+                    <h3>Sensor807: Motor Power Draw</h3>
+                    <svg id="vis2" class="svg_boxes"></svg>
+                </div>
+                <div id="vis2btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <div id="vis3box" class="vis_div">
+                    <h3>Sensor876: CPU Temperature</h3>
+                    <svg id="vis3" class="svg_boxes"></svg>
+                </div>
+                <div id="vis3btn" class="vis_btn">
+                    <p>Enter list of robot names: </p>
+                    <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                    <br>
+                    <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+                </div>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_1</h3>
+                <svg id="vis5" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Thermometer_236: Robot_2</h3>
+                <svg id="vis6" class="svg_boxes"></svg>
+            </div>
+            <div class="spacer"></div>
+            <div>
+                <h3>Historical Data</h3>
+                <svg id="vis4" class="svg_boxes"></svg>
+            </div>
       </div>
 </template>
 
 <script>
+//<p style="white-space: pre-line;">{{ message }}</p>
+
 import * as d3 from 'd3'
+import * as vega from 'vega'
+import {default as vegaEmbed} from 'vega-embed'
+import * as vegaLite from 'vega-lite'
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------- INITIALIZE GLOBAL VARIABLES --------------------------------- */
@@ -48,51 +90,9 @@ const SAMPLE_DATA = [
     { "month" : "December", "point" : [400, 4], "r" : 7 },
 ];
 
-const PRESSURE_DATA = [
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 40 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 20 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:08.000Z", "result" : 10 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:09.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:10.000Z", "result" : 60 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:11.000Z", "result" : 50 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:12.000Z", "result" : 80 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:13.000Z", "result" : 20 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:14.000Z", "result" : 10 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:05.000Z", "result" : 40 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:06.000Z", "result" : 60 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:07.000Z", "result" : 20 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:08.000Z", "result" : 80 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:09.000Z", "result" : 10 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:10.000Z", "result" : 50 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:11.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:12.000Z", "result" : 20 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:13.000Z", "result" : 60 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 40 },
-]
+var CURRENT_DATA = [];
 
-const TEMPERATURE_DATA = [
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:06.000Z", "result" : 33 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:07.000Z", "result" : 35 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:08.000Z", "result" : 37 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:09.000Z", "result" : 32 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:10.000Z", "result" : 30 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:11.000Z", "result" : 33 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:12.000Z", "result" : 29 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:13.000Z", "result" : 34 },
-    { "robot" : "robot_1", "date" : "2019-02-07T18:02:14.000Z", "result" : 35 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:05.000Z", "result" : 40 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:06.000Z", "result" : 39 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:07.000Z", "result" : 38 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:08.000Z", "result" : 35 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:09.000Z", "result" : 32 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:10.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:11.000Z", "result" : 31 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:12.000Z", "result" : 29 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:13.000Z", "result" : 30 },
-    { "robot" : "robot_2", "date" : "2019-02-07T18:02:14.000Z", "result" : 32 },
-]
+var TEMPERATURE_DATA = [];
 
 /* constants */
 const WIDTH = 1000; //800
@@ -119,10 +119,15 @@ var _vis3;
 var _vis4;
 var _vis5;
 var _vis6;
+var _vis7data;
 var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
+var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
+    '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
+    '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 //var data = [10, 20, 30 , 40, 50];
 var th;
+var msg_vis2 = "robot1\nrobot2\nrobot3\nrobot4";
 
 var HPyRange;
 var HPyDomain;
@@ -134,7 +139,7 @@ var HPxLength;
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
-function loadObservation(obid){
+function loadObservations(){
     //create object to hold observation id, result, and time
     var obj_obs = function(id, result, time) {
         this.id = id;
@@ -142,30 +147,30 @@ function loadObservation(obid){
         this.time = time;
     }
     //create an object with null values to hold resulting obs
-    var obs = new obj_obs(null, null, null);
+    var obs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText);
-
-            obs.id = r['@iot.id'];
-            obs.result = r['result'];
-            obs.time = r['resultTime'];
+            var r = JSON.parse(xhttp.responseText).value;
+            r.forEach(result => {
+                var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
+                obs.push(ob);
+            });
+        
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations("+obid+")", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
     xhttp.send();
     return obs;
 }
 
-function loadDatastreams_Obs(){
+function loadDatastreams_Obs(obs_all){
     var dsobs = [];
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function () {
         
         if (this.readyState == 4 && this.status == 200) {
             var r = JSON.parse(xhttp.responseText).value;
-
             //object to hold datastream:id, type, and list of observation ids
             var Obj_ds_ob = function(a, b, c){
                 this.id = a;
@@ -197,10 +202,12 @@ function loadDatastreams_Obs(){
                     var obid = obs[j]['@iot.id'];//obid at datastream i, 
 
                     //get the info of the obs
-                    var obs_info = loadObservation(obid);
-
-                    //push to obids, which now contains obs info (id, result, time)
-                    obids.push(obs_info);
+                    obs_all.forEach(res => {
+                        if (obid == res.id) {
+                            //push to obids, which now contains obs info (id, result, time)
+                            obids.push(res);
+                        }
+                    })
                 }
 
                 //create new obj_ds_ob to hold all of the data
@@ -210,7 +217,9 @@ function loadDatastreams_Obs(){
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$expand=Observations", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return dsobs;
 }
@@ -253,31 +262,32 @@ function loadThing_Datastreams_Obs(dsobs){
 
                 //create new obj_th_ds_obs to hold all of the thing info
                 var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
-                /*
-                for (var m = 0; m < thds.length; m++) {
-                    if (thds[m].type = 'T') {
-                        thdsob.dsT = thds[m];
-                    } else if (thds[m].type = 'P') {
-                        thdsob.dsP = thds[m];
-                    } else if (thds[m].type = 'H') {
-                        thdsob.dsH = thds[m];
-                    }
-                }
-                */
                 //append to final list of all things
                 thdsobs.push(thdsob);
             }
         }
     };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$expand=Datastreams", true);
+    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
     xhttp.send();
     return thdsobs;
 }
 
 function getData(){
-    var ds = loadDatastreams_Obs();
-    th = [];
+    var obs = loadObservations();
 
+    var ds = [];
+    function obs_data_check() {
+        if (obs.length > 0) {
+            ds = loadDatastreams_Obs(obs);
+        } else {
+            setTimeout(obs_data_check, 500);
+        }
+    }
+    obs_data_check();
+
+    th = [];
     //check that ds is defined before running loadThing_Datastreams_Obs(ds)
     function ds_data_check() {
         if (ds.length > 0) {
@@ -291,8 +301,7 @@ function getData(){
     
     function th_data_check() {
         if (th.length > 0) {
-            console.log(th);
-            //console.log(th[5].ds[1].id);
+            //console.log(th);
             saveData(th);
         } else {
             setTimeout(th_data_check, 500);
@@ -302,10 +311,11 @@ function getData(){
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/* ---------------------------------- API DATA TO ROBOT HEALTH --------------------------------- */
+/* ------------------------------ API DATA TO OBSERVATION DATA --------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
 function saveData(th) {
+    //extract latest health observation
     //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
     ROBOT_HEALTH = [];
     var obj_rb = function(robot, health) {
@@ -328,6 +338,78 @@ function saveData(th) {
             ROBOT_HEALTH.push(rb);
         }
     }
+
+    //extract all temperature observations
+    //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
+    TEMPERATURE_DATA = [];
+    var obj_temp = function(robot, date, result) {
+        this.robot = robot;
+        this.date = date;
+        this.result = result;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var result = null;
+            var date = null;
+            var rname = th[i].name;
+            // loop through all ds of the robot
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'T') {
+                    //console.log(ds[j].id);
+                    // loop through all obs of the temp ds
+                    for (var k = 0; k < ds[j].obids.length; k++) {
+                        result = ds[j].obids[k].result;
+                        date = ds[j].obids[k].time;
+                        var t_obs = new obj_temp(rname, date, result);
+                        TEMPERATURE_DATA.push(t_obs);
+                    }
+                }
+            }
+        }
+    }
+
+    //extract all current (previously pressure) observations
+    CURRENT_DATA = [];
+    var obj_curr = function(robot, date, result) {
+        this.robot = robot;
+        this.date = date;
+        this.result = result;
+    }
+    for (var i = 0; i < th.length; i++) {
+        var name = th[i].name.slice(0,5);
+        if (name === "robot") {
+            var ds = th[i].ds;
+            var result = null;
+            var date = null;
+            var rname = th[i].name;
+            // loop through all ds of the robot
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'P') {
+                    //console.log(ds[j].id);
+                    // loop through all obs of the temp ds
+                    for (var k = 0; k < ds[j].obids.length; k++) {
+                        result = ds[j].obids[k].result;
+                        date = ds[j].obids[k].time;
+                        var c_obs = new obj_curr(rname, date, result);
+                        CURRENT_DATA.push(c_obs);
+                    }
+                }
+            }
+        }
+    }
+    /*
+    function temp_data_check() {
+        if (TEMPERATURE_DATA.length > 0) {
+            console.log(TEMPERATURE_DATA);
+        } else {
+            setTimeout(temp_data_check, 500);
+        }
+    }
+    temp_data_check();
+    */
+    
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -389,7 +471,7 @@ var Healthplot = function(){
             .padding(0.1);
 
         this.xAxisScale = d3.scaleBand()
-            .range([0, this.width - _margin.left])
+            .rangeRound(xRange) //[0, this.width - _margin.left]
             .domain(this.data.map(function(d){ return d.robot; }));
 
     };
@@ -470,13 +552,19 @@ var singleLineGraph = function () {
 
     this.parseTime;
     this.xAxisScale;
+
     this.xScale;
     this.yScale;
+
     this.yRange;
+    this.yLabel;
 
     this.xAxis;
     this.yAxis;
     this.gx;
+
+    this.dataNestLength;
+    this.legendSpace = {x:70, y:18};
 
     this.setupScales = function(yRange, yDomain, xRange){
         //kind of like the min and max value of range in last tut
@@ -495,11 +583,26 @@ var singleLineGraph = function () {
 
         this.xScale = d3.scaleTime()
             .domain(d3.extent(this.data, function(d) { return d.date; }))
-            .range([_margin.right, this.width - _margin.left]);
+            .range([_margin.right, this.width - _margin.left - 10]);
 
         this.xAxisScale = d3.scaleBand()
             .range([0, this.width - _margin.left])
             .domain(this.data.map(function(d){ return d.robot; }));
+        
+        // x-axis label
+        this.svg.append("text")
+            .attr("x", this.width / 2)
+            .attr("y", this.height - _margin.bottom / 2 + 15)
+            .style("text-anchor", "middle")
+            .text("Time");
+
+        // y-axis label
+        this.svg.append("text")
+            .attr("x", _margin.left)
+            .attr("y", this.height/2)
+            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
+            .style("text-anchor", "middle")
+            .text(this.yLabel);
 
     }
 
@@ -528,13 +631,49 @@ var singleLineGraph = function () {
 
         // Add the valueline path.
         this.svg.append("path")
+            .data(this.data)
             .attr("class", "line")
             .attr("d", valueline(this.data))
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
             .attr("stroke", "blue")
             .attr("stroke-width", 2)
             .attr("fill", "none")
             .attr("transform", `translate(${_margin.left}, 0)`)
-            .append("svg:title");
+            .append("svg:title")
+            .text(function(d) {return d.robot;});
+
+        // Add the Legend
+        this.svg.append("rect")
+            .data(this.data)
+            .attr("x", _margin.left + 5)
+            .attr("y", this.height + (_margin.bottom/2) )
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+            })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(this.data)
+            .attr("class", "legend_text")
+            .attr("x", _margin.left + 20)  // space legend
+            .attr("y", this.height + (_margin.bottom/2)+ 10)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
 
         // Add the X Axis
         this.svg.append("g")
@@ -548,155 +687,339 @@ var singleLineGraph = function () {
 
     }
 
-    function drawLine(lineData,lineColor,lineLabel,lineId)
-    {
-            // append line to svg
-        var group = this.svg.append("g")
-                        .attr('class', lineId);
+    this.multiLine = function(lineData, i) {
 
-            group.append("svg:path")
-                    .attr('d', lineSelection(lineData))
-                    .attr('stroke', lineColor)
-                    .attr('stroke-width', 2)
-                    .attr('fill', 'none');
+        this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
 
-        // prepare label for line
-        group.append("rect")
-            .attr("width", chartConfig.lineLabel.width)
-            .attr("height", chartConfig.lineLabel.height)
-            .attr("x", xScale(lineData[0].year)-100)
-            .attr("y", yScale(lineData[0].sale)-
-            (chartConfig.lineLabel.height/2))
-            .attr("stroke", lineColor)
-            .attr("fill", lineColor)
-            .attr("stroke-width", 1);
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, function(d) { return d.result; })])
+            .range(this.yRange);
 
-    // draw line label text
-    group.append("text")
-            .attr("dx", xScale(lineData[0].year)-(chartConfig.lineConnectorLength+7))
-        .attr("dy", yScale(lineData[0].sale)+4) // 4 is padding
-            .attr("text-anchor", "end")
-        .attr("class", "lineLabel")
-            .style("fill", "white")
-            .text(lineLabel);
+        var xScale = d3.scaleTime()
+            .domain(d3.extent(this.data, function(d) { return d.date; }))
+            .range([_margin.right, this.width - _margin.left]);
 
-    // line to label connector
-    group.append("line")
-    .attr({
-    x1: xScale(lineData[0].year), y1: yScale(lineData[0].sale), //start of the line
-    x2: xScale(lineData[0].year)-chartConfig.lineConnectorLength, y2: yScale(lineData[0].sale)  //end of the line
+        var valueline = d3.line()
+            .x(function(d) { return xScale(d.date)})
+            .y(function(d) { return yScale(d.result)});
+
+        this.svg
+                .attr("width", this.width + _margin.left + _margin.right)
+                .attr("height", this.height + _margin.top + _margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+
+        //scale range of data
+        // console.log(this.data);
+        // Add the valueline path.
+        this.svg.append("path")
+            .data(lineData.values)
+            .attr("class", "line")
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
+            .attr("d", valueline(lineData.values))
+            .attr("stroke", colors[i])
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .append("svg:title")
+            .text(lineData.key);
+
+        // Add the Legend
+        var legendMax = parseInt((this.width/1.3)/this.legendSpace.x, 10);
+        if (i == 0) var j = 0;
+        else j = parseInt((i)/legendMax); 
+
+        var k = i - j * legendMax;
+        //console.log(legendMax+" "+i+" "+j+" "+k);
+        var rect_x = this.legendSpace.x * (k+1) + 25*k;
+        var text_x = (this.legendSpace.x + 25)*(k+1);
+        //console.log(rect_x + ", " + text_x);
+
+        this.svg.append("rect")
+            .data(lineData.values)
+            .attr("x", this.legendSpace.x * (k+1) + 15*k)
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j - 5)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", colors[i])
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
             })
-    .attr('stroke', lineColor)
-    .attr('stroke-width', 2)
-    .attr('fill', lineColor);
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(lineData.values)
+            .attr("class", "legend_text")
+            .attr("x", (this.legendSpace.x + 15)*(k+1))  // space legend
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j + 5)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "black")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
 
-    return group;
     }
 
+    this.update = function(rbt_names, datatype) {
+        var all_rbt_obs = []; 
+        if (datatype == "current") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < CURRENT_DATA.length; j++) {
+                    if (rbt_names[i] == CURRENT_DATA[j].robot) {
+                        all_rbt_obs.push(CURRENT_DATA[j]);
+                    }
+                }
+            }
+        } else if (datatype == "temperature") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < TEMPERATURE_DATA.length; j++) {
+                    if (rbt_names[i] == TEMPERATURE_DATA[j].robot) {
+                        all_rbt_obs.push(TEMPERATURE_DATA[j]);
+                    }
+                }
+            }
+        }
 
-    /*
-    this.update = function() {
-        console.log(_vis1.data[0].robot);
-        const t = d3.transition()
-            .duration(750);
+        this.data = all_rbt_obs;
 
-        this.svg.selectAll("rect")
-            .order()
-            .transition(t)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "blue")
-            .attr("x", function(d, i) { return _vis1.xScale(i); });
+        //separate by robot names using dataNest
+        var dataNest = d3.nest()
+            .key(function(d) {return d.robot;})
+            .entries(all_rbt_obs);
+        //console.log(dataNest);
+        this.dataNestLength = dataNest.length;
 
-        this.gx.transition(t)
-            .call(this.xAxisScale)
-            .delay(function(d, i) { return i*20; })
-            .style("fill", "red");
-    }*/
-}
+        //remove old data
+        this.svg.selectAll("*")
+            .remove();    
+        
+        this.setupScales([this.height - _margin.bottom, _margin.top], [0, 100], [0, this.width - _margin.left]);
 
-/**
- * Function changeHealthBarHeights: changes the heights of the bars in our visualization with values
- * from a given data attribute
- * @param attr the data attribute containing the value to be applied to each bar's height
- * @param maxAttrValue the maximum value the attribute can have
- * assume the min value is 0
- */
-function changeHealthBarHeights(attr, maxAttrValue){
-    for (var i = 0; i < _data1.length; i++){
-        var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);
-        var bar = document.getElementById("column_" + i);
+        // Add the X Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
+            .call(d3.axisBottom(this.xScale));
 
-        var oldY = bar.getAttribute("y");
-        var oldHeight = bar.getAttribute("height");
-        var newY = _vis_height - PADDING_FOR_LABELS - newHeight;
-
-        bar.setAttribute("y", oldY);
-        bar.setAttribute("height", oldHeight);
-
-        var animate = "<animate id='animate_bar_" + i + "' attributeName='y' from='" + oldY + "' " +
-            "to='" + newY + "' dur='1s' begin='indefinite'" +
-            "repeatCount='1' fill='freeze'></animate>" +
-            "<animate attributeName='height' from='"+ oldHeight +"' to='"+ newHeight +"' dur='1s' " +
-            "begin='animate_bar_"+ i +".begin' fill='freeze'></animate>" +
-            "<title>"+ _data1[i][attr] +"</title>";
-        bar.innerHTML = animate;
-        document.getElementById('animate_bar_' + i).beginElement();
+        // Add the Y Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .call(d3.axisLeft(this.yScale));
+        
+        for (var i = 0; i < dataNest.length; i++) {
+            this.multiLine(dataNest[i], i);
+        }
+        /*
+        //add new data
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+        */
     }
 }
 
-function mapValue(value, origMin, origMax, newMin, newMax){
-    return (value - origMin) * (newMax - newMin) / (origMax - origMin) + newMin;
+/* --------------------------------------------------------------------------------------------- */
+/* ----------------------------------- ROBOT DOT CHART ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
+function setUpVis7() {
+    if (th.length > 0) {
+        var newData = [];
+        for (var i = 0; i < th.length; i++) {
+            var name = th[i].name.slice(0,5);
+            if (name == "robot") {
+                if (th[i].status == "Healthy") var stat = "1 - Healthy";
+                else if (th[i].status == "Warning") var stat = "2 - Warning";
+                else if (th[i].status == "Urgent") var stat = "3 - Urgent";
+                else if (th[i].status == "Unknown") var stat = "4 - Unknown";
+                else if (th[i].status == "Needs Parts") var stat = "5 - Needs Parts";
+                var entry = {
+                    "robot" : th[i].name,
+                    "id" : th[i].id,
+                    "status" : stat
+                };
+                newData.push(entry);
+            }
+        }
+
+        _vis7data = [{
+            "name": "robots",
+            "values": newData
+        }]
+        setupDotChart();
+    } else {
+        setTimeout(setUpVis7, 500)
+    }
 }
+
+/*
+function check_newData() {
+    if (newData.length > 0) {
+        setup();
+    } else {
+        setTimeout(check_newData, 500);
+    }
+}*/
+
+function setupDotChart(){
+    vega.scheme('basic', ['#32D144', '#FB7F28', '#EC1C24', '#3F48CC', '#585858', '#000000']);
+
+    var spec = {
+    "$schema": "https://vega.github.io/schema/vega/v5.json",
+    "width": 1000,
+    "height": 200,
+    "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
+    "autosize": "none",
+
+    "signals": [
+        { "name": "cx", "update": "width / 2" },
+        { "name": "cy", "update": "height / 2" },
+        { "name": "radius", "value": 8, "bind": {"input": "range", "min": 2, "max": 15, "step": 1} },
+        { "name": "collide", "value": 1},
+        { "name": "gravityX", "value": 0.2},
+        { "name": "gravityY", "value": 0.1},
+        { "name": "static", "value": false}
+    ],
+
+    "data": _vis7data,
+
+    "scales": [
+        {
+        "name": "xscale",
+        "type": "band",
+        "domain": {
+            "data": "robots",
+            "field": "status",
+            "sort": true
+        },
+        "range": "width"
+        },
+        {
+        "name": "color",
+        "type": "ordinal",
+        "domain": {"data": "robots", "field": "status", "sort": true},
+        "range": {"scheme": "basic"}
+        }
+    ],
+
+    "axes": [
+        { "orient": "bottom", "scale": "xscale" }
+    ],
+
+    "marks": [
+        {
+        "name": "nodes",
+        "type": "symbol",
+        "from": {"data": "robots"},
+        "encode": {
+            "enter": {
+            "fill": {"scale": "color", "field": "status"},
+            "xfocus": {"scale": "xscale", "field": "status", "band": 0.5},
+            "yfocus": {"signal": "cy"}
+            },
+            "update": {
+            "size": {"signal": "pow(2 * radius, 2)"},
+            "stroke": {"value": "white"},
+            "strokeWidth": {"value": 1},
+            "zindex": {"value": 0}
+            },
+            "hover": {
+            "stroke": {"value": "purple"},
+            "strokeWidth": {"value": 3},
+            "zindex": {"value": 1}
+            }
+        },
+        "transform": [
+            {
+            "type": "force",
+            "iterations": 300,
+            "static": {"signal": "static"},
+            "forces": [
+                {"force": "collide", "iterations": {"signal": "collide"}, "radius": {"signal": "radius"}},
+                {"force": "x", "x": "xfocus", "strength": {"signal": "gravityX"}},
+                {"force": "y", "y": "yfocus", "strength": {"signal": "gravityY"}}
+            ]
+            }
+        ]
+        }
+    ]
+    }
+    console.log("vega done");
+
+    vegaEmbed('#vis7', spec).then(function(result) {
+        
+        // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
+    }).catch(console.error);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 2 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis2(){
-    _vis2 = new singleLineGraph();
-    _vis2.svg = d3.select("#vis2");
-    //match size of svg container in html
-    _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
-        _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
-    _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+    if (CURRENT_DATA.length > 0) {
+        _vis2 = new singleLineGraph();
+        _vis2.svg = d3.select("#vis2");
+        //match size of svg container in html
+        _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
+            _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
+        _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+        _vis2.yLabel = "Current (Ampere)";
 
-    var data2 = [];
-    var count = 0;
-
-    for (let i = 0; i < PRESSURE_DATA.length; i++) {
-        if (PRESSURE_DATA[i].robot === "robot_1") {
-            //console.log(PRESSURE_DATA[i].robot);
-            data2.push(PRESSURE_DATA[i]);
-            count++;
+        var temp = msg_vis2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
         }
-    }
 
-    _vis2.data = data2;
-    _vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left], _vis2.data.length);
-    //_vis2.setupAxis();
-    _vis2.createLine();
+        //_vis2.data = data2;
+        //_vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left]);
+        //_vis2.setupAxis();
+        _vis2.update(rbt_names, "current");
+    } else {
+        setTimeout(setupVis2, 500);
+    }
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 3 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis3(){
-    _vis3 = new singleLineGraph();
-    _vis3.svg = d3.select("#vis3");
-    //match size of svg container in html
-    _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
-        _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
-    _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis3 = new singleLineGraph();
+        _vis3.svg = d3.select("#vis3");
+        //match size of svg container in html
+        _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
+            _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
+        _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
+        _vis3.yLabel = "Temperature (Celcius)";
 
-    var data3 = [];
-    var count = 0;
-
-    for (let i = 0; i < PRESSURE_DATA.length; i++) {
-        if (PRESSURE_DATA[i].robot === "robot_2") {
-            //console.log(PRESSURE_DATA[i].robot);
-            data3.push(PRESSURE_DATA[i]);
-            count++;
+        var temp = msg_vis2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
         }
-    }
 
-    _vis3.data = data3;
-    _vis3.setupScales([_vis3.height - _margin.bottom, _margin.top], [0, 100], [0, _vis3.width - _margin.left], _vis3.data.length);
-    //_vis2.setupAxis();
-    _vis3.createLine();
+        _vis3.update(rbt_names, "temperature");
+    } else {
+        setTimeout(setupVis3, 500);
+    }
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 4 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis4(){
   let xScale = d3.scaleLinear()
@@ -764,56 +1087,77 @@ function setupVis4(){
         .style("alignment-baseline", "middle");
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 5 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
 // code modified from Jerome Freye's example @ http://bl.ocks.org/jfreyre/b1882159636cc9e1283a
 function setupVis5(){
-    _vis5 = new singleLineGraph();
-    _vis5.svg = d3.select("#vis5");
-    //match size of svg container in html
-    _vis5.width = _vis5.svg.node().getBoundingClientRect().width != undefined ?
-        _vis5.svg.node().getBoundingClientRect().width : _vis5.width; //if undefined
-    _vis5.height = _vis5.svg.node().getBoundingClientRect().height;
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis5 = new singleLineGraph();
+        _vis5.svg = d3.select("#vis5");
+        //match size of svg container in html
+        _vis5.width = _vis5.svg.node().getBoundingClientRect().width != undefined ?
+            _vis5.svg.node().getBoundingClientRect().width : _vis5.width; //if undefined
+        _vis5.height = _vis5.svg.node().getBoundingClientRect().height;
 
-    var data3 = [];
-    var count = 0;
+        var data3 = [];
+        var count = 0;
 
-    for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
-        if (TEMPERATURE_DATA[i].robot === "robot_1") {
-            // console.log(TEMPERATURE_DATA[i].robot);
-            data3.push(TEMPERATURE_DATA[i]);
-            count++;
+        for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
+            if (TEMPERATURE_DATA[i].robot === "robot1") {
+                // console.log(TEMPERATURE_DATA[i].robot);
+                data3.push(TEMPERATURE_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis5.data = data3;
-    _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
-    //_vis2.setupAxis();
-    _vis5.createLine();
+        _vis5.data = data3;
+        _vis5.setupScales([_vis5.height - _margin.bottom, _margin.top], [0, 100], [0, _vis5.width - _margin.left], _vis5.data.length);
+        //_vis2.setupAxis();
+        _vis5.createLine();
+    } else {
+        setTimeout(setupVis5, 500);
+    }
+    
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 6 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 function setupVis6(){
-    _vis6 = new singleLineGraph();
-    _vis6.svg = d3.select("#vis6");
-    //match size of svg container in html
-    _vis6.width = _vis6.svg.node().getBoundingClientRect().width != undefined ?
-        _vis6.svg.node().getBoundingClientRect().width : _vis6.width; //if undefined
-    _vis6.height = _vis6.svg.node().getBoundingClientRect().height;
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis6 = new singleLineGraph();
+        _vis6.svg = d3.select("#vis6");
+        //match size of svg container in html
+        _vis6.width = _vis6.svg.node().getBoundingClientRect().width != undefined ?
+            _vis6.svg.node().getBoundingClientRect().width : _vis6.width; //if undefined
+        _vis6.height = _vis6.svg.node().getBoundingClientRect().height;
 
-    var data3 = [];
-    var count = 0;
+        var data3 = [];
+        var count = 0;
 
-    for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
-        if (TEMPERATURE_DATA[i].robot === "robot_2") {
-            // console.log(TEMPERATURE_DATA[i].robot);
-            data3.push(TEMPERATURE_DATA[i]);
-            count++;
+        for (let i = 0; i < TEMPERATURE_DATA.length; i++) {
+            if (TEMPERATURE_DATA[i].robot === "robot2") {
+                // console.log(TEMPERATURE_DATA[i].robot);
+                data3.push(TEMPERATURE_DATA[i]);
+                count++;
+            }
         }
-    }
 
-    _vis6.data = data3;
-    _vis6.setupScales([_vis6.height - _margin.bottom, _margin.top], [0, 100], [0, _vis6.width - _margin.left], _vis6.data.length);
-    //_vis2.setupAxis();
-    _vis6.createLine();
+        _vis6.data = data3;
+        _vis6.setupScales([_vis6.height - _margin.bottom, _margin.top], [0, 100], [0, _vis6.width - _margin.left], _vis6.data.length);
+        //_vis2.setupAxis();
+        _vis6.createLine();
+    } else {
+        setTimeout(setupVis6, 500);
+    }
 }
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------------- EXPORT ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
 
 export default {
   name: 'Analytics',
@@ -824,7 +1168,8 @@ export default {
     setupVis3();
     setupVis4();
     setupVis5();
-    setupVis6();  
+    setupVis6();
+    setUpVis7();  
   },
   data () {
     return {
@@ -832,7 +1177,9 @@ export default {
       _data1: this._data1,
       _vis_height: this._vis_height,
       _vis_width: this._vis_width,
-      PADDING_FOR_LABELS: this.PADDING_FOR_LABELS
+      PADDING_FOR_LABELS: this.PADDING_FOR_LABELS,
+      message_v2: "robot1\nrobot2\nrobot3\nrobot4",
+      message_v3: "robot1\nrobot2\nrobot3\nrobot4"
     }
   },
   methods: {
@@ -872,6 +1219,26 @@ export default {
             _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
             _vis1.update();
         },
+        vis2_update() {
+            var temp = this.message_v2.split(" ");
+            var rbt_names = [];
+            for (var i = 0; i < temp.length; i++) {
+                var temp2 = temp[i].split(/\r?\n/);
+                rbt_names = rbt_names.concat(temp2);
+            }
+            //console.log(rbt_names);
+            _vis2.update(rbt_names, "current");
+        },
+        vis3_update() {
+            var temp = this.message_v3.split(" ");
+            var rbt_names = [];
+            for (var i = 0; i < temp.length; i++) {
+                var temp2 = temp[i].split(/\r?\n/);
+                rbt_names = rbt_names.concat(temp2);
+            }
+            //console.log(rbt_names);
+            _vis3.update(rbt_names, "temperature");
+        }
   },
   route: {
       activate() {
@@ -879,6 +1246,7 @@ export default {
       }
   }
 }
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
@@ -955,7 +1323,7 @@ div#div_visuals {
     /*max-height: 550px;*/
     box-sizing: border-box;
     /*padding: 10px;*/
-    overflow:scroll;
+    overflow-y:scroll;
     position:fixed !important;
     position:absolute;
     top:60px;
@@ -975,9 +1343,15 @@ div#div_buttons {
 div.vis_div {
     float: left;
     width: 85%;
-    height: 430px;
+    height: 470px;
     overflow-y: scroll;
+    overflow-x:hidden !important;
 }
+
+#vis2box {
+    overflow-x:hidden;
+}
+
 div.vis_btn {
     float: left;
     width: 15%;
@@ -1019,6 +1393,7 @@ button:focus {
     min-height: 400px;
     /*box-sizing: border-box;*/
     margin: 10px auto;
+    overflow-x:hidden;
 }
 
 #vis4 {
@@ -1038,6 +1413,34 @@ button:focus {
     height: 60px;
     float: left;
     margin: 1px;
+}
+#vis2textbox {
+    min-height: 300px;
+}
+#vis3textbox {
+    min-height: 300px;
+}
+
+#vis1box {
+    min-height: 600px;
+}
+
+#vis2box {
+    min-height: 600px;
+}
+#vis3box {
+    min-height: 600px;
+}
+
+#vis7 {
+    height: 300px;
+    width: 100%;
+}
+
+.spacer {
+    height: 100px;
+    float: left;
+    width: 100%;
 }
 </style>
 
