@@ -17,7 +17,7 @@ export default {
   name: 'SysSummary',
   data () {
     return {
-      _vis7data
+      _vis7data: []
     }
   },
   mounted() {
