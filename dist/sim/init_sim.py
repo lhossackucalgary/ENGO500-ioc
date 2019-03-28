@@ -157,7 +157,7 @@ def create_crews():
     crew_list = []
     for i in range(0, NUM_CREW):
         crew = {"name": "Crew" + str(i)}
-        data = {"name": "Crew" + str(i), "description": "Crew " + str(i), "properties": {"route": []}}
+        data = {"name": "Crew" + str(i), "description": "[]", "properties": {"route": []}}
         try:
             r = requests.post(url = "http://routescout.sensorup.com/v1.0/Things", json = data, headers = headers)
             logging.debug(r.json())

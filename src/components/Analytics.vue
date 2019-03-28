@@ -1406,6 +1406,7 @@ div.vis_div {
     overflow-y: scroll;
     overflow-x:hidden !important;
 }
+
 #vis2box {
     overflow-x:hidden;
 }
@@ -1478,15 +1479,18 @@ button:focus {
 #vis3textbox {
     min-height: 350px;
 }
+
 #vis1box {
     min-height: 600px;
 }
+
 #vis2box {
     min-height: 600px;
 }
 #vis3box {
     min-height: 600px;
 }
+
 #vis7 {
     height: 300px;
     width: 100%;
