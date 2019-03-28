@@ -6,48 +6,7 @@
           <router-link to="/analytics/cpu-temp">CPU Temperature</router-link>
           <router-link to="/analytics/power-draw">Power Draw</router-link>
           <router-view></router-view>
-            <div>
-                <h3>Robot Summary</h3>
-                <div id="vis7" class="vis_div"></div>
-            </div>
-            <div>
-                <div id="vis1box" class="vis_div">
-                    <h3 class="head">Robot Health</h3>
-                    <svg id="vis1" class="svg_boxes"></svg>
-                </div>
-                <div id="vis1btn" class="vis_btn">
-                    <div class="spacer"></div>
-                    <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
-                    <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
-                    <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
-                </div>
-            </div>
-            <div class="spacer"></div>
-            <div>
-                <div id="vis2box" class="vis_div">
-                    <h3>Sensor807: Motor Power Draw</h3>
-                    <svg id="vis2" class="svg_boxes"></svg>
-                </div>
-                <div id="vis2btn" class="vis_btn">
-                    <p>Enter list of robot names: </p>
-                    <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
-                    <br>
-                    <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
-                </div>
-            </div>
-            <div class="spacer"></div>
-            <div>
-                <div id="vis3box" class="vis_div">
-                    <h3>Sensor876: CPU Temperature</h3>
-                    <svg id="vis3" class="svg_boxes"></svg>
-                </div>
-                <div id="vis3btn" class="vis_btn">
-                    <p>Enter list of robot names: </p>
-                    <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
-                    <br>
-                    <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
-                </div>
-            </div>
+
             <div class="spacer"></div>
             <div>
                 <h3>Thermometer_236: Robot_1</h3>
@@ -70,9 +29,6 @@
 //<p style="white-space: pre-line;">{{ message }}</p>
 
 import * as d3 from 'd3'
-import * as vega from 'vega'
-import {default as vegaEmbed} from 'vega-embed'
-import * as vegaLite from 'vega-lite'
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------- INITIALIZE GLOBAL VARIABLES --------------------------------- */
@@ -124,7 +80,7 @@ var _vis3;
 var _vis4;
 var _vis5;
 var _vis6;
-var _vis7data;
+
 var parseTime = d3.timeParse("%H:%M %p");
 var parseDate = d3.timeParse("%Y-%m-%d");
 var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
@@ -144,176 +100,6 @@ var HPxLength;
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
-function loadObservations(){
-    //create object to hold observation id, result, and time
-    var obj_obs = function(id, result, time) {
-        this.id = id;
-        this.result = result;
-        this.time = time;
-    }
-    //create an object with null values to hold resulting obs
-    var obs = [];
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText).value;
-            r.forEach(result => {
-                var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
-                obs.push(ob);
-            });
-
-        }
-    };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
-    xhttp.send();
-    return obs;
-}
-
-function loadDatastreams_Obs(obs_all){
-    var dsobs = [];
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-
-        if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText).value;
-            //object to hold datastream:id, type, and list of observation ids
-            var Obj_ds_ob = function(a, b, c){
-                this.id = a;
-                this.type = b //either T, P, or H (temp, pressure, or HP)
-                this.obids = c;
-            }
-
-            for (var i = 0; i < r.length; i++) {
-                var dsid = r[i]['@iot.id']; //datastream id at i
-
-                var desc = r[i]['description'];
-
-                //get type of the datastream at i
-                var type = null;
-                if (desc === "Datastream for recording pressure") {
-                    type = 'P';
-                } else if (desc === "Datastream for recording temperature") {
-                    type = 'T';
-                } else if (desc === "Health percentage") {
-                    type = 'H';
-                } else {
-                    console.error("datastream does not have valid type: " + desc);
-                }
-
-                //get observations from datastream at i
-                var obs = r[i]['Observations'];//obs array at i
-                var obids = [];
-                for (var j = 0; j < obs.length; j++) {
-                    var obid = obs[j]['@iot.id'];//obid at datastream i,
-
-                    //get the info of the obs
-                    obs_all.forEach(res => {
-                        if (obid == res.id) {
-                            //push to obids, which now contains obs info (id, result, time)
-                            obids.push(res);
-                        }
-                    })
-                }
-
-                //create new obj_ds_ob to hold all of the data
-                var dsob = new Obj_ds_ob(dsid,type,obids);
-                //add to array of datastream w obs
-                dsobs.push(dsob);
-            }
-        }
-    };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
-    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
-    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-    xhttp.send();
-    return dsobs;
-}
-
-function loadThing_Datastreams_Obs(dsobs){
-    var thdsobs = [];
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function () {
-        if (this.readyState == 4 && this.status == 200) {
-            var r = JSON.parse(xhttp.responseText).value;
-
-            //object to hold thing: id, name, desc, status, and list of ds objects
-            var obj_th_ds_obs = function(id, name, desc, stat, ds) {
-                this.id = id;
-                this.name = name;
-                this.desc = desc;
-                this.status = stat;
-                this.ds = ds;
-            }
-
-            for (var i = 0; i < r.length; i++) {
-                var thid = r[i]['@iot.id'];
-                var thname = r[i]['name'];
-                var thdesc = r[i]['description'];
-                var thstat = r[i]['properties']['status'];
-                var thds = [];
-
-                //get all datastreams of thing at i
-                var allds = r[i]['Datastreams'];
-                for (var j = 0; j < allds.length; j++) {
-                    var dsid = allds[j]['@iot.id'];
-
-                    //loop through dsobs to find the dsob matching the current dsid
-                    for (var k = 0; k < dsobs.length; k++) {
-                        if (dsid == dsobs[k].id) {
-                            thds.push(dsobs[k]);
-                        }
-                    }
-                }
-
-                //create new obj_th_ds_obs to hold all of the thing info
-                var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
-                //append to final list of all things
-                thdsobs.push(thdsob);
-            }
-        }
-    };
-    xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
-    xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
-    xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
-    xhttp.send();
-    return thdsobs;
-}
-
-function getData(){
-    var obs = loadObservations();
-
-    var ds = [];
-    function obs_data_check() {
-        if (obs.length > 0) {
-            ds = loadDatastreams_Obs(obs);
-        } else {
-            setTimeout(obs_data_check, 500);
-        }
-    }
-    obs_data_check();
-
-    th = [];
-    //check that ds is defined before running loadThing_Datastreams_Obs(ds)
-    function ds_data_check() {
-        if (ds.length > 0) {
-            th = loadThing_Datastreams_Obs(ds);
-        } else {
-            setTimeout(ds_data_check, 500);
-        }
-    }
-    ds_data_check();
-
-
-    function th_data_check() {
-        if (th.length > 0) {
-            //console.log(th);
-            saveData(th);
-        } else {
-            setTimeout(th_data_check, 500);
-        }
-    }
-    th_data_check();
-}
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------ API DATA TO OBSERVATION DATA --------------------------------- */
@@ -832,140 +618,6 @@ var singleLineGraph = function () {
 }
 
 /* --------------------------------------------------------------------------------------------- */
-/* ----------------------------------- ROBOT DOT CHART ----------------------------------------- */
-/* --------------------------------------------------------------------------------------------- */
-
-function setUpVis7() {
-    if (th.length > 0) {
-        var newData = [];
-        for (var i = 0; i < th.length; i++) {
-            var name = th[i].name.slice(0,5);
-            if (name == "robot") {
-                if (th[i].status == "Healthy") var stat = "1 - Healthy";
-                else if (th[i].status == "Warning") var stat = "2 - Warning";
-                else if (th[i].status == "Urgent") var stat = "3 - Urgent";
-                else if (th[i].status == "Unknown") var stat = "4 - Unknown";
-                else if (th[i].status == "Needs Parts") var stat = "5 - Needs Parts";
-                var entry = {
-                    "robot" : th[i].name,
-                    "id" : th[i].id,
-                    "status" : stat
-                };
-                newData.push(entry);
-            }
-        }
-
-        _vis7data = [{
-            "name": "robots",
-            "values": newData
-        }]
-        setupDotChart();
-    } else {
-        setTimeout(setUpVis7, 500)
-    }
-}
-
-/*
-function check_newData() {
-    if (newData.length > 0) {
-        setup();
-    } else {
-        setTimeout(check_newData, 500);
-    }
-}*/
-
-function setupDotChart(){
-    vega.scheme('basic', ['#32D144', '#FB7F28', '#EC1C24', '#3F48CC', '#585858', '#000000']);
-
-    var spec = {
-    "$schema": "https://vega.github.io/schema/vega/v5.json",
-    "width": 1000,
-    "height": 200,
-    "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
-    "autosize": "none",
-
-    "signals": [
-        { "name": "cx", "update": "width / 2" },
-        { "name": "cy", "update": "height / 2" },
-        { "name": "radius", "value": 8, "bind": {"input": "range", "min": 2, "max": 15, "step": 1} },
-        { "name": "collide", "value": 1},
-        { "name": "gravityX", "value": 0.2},
-        { "name": "gravityY", "value": 0.1},
-        { "name": "static", "value": false}
-    ],
-
-    "data": _vis7data,
-
-    "scales": [
-        {
-        "name": "xscale",
-        "type": "band",
-        "domain": {
-            "data": "robots",
-            "field": "status",
-            "sort": true
-        },
-        "range": "width"
-        },
-        {
-        "name": "color",
-        "type": "ordinal",
-        "domain": {"data": "robots", "field": "status", "sort": true},
-        "range": {"scheme": "basic"}
-        }
-    ],
-
-    "axes": [
-        { "orient": "bottom", "scale": "xscale" }
-    ],
-
-    "marks": [
-        {
-        "name": "nodes",
-        "type": "symbol",
-        "from": {"data": "robots"},
-        "encode": {
-            "enter": {
-            "fill": {"scale": "color", "field": "status"},
-            "xfocus": {"scale": "xscale", "field": "status", "band": 0.5},
-            "yfocus": {"signal": "cy"}
-            },
-            "update": {
-            "size": {"signal": "pow(2 * radius, 2)"},
-            "stroke": {"value": "white"},
-            "strokeWidth": {"value": 1},
-            "zindex": {"value": 0}
-            },
-            "hover": {
-            "stroke": {"value": "purple"},
-            "strokeWidth": {"value": 3},
-            "zindex": {"value": 1}
-            }
-        },
-        "transform": [
-            {
-            "type": "force",
-            "iterations": 300,
-            "static": {"signal": "static"},
-            "forces": [
-                {"force": "collide", "iterations": {"signal": "collide"}, "radius": {"signal": "radius"}},
-                {"force": "x", "x": "xfocus", "strength": {"signal": "gravityX"}},
-                {"force": "y", "y": "yfocus", "strength": {"signal": "gravityY"}}
-            ]
-            }
-        ]
-        }
-    ]
-    }
-    console.log("vega done");
-
-    vegaEmbed('#vis7', spec).then(function(result) {
-
-        // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
-    }).catch(console.error);
-}
-
-/* --------------------------------------------------------------------------------------------- */
 /* -------------------------------------- SET UP VIS 2 ----------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
@@ -1167,14 +819,13 @@ function setupVis6(){
 export default {
   name: 'Analytics',
   mounted () {
-    getData();
+    this.getData();
     setupVis1();
     setupVis2();
     setupVis3();
     setupVis4();
     setupVis5();
     setupVis6();
-    setUpVis7();
   },
   data () {
     return {
@@ -1184,10 +835,180 @@ export default {
       _vis_width: this._vis_width,
       PADDING_FOR_LABELS: this.PADDING_FOR_LABELS,
       message_v2: "robot1\nrobot2\nrobot3\nrobot4",
-      message_v3: "robot1\nrobot2\nrobot3\nrobot4"
+      message_v3: "robot1\nrobot2\nrobot3\nrobot4",
+      obs: [],
+      ds: [],
+      th: []
     }
   },
   methods: {
+    loadObservations(){
+        //create object to hold observation id, result, and time
+        var obj_obs = function(id, result, time) {
+            this.id = id;
+            this.result = result;
+            this.time = time;
+        }
+        //create an object with null values to hold resulting obs
+        var obs = [];
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var r = JSON.parse(xhttp.responseText).value;
+                r.forEach(result => {
+                    var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
+                    obs.push(ob);
+                });
+
+            }
+        };
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
+        xhttp.send();
+        return obs;
+    },
+
+    loadDatastreams_Obs(obs_all){
+        var dsobs = [];
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+
+            if (this.readyState == 4 && this.status == 200) {
+                var r = JSON.parse(xhttp.responseText).value;
+                //object to hold datastream:id, type, and list of observation ids
+                var Obj_ds_ob = function(a, b, c){
+                    this.id = a;
+                    this.type = b //either T, P, or H (temp, pressure, or HP)
+                    this.obids = c;
+                }
+
+                for (var i = 0; i < r.length; i++) {
+                    var dsid = r[i]['@iot.id']; //datastream id at i
+
+                    var desc = r[i]['description'];
+
+                    //get type of the datastream at i
+                    var type = null;
+                    if (desc === "Datastream for recording pressure") {
+                        type = 'P';
+                    } else if (desc === "Datastream for recording temperature") {
+                        type = 'T';
+                    } else if (desc === "Health percentage") {
+                        type = 'H';
+                    } else {
+                        console.error("datastream does not have valid type: " + desc);
+                    }
+
+                    //get observations from datastream at i
+                    var obs = r[i]['Observations'];//obs array at i
+                    var obids = [];
+                    for (var j = 0; j < obs.length; j++) {
+                        var obid = obs[j]['@iot.id'];//obid at datastream i,
+
+                        //get the info of the obs
+                        obs_all.forEach(res => {
+                            if (obid == res.id) {
+                                //push to obids, which now contains obs info (id, result, time)
+                                obids.push(res);
+                            }
+                        })
+                    }
+
+                    //create new obj_ds_ob to hold all of the data
+                    var dsob = new Obj_ds_ob(dsid,type,obids);
+                    //add to array of datastream w obs
+                    dsobs.push(dsob);
+                }
+            }
+        };
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+        xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+        xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhttp.send();
+        return dsobs;
+    },
+
+    loadThing_Datastreams_Obs(dsobs){
+        var thdsobs = [];
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var r = JSON.parse(xhttp.responseText).value;
+
+                //object to hold thing: id, name, desc, status, and list of ds objects
+                var obj_th_ds_obs = function(id, name, desc, stat, ds) {
+                    this.id = id;
+                    this.name = name;
+                    this.desc = desc;
+                    this.status = stat;
+                    this.ds = ds;
+                }
+
+                for (var i = 0; i < r.length; i++) {
+                    var thid = r[i]['@iot.id'];
+                    var thname = r[i]['name'];
+                    var thdesc = r[i]['description'];
+                    var thstat = r[i]['properties']['status'];
+                    var thds = [];
+
+                    //get all datastreams of thing at i
+                    var allds = r[i]['Datastreams'];
+                    for (var j = 0; j < allds.length; j++) {
+                        var dsid = allds[j]['@iot.id'];
+
+                        //loop through dsobs to find the dsob matching the current dsid
+                        for (var k = 0; k < dsobs.length; k++) {
+                            if (dsid == dsobs[k].id) {
+                                thds.push(dsobs[k]);
+                            }
+                        }
+                    }
+
+                    //create new obj_th_ds_obs to hold all of the thing info
+                    var thdsob = new obj_th_ds_obs(thid, thname, thdesc, thstat, thds);
+                    //append to final list of all things
+                    thdsobs.push(thdsob);
+                }
+            }
+        };
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+        xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+        xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhttp.send();
+        return thdsobs;
+    },
+    obs_data_check() {
+        if (this.obs.length > 0) {
+            this.ds = this.loadDatastreams_Obs(this.obs);
+        } else {
+            setTimeout(this.obs_data_check, 500);
+        }
+    },
+    ds_data_check() {
+        if (this.ds.length > 0) {
+            this.th = this.loadThing_Datastreams_Obs(this.ds);
+        } else {
+            setTimeout(this.ds_data_check, 500);
+        }
+    },
+    th_data_check() {
+        if (this.th.length > 0) {
+            //console.log(th);
+            saveData(this.th);
+            this.$store.commit('updateTh', this.th);
+        } else {
+            setTimeout(this.th_data_check, 500);
+        }
+    },
+    getData(){
+        this.obs = this.loadObservations();
+        this.obs_data_check();
+
+        //check that ds is defined before running loadThing_Datastreams_Obs(ds)
+
+        this.ds_data_check();
+        this.th_data_check();
+    },
+
         changeHealthBarHeights(attr, maxAttrValue) {
             for (var i = 0; i < _data1.length; i++){
                 var newHeight = mapValue(_data1[i][attr], 0, maxAttrValue, 0, _vis_height - PADDING_FOR_LABELS);

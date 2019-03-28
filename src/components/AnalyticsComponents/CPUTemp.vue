@@ -1,5 +1,17 @@
 <template>
-    <h2>CPUTemp</h2>
+  <div>
+      <div id="vis3box" class="vis_div">
+          <h3>Sensor876: CPU Temperature</h3>
+          <svg id="vis3" class="svg_boxes"></svg>
+      </div>
+      <div id="vis3btn" class="vis_btn">
+          <p>Enter list of robot names: </p>
+          <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+          <br>
+          <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+      </div>
+  </div>
+
 </template>
 
 <script>

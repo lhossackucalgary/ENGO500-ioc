@@ -5,7 +5,8 @@ Vue.use(Vuex)
 
 export default new Vuex.Store({
   state: {
-    selected_items: []
+    selected_items: [],
+    th: []
   },
   getters: {
 
@@ -14,8 +15,11 @@ export default new Vuex.Store({
 
   },
   mutations: {
-    updateSelectedItems (state, newItems) {
+    updateSelectedItems(state, newItems) {
       state.selected_items = newItems;
+    },
+    updateTh(state, newTh) {
+      state.th = newTh;
     }
   }
 })

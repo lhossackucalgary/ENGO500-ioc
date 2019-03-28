@@ -1,5 +1,16 @@
 <template>
-    <h2>Robot Health</h2>
+  <div>
+      <div id="vis1box" class="vis_div">
+          <h3 class="head">Robot Health</h3>
+          <svg id="vis1" class="svg_boxes"></svg>
+      </div>
+      <div id="vis1btn" class="vis_btn">
+          <div class="spacer"></div>
+          <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
+          <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
+          <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+      </div>
+  </div>
 </template>
 
 <script>
