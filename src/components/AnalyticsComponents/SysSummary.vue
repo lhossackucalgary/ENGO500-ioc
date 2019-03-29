@@ -31,20 +31,21 @@ export default {
             for (var i = 0; i < th.length; i++) {
                 var name = th[i].name.slice(0,5);
                 if (name == "robot") {
-                    if (th[i].status == "Healthy") var stat = "1 - Healthy";
-                    else if (th[i].status == "Warning") var stat = "2 - Warning";
-                    else if (th[i].status == "Urgent") var stat = "3 - Urgent";
-                    else if (th[i].status == "Unknown") var stat = "4 - Unknown";
-                    else if (th[i].status == "Needs Parts") var stat = "5 - Needs Parts";
-                    var entry = {
+                    if (th[i].status == "Healthy") var stat = "R1 - Healthy";
+                    else if (th[i].status == "Warning") var stat = "R2 - Warning";
+                    else if (th[i].status == "Urgent") var stat = "R3 - Urgent";
+                    else if (th[i].status == "Unknown") var stat = "R4 - Unknown";
+                    else if (th[i].status == "Needs Parts") var stat = "R5 - Needs Parts";
+                } else {
+                    var stat = "Active Crews";
+                }
+                var entry = {
                         "robot" : th[i].name,
                         "id" : th[i].id,
                         "status" : stat
                     };
-                    newData.push(entry);
-                }
+                newData.push(entry);
             }
-
             this._vis7data = [{
                 "name": "robots",
                 "values": newData
@@ -56,12 +57,12 @@ export default {
         },
 
     setupDotChart(){
-        vega.scheme('basic', ['#32D144', '#FB7F28', '#EC1C24', '#3F48CC', '#585858', '#000000']);
+        vega.scheme('basic', [ '#000000', '#32D144', '#FB7F28', '#EC1C24', '#3F48CC', '#585858']);
 
         var spec = {
         "$schema": "https://vega.github.io/schema/vega/v5.json",
         "width": 1000,
-        "height": 200,
+        "height": 300,
         "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
         "autosize": "none",
 
