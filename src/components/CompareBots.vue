@@ -251,7 +251,7 @@ function getData(){
     
     
     function th_data_check() {
-        if (th.length > 0) {
+        if (th.length > 0 && compBots.length > 0) {
             saveData(th);
         } else {
             setTimeout(th_data_check, 500);
@@ -267,7 +267,6 @@ function getData(){
 function saveData() {
     //extract latest health observation
     //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
-    ALL_ROBOT_HEALTH = [];
     ROBOT_HEALTH = [];
     var obj_rb = function(robot, date, health) {
         this.robot = robot;
@@ -285,16 +284,26 @@ function saveData() {
                 health = ds[j].obids[0].result;
                 var rh_obs = new obj_rb(rname, ds[j].obids[0].time, health);
                 ROBOT_HEALTH.push(rh_obs);
-                ds[j].obids.forEach(ob => {
-                  result = ob.result;
-                  date = ob.time;
-                  var h_obs = new obj_rb(rname, date, result);
-                  ALL_ROBOT_HEALTH.push(h_obs);
-                });
               }
             }
         }
       });
+    }
+    compBots = [];
+    ALL_ROBOT_HEALTH = [];
+    for (var i = 0; i < th.length; i++) {
+      var ds = th[i].ds;
+      var rname = th[i].name;
+      for (var j = 0; j < ds.length; j++) {
+        if (ds[j].type == 'H') {
+          ds[j].obids.forEach(ob => {
+            result = ob.result;
+            date = ob.time;
+            var h_obs = new obj_rb(rname, date, result);
+            ALL_ROBOT_HEALTH.push(h_obs);
+          });
+        }
+      }
     }
 
     //extract all temperature observations
@@ -649,7 +658,6 @@ var singleLineGraph = function () {
                 .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
         //scale range of data
-        // console.log(this.data);
         // Add the valueline path.
         this.svg.append("path")
             .data(lineData.values)
@@ -669,10 +677,6 @@ var singleLineGraph = function () {
         else j = parseInt((i)/legendMax); 
 
         var k = i - j * legendMax;
-        //console.log(legendMax+" "+i+" "+j+" "+k);
-        var rect_x = this.legendSpace.x * (k+1) + 25*k;
-        var text_x = (this.legendSpace.x + 25)*(k+1);
-        //console.log(rect_x + ", " + text_x);
 
         this.svg.append("rect")
             .data(lineData.values)
@@ -742,7 +746,6 @@ var singleLineGraph = function () {
         var dataNest = d3.nest()
             .key(function(d) {return d.robot;})
             .entries(all_rbt_obs);
-        //console.log(dataNest);
         this.dataNestLength = dataNest.length;
 
         //remove old data
@@ -779,23 +782,24 @@ var singleLineGraph = function () {
 
 function setupVis2(){
     if (CURRENT_DATA.length > 0) {
-        _vis2 = new singleLineGraph();
-        _vis2.svg = d3.select("#vis2");
-        console.log(_vis2.svg);
-        //match size of svg container in html
-        _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
-            _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
-        _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
-        _vis2.yLabel = "Current (Ampere)";
+      _vis2 = new singleLineGraph();
+      _vis2.svg = d3.select("#vis2");
 
-        var rbt_names = [];
-        message_v2 = "";
-        ROBOT_HEALTH.forEach(ob => {
-          rbt_names.push(ob.robot);
-          message_v2 = message_v2.concat(ob.robot+"\n");
-        })
-        
-        _vis2.update(rbt_names, "current");
+      //match size of svg container in html
+      _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
+          _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
+      _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+      _vis2.yLabel = "Current (Ampere)";
+
+      var rbt_names = [];
+      message_v2 = "";
+      ROBOT_HEALTH.forEach(ob => {
+        rbt_names.push(ob.robot);
+        message_v2 = message_v2.concat(ob.robot+"\n");
+      })
+      
+      _vis2.update(rbt_names, "current");
+
     } else {
         setTimeout(setupVis2, 500);
     }
@@ -886,7 +890,6 @@ export default {
             var temp2 = temp[i].split(/\r?\n/);
             rbt_names = rbt_names.concat(temp2);
         }
-        //console.log(rbt_names);
         _vis2.update(rbt_names, "current");
     },
     vis3_update() {
@@ -896,7 +899,6 @@ export default {
             var temp2 = temp[i].split(/\r?\n/);
             rbt_names = rbt_names.concat(temp2);
         }
-        //console.log(rbt_names);
         _vis3.update(rbt_names, "temperature");
     },
     vis4_update() {
@@ -906,7 +908,6 @@ export default {
             var temp2 = temp[i].split(/\r?\n/);
             rbt_names = rbt_names.concat(temp2);
         }
-        console.log(rbt_names);
         _vis4.update(rbt_names, "health");
     },
     saveCompBots() {
@@ -1043,6 +1044,7 @@ button:focus {
 }
 .visbox {
     min-height: 600px;
+    overflow: hidden;
 }
 .spacer {
     height: 100px;
