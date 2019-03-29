@@ -33,6 +33,10 @@ export default new Router({
       component: Analytics,
       children: [
         {
+          path: '',
+          component: SysSummary
+        },
+        {
           path: 'sys-summary',
           component: SysSummary
         },
