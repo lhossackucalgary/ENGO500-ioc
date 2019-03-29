@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3>Robot Summary</h3>
+      <h3>System Summary</h3>
       <div id="vis7" class="vis_div"></div>
   </div>
 </template>
