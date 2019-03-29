@@ -30,6 +30,19 @@
             </div>
         </div>
         <div class="spacer"></div>
+        <div>
+            <div id="vis3box" class="vis_div">
+                <h3>Sensor876: CPU Temperature</h3>
+                <svg id="vis3" class="svg_boxes"></svg>
+            </div>
+            <div id="vis3btn" class="vis_btn">
+                <p>Enter list of robot names: </p>
+                <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                <br>
+                <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+            </div>
+        </div>
+        <div class="spacer"></div>
       </div>
 
   </div>
@@ -44,10 +57,19 @@ var ROBOT_HEALTH = [];
 var ALL_ROBOT_HEALTH = [];
 var TEMPERATURE_DATA = [];
 var CURRENT_DATA = [];
+var message_v2;
+var message_v3;
 
 const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
+var parseTime = d3.timeParse("%H:%M %p");
+var parseDate = d3.timeParse("%Y-%m-%d");
+var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#fabebe', '#008080', '#e6beff', '#9a6324', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080',
+    '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
+    '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
+
 var _vis1;
 var _vis2;
+var _vis3;
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
@@ -741,25 +763,50 @@ function setupVis2(){
     if (CURRENT_DATA.length > 0) {
         _vis2 = new singleLineGraph();
         _vis2.svg = d3.select("#vis2");
+        console.log(_vis2.svg);
         //match size of svg container in html
         _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
             _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
         _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
         _vis2.yLabel = "Current (Ampere)";
 
-        var temp = msg_vis2.split(" ");
         var rbt_names = [];
-        for (var i = 0; i < temp.length; i++) {
-            var temp2 = temp[i].split(/\r?\n/);
-            rbt_names = rbt_names.concat(temp2);
-        }
-
-        //_vis2.data = data2;
-        //_vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left]);
-        //_vis2.setupAxis();
+        message_v2 = "";
+        ROBOT_HEALTH.forEach(ob => {
+          rbt_names.push(ob.robot);
+          message_v2 = message_v2.concat(ob.robot+"\n");
+        })
+        
         _vis2.update(rbt_names, "current");
     } else {
         setTimeout(setupVis2, 500);
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 3 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
+function setupVis3(){
+    if (TEMPERATURE_DATA.length > 0) {
+        _vis3 = new singleLineGraph();
+        _vis3.svg = d3.select("#vis3");
+        //match size of svg container in html
+        _vis3.width = _vis3.svg.node().getBoundingClientRect().width != undefined ?
+            _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
+        _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
+        _vis3.yLabel = "Temperature (Celcius)";
+
+        var rbt_names = [];
+        message_v3 = "";
+        ROBOT_HEALTH.forEach(ob => {
+          rbt_names.push(ob.robot);
+          message_v3 = message_v3.concat(ob.robot+"\n");
+        })
+
+        _vis3.update(rbt_names, "temperature");
+    } else {
+        setTimeout(setupVis3, 500);
     }
 }
 
@@ -767,7 +814,8 @@ export default {
   name: 'CompareBots',
   data () {
     return {
-      message_v2: "robot1\nrobot2\nrobot3\nrobot4"
+      message_v2: this.message_v2,
+      message_v3: this.message_v3
 
     }
   },
@@ -795,8 +843,32 @@ export default {
         //console.log(rbt_names);
         _vis2.update(rbt_names, "current");
     },
+    vis3_update() {
+            var temp = this.message_v3.split(" ");
+            var rbt_names = [];
+            for (var i = 0; i < temp.length; i++) {
+                var temp2 = temp[i].split(/\r?\n/);
+                rbt_names = rbt_names.concat(temp2);
+            }
+            //console.log(rbt_names);
+            _vis3.update(rbt_names, "temperature");
+        },
     saveCompBots() {
       compBots = this.$store.state.selected_items;
+    },
+    printBotsInTB2() {
+      if (message_v2 != undefined) {
+        this.message_v2 = message_v2;
+      } else {
+        setTimeout(this.printBotsInTB);
+      }
+    },
+    printBotsInTB3() {
+      if (message_v3 != undefined) {
+        this.message_v3 = message_v3;
+      } else {
+        setTimeout(this.printBotsInTB);
+      }
     }
   },
   mounted () {
@@ -805,6 +877,9 @@ export default {
     getData();
     setupVis1();
     setupVis2();
+    setupVis3();
+    this.printBotsInTB2();
+    this.printBotsInTB3();
   }
 }
 </script>
@@ -909,6 +984,12 @@ button:focus {
     min-height: 600px;
 }
 #vis2box {
+    min-height: 600px;
+}
+#vis3textbox {
+    min-height: 300px;
+}
+#vis3box {
     min-height: 600px;
 }
 .spacer {
