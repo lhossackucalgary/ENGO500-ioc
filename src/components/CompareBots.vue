@@ -18,26 +18,39 @@
         </div>
         <div class="spacer"></div>
         <div>
-            <div id="vis2box" class="vis_div">
+            <div class="vis_div visbox">
+                <h3>Robot Health History</h3>
+                <svg id="vis4" class="svg_boxes"></svg>
+            </div>
+            <div id="vis4btn" class="vis_btn">
+                <p>Enter list of robot names: </p>
+                <textarea class="vistextbox" v-model="message_v4" placeholder="robot1 robot2 ..."></textarea>
+                <br>
+                <button id="btn_vis4_update" class="cat" v-on:click="vis4_update()">Update Chart</button>
+            </div>
+        </div>
+        <div class="spacer"></div>
+        <div>
+            <div class="vis_div visbox">
                 <h3>Sensor807: Motor Power Draw</h3>
                 <svg id="vis2" class="svg_boxes"></svg>
             </div>
             <div id="vis2btn" class="vis_btn">
                 <p>Enter list of robot names: </p>
-                <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
+                <textarea class="vistextbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
             </div>
         </div>
         <div class="spacer"></div>
         <div>
-            <div id="vis3box" class="vis_div">
+            <div class="vis_div visbox">
                 <h3>Sensor876: CPU Temperature</h3>
                 <svg id="vis3" class="svg_boxes"></svg>
             </div>
             <div id="vis3btn" class="vis_btn">
                 <p>Enter list of robot names: </p>
-                <textarea id="vis3textbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
+                <textarea class="vistextbox" v-model="message_v3" placeholder="robot1 robot2 ..."></textarea>
                 <br>
                 <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
             </div>
@@ -59,6 +72,7 @@ var TEMPERATURE_DATA = [];
 var CURRENT_DATA = [];
 var message_v2;
 var message_v3;
+var message_v4;
 
 const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
 var parseTime = d3.timeParse("%H:%M %p");
@@ -70,6 +84,7 @@ var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
 var _vis1;
 var _vis2;
 var _vis3;
+var _vis4;
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
@@ -237,7 +252,6 @@ function getData(){
     
     function th_data_check() {
         if (th.length > 0) {
-            //console.log(th);
             saveData(th);
         } else {
             setTimeout(th_data_check, 500);
@@ -258,7 +272,7 @@ function saveData() {
     var obj_rb = function(robot, date, health) {
         this.robot = robot;
         this.date = date;
-        this.health = health;
+        this.result = health;
     }
     for (var i = 0; i < th.length; i++) {
       compBots.forEach(cid => {
@@ -301,7 +315,6 @@ function saveData() {
             // loop through all ds of the robot
             for (var j = 0; j < ds.length; j++) {
                 if (ds[j].type == 'T') {
-                    //console.log(ds[j].id);
                     // loop through all obs of the temp ds
                     for (var k = 0; k < ds[j].obids.length; k++) {
                         result = ds[j].obids[k].result;
@@ -331,7 +344,6 @@ function saveData() {
             // loop through all ds of the robot
             for (var j = 0; j < ds.length; j++) {
                 if (ds[j].type == 'P') {
-                    //console.log(ds[j].id);
                     // loop through all obs of the temp ds
                     for (var k = 0; k < ds[j].obids.length; k++) {
                         result = ds[j].obids[k].result;
@@ -354,7 +366,6 @@ function saveData() {
 // https://alignedleft.com/tutorials/d3/scales
 function setupVis1(){
     if (ROBOT_HEALTH.length > 0) {
-        console.log(ROBOT_HEALTH);
         _vis1 = new Healthplot();
         _vis1.svg = d3.select("#vis1");
         //match size of svg container in html
@@ -446,13 +457,13 @@ var Healthplot = function(){
                 .attr("class", "bar")
                 .style("fill","lightgreen")
                 .attr("width", _vis1.xScale.bandwidth())
-                .attr("height", function(d) { return (_vis1.height - _margin.bottom - _vis1.yScale(d.health)); })
+                .attr("height", function(d) { return (_vis1.height - _margin.bottom - _vis1.yScale(d.result)); })
                 .attr("x", function(d, i) { return _vis1.xScale(i); })
-                .attr("y", function(d) { return _vis1.yScale(d.health); })
+                .attr("y", function(d) { return _vis1.yScale(d.result); })
                 .attr("transform", `translate(${_margin.left}, 0)`)
                 .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
                 .text(function(d) {
-                return d.health; });
+                return d.result; });
                 // same as return d["robot"];
     }
 
@@ -556,7 +567,6 @@ var singleLineGraph = function () {
                 .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
         //scale range of data
-        // console.log(this.data);
 
         // Add the valueline path.
         this.svg.append("path")
@@ -716,6 +726,14 @@ var singleLineGraph = function () {
                     }
                 }
             }
+        } else if (datatype == "health") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < ALL_ROBOT_HEALTH.length; j++) {
+                    if (rbt_names[i] == ALL_ROBOT_HEALTH[j].robot) {
+                        all_rbt_obs.push(ALL_ROBOT_HEALTH[j]);
+                    }
+                }
+            }
         }
 
         this.data = all_rbt_obs;
@@ -810,12 +828,40 @@ function setupVis3(){
     }
 }
 
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 4 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
+function setupVis4(){
+    if (ALL_ROBOT_HEALTH.length > 0) {
+        _vis4 = new singleLineGraph();
+        _vis4.svg = d3.select("#vis4");
+        //match size of svg container in html
+        _vis4.width = _vis4.svg.node().getBoundingClientRect().width != undefined ?
+            _vis4.svg.node().getBoundingClientRect().width : _vis4.width; //if undefined
+        _vis4.height = _vis4.svg.node().getBoundingClientRect().height;
+        _vis4.yLabel = "Health (%)";
+
+        var rbt_names = [];
+        message_v4 = "";
+        ROBOT_HEALTH.forEach(ob => {
+          rbt_names.push(ob.robot);
+          message_v4 = message_v4.concat(ob.robot+"\n");
+        })
+
+        _vis4.update(rbt_names, "health");
+    } else {
+        setTimeout(setupVis4, 500);
+    }
+}
+
 export default {
   name: 'CompareBots',
   data () {
     return {
       message_v2: this.message_v2,
-      message_v3: this.message_v3
+      message_v3: this.message_v3,
+      message_v4: this.message_v4
 
     }
   },
@@ -825,10 +871,10 @@ export default {
             _vis1.data.sort((a, b) => d3.ascending(parseInt(a.robot.slice(5),10), parseInt(b.robot.slice(5),10)));
         }
         if (order === "value-ascending") {
-            _vis1.data.sort((a, b) => a.health - b.health);
+            _vis1.data.sort((a, b) => a.result - b.result);
         }
         if (order === "value-descending") {
-            _vis1.data.sort((a, b) => b.health - a.health);
+            _vis1.data.sort((a, b) => b.result - a.result);
         }
         _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
         _vis1.update();
@@ -844,15 +890,25 @@ export default {
         _vis2.update(rbt_names, "current");
     },
     vis3_update() {
-            var temp = this.message_v3.split(" ");
-            var rbt_names = [];
-            for (var i = 0; i < temp.length; i++) {
-                var temp2 = temp[i].split(/\r?\n/);
-                rbt_names = rbt_names.concat(temp2);
-            }
-            //console.log(rbt_names);
-            _vis3.update(rbt_names, "temperature");
-        },
+        var temp = this.message_v3.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
+        }
+        //console.log(rbt_names);
+        _vis3.update(rbt_names, "temperature");
+    },
+    vis4_update() {
+        var temp = this.message_v4.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
+        }
+        console.log(rbt_names);
+        _vis4.update(rbt_names, "health");
+    },
     saveCompBots() {
       compBots = this.$store.state.selected_items;
     },
@@ -860,14 +916,21 @@ export default {
       if (message_v2 != undefined) {
         this.message_v2 = message_v2;
       } else {
-        setTimeout(this.printBotsInTB);
+        setTimeout(this.printBotsInTB2);
       }
     },
     printBotsInTB3() {
       if (message_v3 != undefined) {
         this.message_v3 = message_v3;
       } else {
-        setTimeout(this.printBotsInTB);
+        setTimeout(this.printBotsInTB3);
+      }
+    },
+    printBotsInTB4() {
+      if (message_v4 != undefined) {
+        this.message_v4 = message_v4;
+      } else {
+        setTimeout(this.printBotsInTB4);
       }
     }
   },
@@ -878,8 +941,10 @@ export default {
     setupVis1();
     setupVis2();
     setupVis3();
+    setupVis4();
     this.printBotsInTB2();
     this.printBotsInTB3();
+    this.printBotsInTB4();
   }
 }
 </script>
@@ -935,10 +1000,6 @@ div.vis_div {
     overflow-x:hidden !important;
 }
 
-#vis2box {
-    overflow-x:hidden;
-}
-
 div.vis_btn {
     float: left;
     width: 15%;
@@ -977,19 +1038,10 @@ button:focus {
     margin: 10px auto;
     overflow-x:hidden;
 }
-#vis2textbox {
+.vistextbox {
     min-height: 300px;
 }
-#vis1box {
-    min-height: 600px;
-}
-#vis2box {
-    min-height: 600px;
-}
-#vis3textbox {
-    min-height: 300px;
-}
-#vis3box {
+.visbox {
     min-height: 600px;
 }
 .spacer {
