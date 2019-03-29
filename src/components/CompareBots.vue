@@ -1,8 +1,37 @@
 /* eslint-disable */
 <template>
   <div class="">
+  <div id="div_visuals">
     <h2>Compare Robots Page</h2>
     <p>{{$store.state.selected_items}}</p>
+        <div>
+            <div id="vis1box" class="vis_div">
+                <h3 class="head">Robot Health</h3>
+                <svg id="vis1" class="svg_boxes"></svg>
+            </div>
+            <div id="vis1btn" class="vis_btn">
+                <div class="spacer"></div>
+                <button id="btn_name_ascending" class="cat" v-on:click="vis1_switch('name-ascending')">Name Ascending</button>
+                <button id="btn_val_ascending" class="cat" v-on:click="vis1_switch('value-ascending')">Value Ascending</button>
+                <button id="btn_val_descending" class="cat" v-on:click="vis1_switch('value-descending')">Value Descending</button>
+            </div>
+        </div>
+        <div class="spacer"></div>
+        <div>
+            <div id="vis2box" class="vis_div">
+                <h3>Sensor807: Motor Power Draw</h3>
+                <svg id="vis2" class="svg_boxes"></svg>
+            </div>
+            <div id="vis2btn" class="vis_btn">
+                <p>Enter list of robot names: </p>
+                <textarea id="vis2textbox" v-model="message_v2" placeholder="robot1 robot2 ..."></textarea>
+                <br>
+                <button id="btn_vis2_update" class="cat" v-on:click="vis2_update()">Update Chart</button>
+            </div>
+        </div>
+        <div class="spacer"></div>
+      </div>
+
   </div>
 </template>
 
@@ -10,9 +39,15 @@
 import * as d3 from 'd3'
 
 var th;
-var ROBOT_HEALTH;
-var TEMPERATURE_DATA;
-var CURRENT_DATA;
+var compBots;
+var ROBOT_HEALTH = [];
+var ALL_ROBOT_HEALTH = [];
+var TEMPERATURE_DATA = [];
+var CURRENT_DATA = [];
+
+const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
+var _vis1;
+var _vis2;
 
 /* --------------------------------------------------------------------------------------------- */
 /* ------------------------------------ LOAD DATA FROM API ------------------------------------- */
@@ -180,8 +215,8 @@ function getData(){
     
     function th_data_check() {
         if (th.length > 0) {
-            console.log(th);
-            //saveData(th);
+            //console.log(th);
+            saveData(th);
         } else {
             setTimeout(th_data_check, 500);
         }
@@ -194,9 +229,9 @@ function getData(){
 /* --------------------------------------------------------------------------------------------- */
 
 function saveData() {
-    var compBot_id = this.$store.state.selected_items;
     //extract latest health observation
     //{ "robot" : "robot_1", "health" : 90, "pressure" : 40, "temperature" : 20}
+    ALL_ROBOT_HEALTH = [];
     ROBOT_HEALTH = [];
     var obj_rb = function(robot, date, health) {
         this.robot = robot;
@@ -204,25 +239,27 @@ function saveData() {
         this.health = health;
     }
     for (var i = 0; i < th.length; i++) {
-      compBot_id.forEach(cid => {
-        if (cid = th[i].id) {
+      compBots.forEach(cid => {
+        if (cid == th[i].id) {
           var ds = th[i].ds;
             var health = null;
             var rname = th[i].name;
             for (var j = 0; j < ds.length; j++) {
               if (ds[j].type == 'H') {
                 health = ds[j].obids[0].result;
+                var rh_obs = new obj_rb(rname, ds[j].obids[0].time, health);
+                ROBOT_HEALTH.push(rh_obs);
                 ds[j].obids.forEach(ob => {
                   result = ob.result;
                   date = ob.time;
-                  var h_obs = new obj_temp(rname, date, result);
-                  ROBOT_HEALTH.push(h_obs);
+                  var h_obs = new obj_rb(rname, date, result);
+                  ALL_ROBOT_HEALTH.push(h_obs);
                 });
               }
             }
         }
       });
-    }//CHECK THIS
+    }
 
     //extract all temperature observations
     //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
@@ -284,16 +321,6 @@ function saveData() {
             }
         }
     }
-    /*
-    function temp_data_check() {
-        if (TEMPERATURE_DATA.length > 0) {
-            console.log(TEMPERATURE_DATA);
-        } else {
-            setTimeout(temp_data_check, 500);
-        }
-    }
-    temp_data_check();
-    */
     
 }
 
@@ -301,16 +328,483 @@ function saveData() {
 /* ------------------------------------- HEALTH BAR CHART -------------------------------------- */
 /* --------------------------------------------------------------------------------------------- */
 
+// code modified from Scott Murray's example
+// https://alignedleft.com/tutorials/d3/scales
+function setupVis1(){
+    if (ROBOT_HEALTH.length > 0) {
+        console.log(ROBOT_HEALTH);
+        _vis1 = new Healthplot();
+        _vis1.svg = d3.select("#vis1");
+        //match size of svg container in html
+        _vis1.width = _vis1.svg.node().getBoundingClientRect().width != undefined ?
+            _vis1.svg.node().getBoundingClientRect().width : _vis1.width; //if undefined
+        _vis1.height = _vis1.svg.node().getBoundingClientRect().height;
+
+        _vis1.data = ROBOT_HEALTH;
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+    } else {
+        setTimeout(setupVis1, 500);
+    }
+}
+
+var Healthplot = function(){
+    this.data;
+    this.width;
+    this.height;
+
+    this.svg;
+    this.bar;
+
+    this.xAxisScale;
+    this.xScale;
+    this.yScale;
+
+    this.xAxis;
+    this.yAxis;
+    this.gx;
+
+    this.setupScales = function(yRange, yDomain, xRange, xLength){
+
+        //kind of like the min and max value of range in last tut
+        this.yScale = d3.scaleLinear()
+            .domain(yDomain)
+            .range(yRange);
+
+        this.xScale = d3.scaleBand()
+            .domain(d3.range(0, xLength))
+            .rangeRound(xRange)
+            .padding(0.1);
+
+        this.xAxisScale = d3.scaleBand()
+            .rangeRound(xRange) //[0, this.width - _margin.left]
+            .domain(this.data.map(function(d){ return d.robot; }));
+
+    };
+
+    this.setupAxis = function(){
+        this.yAxis = d3.axisLeft(this.yScale)
+            .tickSize(-this.width);
+
+        this.xAxis = d3.axisBottom(this.xAxisScale);
+
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .attr("class", "y axis")
+            .call(this.yAxis);
+
+        this.gx = this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, ${_vis1.height - _margin.bottom})`)
+            .attr("class", "x axis")
+            .call(this.xAxis);
+
+        // x-axis label
+        this.svg.append("text")
+            .attr("x", this.width / 2)
+            .attr("y", this.height - _margin.bottom / 2 + 15)
+            .style("text-anchor", "middle")
+            .text("Robot Name");
+
+        // y-axis label
+        this.svg.append("text")
+            .attr("x", _margin.left)
+            .attr("y", this.height/2)
+            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
+            .style("text-anchor", "middle")
+            .text("Health (%)");
+
+    }
+
+    this.createBars = function() {
+    this.bar = this.svg.selectAll("rect")
+            .data(this.data)
+            .enter()
+            .append("rect")
+                .attr("class", "bar")
+                .style("fill","lightgreen")
+                .attr("width", _vis1.xScale.bandwidth())
+                .attr("height", function(d) { return (_vis1.height - _margin.bottom - _vis1.yScale(d.health)); })
+                .attr("x", function(d, i) { return _vis1.xScale(i); })
+                .attr("y", function(d) { return _vis1.yScale(d.health); })
+                .attr("transform", `translate(${_margin.left}, 0)`)
+                .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
+                .text(function(d) {
+                return d.health; });
+                // same as return d["robot"];
+    }
+
+    this.update = function() {
+        //remove old data
+        _vis1.svg.selectAll("*")
+            .remove();    
+
+        //add new data
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* ---------------------------------------- LINE GRAPH ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+var singleLineGraph = function () {
+    this.data;
+    this.width;
+    this.height;
+
+    this.svg;
+    this.line;
+
+    this.parseTime;
+    this.xAxisScale;
+
+    this.xScale;
+    this.yScale;
+
+    this.yRange;
+    this.yLabel;
+
+    this.xAxis;
+    this.yAxis;
+    this.gx;
+
+    this.dataNestLength;
+    this.legendSpace = {x:70, y:18};
+
+    this.setupScales = function(yRange, yDomain, xRange){
+        //kind of like the min and max value of range in last tut
+        this.yRange = yRange;
+
+        this.data.forEach(function(d) {
+            if (typeof(d.date) === "string") {
+              d.date = Date.parse(d.date);
+            }
+            d.result = +d.result;
+        });
+
+        this.yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, function(d) { return d.result; })])
+            .range(yRange);
+
+        this.xScale = d3.scaleTime()
+            .domain(d3.extent(this.data, function(d) { return d.date; }))
+            .range([_margin.right, this.width - _margin.left - 10]);
+
+        this.xAxisScale = d3.scaleBand()
+            .range([0, this.width - _margin.left])
+            .domain(this.data.map(function(d){ return d.robot; }));
+        
+        // x-axis label
+        this.svg.append("text")
+            .attr("x", this.width / 2)
+            .attr("y", this.height - _margin.bottom / 2 + 15)
+            .style("text-anchor", "middle")
+            .text("Time");
+
+        // y-axis label
+        this.svg.append("text")
+            .attr("x", _margin.left)
+            .attr("y", this.height/2)
+            .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
+            .style("text-anchor", "middle")
+            .text(this.yLabel);
+
+    }
+
+
+    this.createLine = function() {
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, function(d) { return d.result; })])
+            .range(this.yRange);
+
+        var xScale = d3.scaleTime()
+            .domain(d3.extent(this.data, function(d) { return d.date; }))
+            .range([_margin.right, this.width - _margin.left]);
+
+        var valueline = d3.line()
+            .x(function(d) { return xScale(d.date)})
+            .y(function(d) { return yScale(d.result)});
+
+        this.svg
+                .attr("width", this.width + _margin.left + _margin.right)
+                .attr("height", this.height + _margin.top + _margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+
+        //scale range of data
+        // console.log(this.data);
+
+        // Add the valueline path.
+        this.svg.append("path")
+            .data(this.data)
+            .attr("class", "line")
+            .attr("d", valueline(this.data))
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
+            .attr("stroke", "blue")
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .append("svg:title")
+            .text(function(d) {return d.robot;});
+
+        // Add the Legend
+        this.svg.append("rect")
+            .data(this.data)
+            .attr("x", _margin.left + 5)
+            .attr("y", this.height + (_margin.bottom/2) )
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+            })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(this.data)
+            .attr("class", "legend_text")
+            .attr("x", _margin.left + 20)  // space legend
+            .attr("y", this.height + (_margin.bottom/2)+ 10)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "blue")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
+
+        // Add the X Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
+            .call(d3.axisBottom(this.xScale));
+
+        // Add the Y Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .call(d3.axisLeft(this.yScale));
+
+    }
+
+    this.multiLine = function(lineData, i) {
+
+        this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
+
+        var yScale = d3.scaleLinear()
+            .domain([0, d3.max(this.data, function(d) { return d.result; })])
+            .range(this.yRange);
+
+        var xScale = d3.scaleTime()
+            .domain(d3.extent(this.data, function(d) { return d.date; }))
+            .range([_margin.right, this.width - _margin.left]);
+
+        var valueline = d3.line()
+            .x(function(d) { return xScale(d.date)})
+            .y(function(d) { return yScale(d.result)});
+
+        this.svg
+                .attr("width", this.width + _margin.left + _margin.right)
+                .attr("height", this.height + _margin.top + _margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+
+        //scale range of data
+        // console.log(this.data);
+        // Add the valueline path.
+        this.svg.append("path")
+            .data(lineData.values)
+            .attr("class", "line")
+            .attr("id", function(d) { return d.robot+"-"+d.date; })
+            .attr("d", valueline(lineData.values))
+            .attr("stroke", colors[i])
+            .attr("stroke-width", 2)
+            .attr("fill", "none")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .append("svg:title")
+            .text(lineData.key);
+
+        // Add the Legend
+        var legendMax = parseInt((this.width/1.3)/this.legendSpace.x, 10);
+        if (i == 0) var j = 0;
+        else j = parseInt((i)/legendMax); 
+
+        var k = i - j * legendMax;
+        //console.log(legendMax+" "+i+" "+j+" "+k);
+        var rect_x = this.legendSpace.x * (k+1) + 25*k;
+        var text_x = (this.legendSpace.x + 25)*(k+1);
+        //console.log(rect_x + ", " + text_x);
+
+        this.svg.append("rect")
+            .data(lineData.values)
+            .attr("x", this.legendSpace.x * (k+1) + 15*k)
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j - 5)
+            .attr("width", 10)
+            .attr("height", 10)
+            .style("fill", colors[i])
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+            })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            });
+        this.svg.append("text")
+            .data(lineData.values)
+            .attr("class", "legend_text")
+            .attr("x", (this.legendSpace.x + 15)*(k+1))  // space legend
+            .attr("y", this.height + (_margin.bottom/2) + this.legendSpace.y * j + 5)
+            .attr("class", "legend")    // style the legend
+            .style("fill", "black")
+            .on("mouseover", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 5);
+                })
+            .on("mouseout", function(d) {
+                d3.select("#"+d.robot+"-"+d.date)
+                    .attr("stroke-width", 2);
+            })
+            .text(function(d) {return d.robot; });
+
+    }
+
+    this.update = function(rbt_names, datatype) {
+        var all_rbt_obs = []; 
+        if (datatype == "current") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < CURRENT_DATA.length; j++) {
+                    if (rbt_names[i] == CURRENT_DATA[j].robot) {
+                        all_rbt_obs.push(CURRENT_DATA[j]);
+                    }
+                }
+            }
+        } else if (datatype == "temperature") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < TEMPERATURE_DATA.length; j++) {
+                    if (rbt_names[i] == TEMPERATURE_DATA[j].robot) {
+                        all_rbt_obs.push(TEMPERATURE_DATA[j]);
+                    }
+                }
+            }
+        }
+
+        this.data = all_rbt_obs;
+
+        //separate by robot names using dataNest
+        var dataNest = d3.nest()
+            .key(function(d) {return d.robot;})
+            .entries(all_rbt_obs);
+        //console.log(dataNest);
+        this.dataNestLength = dataNest.length;
+
+        //remove old data
+        this.svg.selectAll("*")
+            .remove();    
+        
+        this.setupScales([this.height - _margin.bottom, _margin.top], [0, 100], [0, this.width - _margin.left]);
+
+        // Add the X Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
+            .call(d3.axisBottom(this.xScale));
+
+        // Add the Y Axis
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .call(d3.axisLeft(this.yScale));
+        
+        for (var i = 0; i < dataNest.length; i++) {
+            this.multiLine(dataNest[i], i);
+        }
+        /*
+        //add new data
+        _vis1.setupScales([_vis1.height - _margin.bottom, _margin.top], [0, 100], [0, _vis1.width - _margin.left], _vis1.data.length);
+        _vis1.setupAxis();
+        _vis1.createBars();
+        */
+    }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* -------------------------------------- SET UP VIS 2 ----------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+
+function setupVis2(){
+    if (CURRENT_DATA.length > 0) {
+        _vis2 = new singleLineGraph();
+        _vis2.svg = d3.select("#vis2");
+        //match size of svg container in html
+        _vis2.width = _vis2.svg.node().getBoundingClientRect().width != undefined ?
+            _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
+        _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
+        _vis2.yLabel = "Current (Ampere)";
+
+        var temp = msg_vis2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
+        }
+
+        //_vis2.data = data2;
+        //_vis2.setupScales([_vis2.height - _margin.bottom, _margin.top], [0, 100], [0, _vis2.width - _margin.left]);
+        //_vis2.setupAxis();
+        _vis2.update(rbt_names, "current");
+    } else {
+        setTimeout(setupVis2, 500);
+    }
+}
+
 export default {
   name: 'CompareBots',
   data () {
     return {
+      message_v2: "robot1\nrobot2\nrobot3\nrobot4"
 
+    }
+  },
+  methods: {
+    vis1_switch(order) {
+        if (order === "name-ascending") {
+            _vis1.data.sort((a, b) => d3.ascending(parseInt(a.robot.slice(5),10), parseInt(b.robot.slice(5),10)));
+        }
+        if (order === "value-ascending") {
+            _vis1.data.sort((a, b) => a.health - b.health);
+        }
+        if (order === "value-descending") {
+            _vis1.data.sort((a, b) => b.health - a.health);
+        }
+        _vis1.xAxisScale.domain(_vis1.data.map(d => d.name));
+        _vis1.update();
+    },
+    vis2_update() {
+        var temp = this.message_v2.split(" ");
+        var rbt_names = [];
+        for (var i = 0; i < temp.length; i++) {
+            var temp2 = temp[i].split(/\r?\n/);
+            rbt_names = rbt_names.concat(temp2);
+        }
+        //console.log(rbt_names);
+        _vis2.update(rbt_names, "current");
+    },
+    saveCompBots() {
+      compBots = this.$store.state.selected_items;
     }
   },
   mounted () {
     console.log(this.$store.state.selected_items);
+    this.saveCompBots();
     getData();
+    setupVis1();
+    setupVis2();
   }
 }
 </script>
@@ -330,5 +824,96 @@ li {
 }
 a {
   color: #42b983;
+}
+
+div#div_visuals {
+    background: white;
+    background-clip: content-box;
+    width: 100%;
+    height: 100%;
+    /*min-height: 100px;*/
+    /*max-height: 550px;*/
+    box-sizing: border-box;
+    /*padding: 10px;*/
+    overflow-y:scroll;
+    position:fixed !important;
+    position:absolute;
+    top:60px;
+    right:0;
+    bottom:60px;
+    left:0;
+}
+
+div#vis1box {
+    overflow-y: scroll;
+}
+
+div#div_buttons {
+    padding: 20px;
+}
+
+div.vis_div {
+    float: left;
+    width: 85%;
+    height: 470px;
+    overflow-y: scroll;
+    overflow-x:hidden !important;
+}
+
+#vis2box {
+    overflow-x:hidden;
+}
+
+div.vis_btn {
+    float: left;
+    width: 15%;
+    height: 430px;
+    background: white;
+}
+button.cat {
+    display: block;
+}
+button {
+    background: white;
+    border: none;
+    height: 30px;
+    padding: 0px 10px;
+
+    font-family: "Sarabun", sans-serif;
+    font-weight: 400;
+    font-size: 1em;
+    letter-spacing: 0.1em;
+}
+button:hover {
+    background: darkturquoise;
+    cursor: pointer;
+}
+button:focus {
+    outline: 0;
+}
+.svg_boxes {
+    background: white;
+    /*border: 1px solid lightgrey;*/
+    display: block;
+    width: 95%;
+    min-width: 800px;
+    min-height: 400px;
+    /*box-sizing: border-box;*/
+    margin: 10px auto;
+    overflow-x:hidden;
+}
+#vis2textbox {
+    min-height: 300px;
+}
+#vis1box {
+    min-height: 600px;
+}
+#vis2box {
+    min-height: 600px;
+}
+.spacer {
+    height: 100px;
+    float: left;
+    width: 100%;
 }
 </style>
