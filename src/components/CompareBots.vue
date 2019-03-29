@@ -5,7 +5,7 @@
     <h2>Compare Robots Page</h2>
     <p>{{$store.state.selected_items}}</p>
         <div>
-            <div id="vis1box" class="vis_div">
+            <div id="vis1box" class="vis_div visbox">
                 <h3 class="head">Robot Health</h3>
                 <svg id="vis1" class="svg_boxes"></svg>
             </div>
