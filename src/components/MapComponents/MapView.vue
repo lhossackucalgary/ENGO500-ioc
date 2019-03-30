@@ -302,7 +302,7 @@ export default {
           lthis.getLocations(thing_id_list, things_locations_map);
         }
       }})(this);
-      xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things", true);
+      xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=5000", true);
       xhttp.send();
     },
 
