@@ -33,7 +33,7 @@ def update_robots():
     get all datastreams from api
     """
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000", headers = headers)      
         print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -161,7 +161,7 @@ def update_robots():
 
 def getRobotDatastreams(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams?$top=50000" %id, headers = headers)      
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")

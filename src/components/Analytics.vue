@@ -67,7 +67,7 @@ export default {
 
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=50000", true);
         xhttp.send();
         return obs;
     },
@@ -125,7 +125,7 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=5000&$expand=Observations", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
@@ -175,7 +175,7 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=5000&$expand=Datastreams", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
@@ -197,7 +197,7 @@ export default {
     },
     th_data_check() {
         if (this.th.length > 0) {
-            //console.log(th);
+            console.log(this.th);
             this.saveData(this.th);
             this.$store.commit('updateTh', this.th);
         } else {
