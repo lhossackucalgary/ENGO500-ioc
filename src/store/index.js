@@ -9,7 +9,8 @@ export default new Vuex.Store({
     th: [],
     ROBOT_HEALTH: [],
     CURRENT_DATA: [],
-    TEMPERATURE_DATA: []
+    TEMPERATURE_DATA: [],
+    ALL_ROBOT_HEALTH: []
   },
   getters: {
 
@@ -33,6 +34,9 @@ export default new Vuex.Store({
     pushTemperatureData(state, newItem) {
       state.TEMPERATURE_DATA.push(newItem);
     },
+    pushAllRobotHealth(state, newItem) {
+      state.ALL_ROBOT_HEALTH.push(newItem);
+    },
     clearRobotHealth(state) {
       state.ROBOT_HEALTH = [];
     },
@@ -41,6 +45,9 @@ export default new Vuex.Store({
     },
     clearTemperatureData(state) {
       state.TEMPERATURE_DATA = [];
+    },
+    clearAllRobotHealth(state) {
+      state.ALL_ROBOT_HEALTH = [];
     }
   }
 })
