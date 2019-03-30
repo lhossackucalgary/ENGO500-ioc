@@ -204,7 +204,7 @@ def create_robots():
 def initSimData():
     #get all datastreams from api
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000", headers = headers)      
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -231,7 +231,7 @@ def initRobotStatusData():
     # Make list of all robots
     bot_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
@@ -250,7 +250,7 @@ def initRobotStatus():
     # Make list of all robots
     bot_id = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]

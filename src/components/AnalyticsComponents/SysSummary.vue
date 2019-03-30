@@ -10,7 +10,7 @@ import * as vega from 'vega'
 import {default as vegaEmbed} from 'vega-embed'
 import * as vegaLite from 'vega-lite'
 
-
+var stat_colors = [];
 
 
 export default {
@@ -26,18 +26,42 @@ export default {
   methods: {
      setUpVis7() {
         var th = this.$store.state.th;
+        var stat_exist = {
+            "a": false,
+            "r1": false,
+            "r2": false,
+            "r3": false,
+            "r4": false,
+            "r5": false
+        };
         if (th.length > 0) {
             var newData = [];
             for (var i = 0; i < th.length; i++) {
                 var name = th[i].name.slice(0,5);
                 if (name == "robot") {
-                    if (th[i].status == "Healthy") var stat = "R1 - Healthy";
-                    else if (th[i].status == "Warning") var stat = "R2 - Warning";
-                    else if (th[i].status == "Urgent") var stat = "R3 - Urgent";
-                    else if (th[i].status == "Unknown") var stat = "R4 - Unknown";
-                    else if (th[i].status == "Needs Parts") var stat = "R5 - Needs Parts";
+                    if (th[i].status == "Healthy") {
+                        var stat = "R1 - Healthy";
+                        stat_exist.r1 = true;
+                    }
+                    else if (th[i].status == "Warning") {
+                        var stat = "R2 - Warning";
+                        stat_exist.r2 = true;
+                    }
+                    else if (th[i].status == "Urgent") {
+                        var stat = "R3 - Urgent";
+                        stat_exist.r3 = true;
+                    }
+                    else if (th[i].status == "Unknown") {
+                        var stat = "R4 - Unknown";
+                        stat_exist.r4 = true;
+                    }
+                    else if (th[i].status == "Needs Parts") {
+                        var stat = "R5 - Needs Parts";
+                        stat_exist.r5 = true;
+                    }
                 } else {
                     var stat = "Active Crews";
+                    stat_exist.a = true;
                 }
                 var entry = {
                         "robot" : th[i].name,
@@ -46,10 +70,20 @@ export default {
                     };
                 newData.push(entry);
             }
+
+            stat_colors = [];
+            if (stat_exist.a == true) stat_colors.push('#000000');
+            if (stat_exist.r1 == true) stat_colors.push('#32D144');
+            if (stat_exist.r2 == true) stat_colors.push('#FB7F28');
+            if (stat_exist.r3 == true) stat_colors.push('#EC1C24');
+            if (stat_exist.r4 == true) stat_colors.push('#3F48CC');
+            if (stat_exist.r5 == true) stat_colors.push('#585858');
+            console.log(stat_colors);
             this._vis7data = [{
                 "name": "robots",
                 "values": newData
             }]
+            
             this.setupDotChart();
         } else {
             setTimeout(this.setUpVis7, 500)
@@ -57,7 +91,7 @@ export default {
         },
 
     setupDotChart(){
-        vega.scheme('basic', [ '#000000', '#32D144', '#FB7F28', '#EC1C24', '#3F48CC', '#585858']);
+        vega.scheme('basic', stat_colors);
 
         var spec = {
         "$schema": "https://vega.github.io/schema/vega/v5.json",

@@ -19,7 +19,7 @@ def grabAllRobotStatus():
     # Make list of all robots and status
     bot_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
@@ -133,7 +133,7 @@ def getWarningRobots():
 
 def getRobotDatastreams(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams?$top=50000" %id, headers = headers)      
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -145,7 +145,7 @@ def getRobotDatastreams(id):
 
 def getDatastreamObs(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations" %id, headers = headers)
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations?$top=50000" %id, headers = headers)      
     except:
         print("error: getting datastream obs in getDatastreamObs(id) for %d" %id)
         exit()
@@ -156,7 +156,7 @@ def getDatastreamObs(id):
 
 def getObsResult(id):
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)" %id, headers = headers)
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)?$top=50000" %id, headers = headers)      
     except:
         print("error: getting result in getObsResult(id) for %d" %id)
         exit()
@@ -237,7 +237,7 @@ def main():
     bot_list = []
     crew_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
