@@ -121,14 +121,14 @@ var Healthplot = function(){
             .style("fill","lightgreen")
             .attr("width", xScale.bandwidth())
             .attr("height", function(d) { 
-              return (h - _margin.bottom - yScale(d.health)); 
+              return (h - _margin.bottom - yScale(d.result)); 
               })
             .attr("x", function(d, i) { return xScale(i); })
-            .attr("y", function(d) { return yScale(d.health); })
+            .attr("y", function(d) { return yScale(d.result); })
             .attr("transform", `translate(${_margin.left}, 0)`)
             .append("svg:title") //now when you hover over the bars, it will tell you which robot it represents
             .text(function(d) {
-                return d.health; });
+                return d.result; });
         // same as return d["robot"];
     }
 
@@ -183,10 +183,10 @@ export default {
                 this._vis1.data.sort((a, b) => d3.ascending(parseInt(a.robot.slice(1),10), parseInt(b.robot.slice(1),10)));
             }
             if (order === "value-ascending") {
-                this._vis1.data.sort((a, b) => a.health - b.health);
+                this._vis1.data.sort((a, b) => a.result - b.result);
             }
             if (order === "value-descending") {
-                this._vis1.data.sort((a, b) => b.health - a.health);
+                this._vis1.data.sort((a, b) => b.result - a.result);
             }
             this._vis1.xAxisScale.domain(this._vis1.data.map(d => d.name));
             this._vis1.update();
