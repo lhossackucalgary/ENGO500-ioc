@@ -13,7 +13,7 @@ def main():
     """
     crew_list = []
     try:
-        crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        crew_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=5000", headers = headers)
         if (crew_loc.status_code >= 200) and (crew_loc.status_code < 300):
             responseJSON = crew_loc.json()
             for thing in responseJSON['value']:
