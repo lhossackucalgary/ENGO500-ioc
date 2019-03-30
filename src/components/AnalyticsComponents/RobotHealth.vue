@@ -118,7 +118,11 @@ var Healthplot = function(){
             .enter()
             .append("rect")
             .attr("class", "bar")
-            .style("fill","lightgreen")
+            .style("fill", function(d) {
+                if (d.result > 67) return "lightgreen";
+                if (d.result > 33) return "orange";
+                else return "red";
+                })
             .attr("width", xScale.bandwidth())
             .attr("height", function(d) { 
               return (h - _margin.bottom - yScale(d.result)); 
