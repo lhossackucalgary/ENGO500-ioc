@@ -4,36 +4,9 @@ import pickle
 import requests
 import geopy.distance
 import math
+import holland 
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
-
-def CalcDist(bot_list, crew_list, routes):
-    cb_dist = []
-    for crew in crew_list:
-        for bot in bot_list:
-            dist = geopy.distance.distance(bot['coord'],crew['coord']).m
-            cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
-
-    cb_dist = sorted(cb_dist, key=lambda k: k['dist'])
-    min_dist = math.inf
-    for crew in crew_list:
-        if len(crew['route']) < min_dist:
-            min_dist = len(crew['route'])
-
-
-    for route in cb_dist:
-        for crew in crew_list:
-            if (route['crewid'] == crew['iotid']) and (len(crew['route']) < (min_dist*2+1)):
-                crew['route'].append(route['robotid'])
-                crew['coord'] = route['botcoord']
-                bot_list = [bot for bot in bot_list if bot['iotid'] != route['robotid']]
-                return bot_list
-                break
-        else:
-            continue
-        break
-
-
 
 def main():
     """
@@ -52,9 +25,9 @@ def main():
     Broken bots status data from monitor_out2.data
     """
     with open('./monitor_out2.data', 'rb') as fin:
-        broken_bots = pickle.load(fin)
+        bot_list = pickle.load(fin)
 
-    broken_bots = [bot for bot in broken_bots if bot['status'] != 'Healthy']
+    bot_list = [bot for bot in bot_list if bot['status'] != 'Healthy']
 
 
     """
@@ -93,7 +66,7 @@ def main():
             logging.exception("Failed getting list of crew description")
 
 
-    for index in broken_bots:
+    for index in bot_list:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index['iotid']) + ")/Locations", headers = headers)
             if (broken_bot_loc.status_code >= 200) and (broken_bot_loc.status_code < 300):
@@ -112,7 +85,7 @@ def main():
         lon, lat = crew['coord'][0], crew['coord'][1]
         crew['coord'] = lat, lon
 
-    for bot in broken_bots:
+    for bot in bot_list:
         lon, lat = bot['coord'][0], bot['coord'][1]
         bot['coord'] = lat, lon
 
@@ -124,50 +97,60 @@ def main():
         if not crew['desc']:
             continue
         else:
-
             crew_desc = crew['desc'][1:-1]
             crew_desc = crew_desc.split(',')
             try:
                 crew_desc = list(map(int, crew_desc))
                 crew['route'] = crew_desc
-                broken_bots = [bot for bot in broken_bots if bot['iotid'] not in crew_desc]
+                for bot in bot_list:
+                    if crew_desc[-1] == bot['iotid']:
+                        crew['coord'] = bot['coord']
+                bot_list = [bot for bot in bot_list if bot['iotid'] not in crew_desc]
             except:
                 crew['desc'] = [];
 
 
     """
-    Calculate distance between crew and robot
+    Specify hyper-parameters for genomes
     """
-    routes = []
-    bot_urgent = []
-    bot_warning = []
+    broken_bots = {}
+    for bot in bot_list:
+        broken_bots.update({bot['iotid']: bot['coord']})
 
-    for bot in broken_bots:
-        if bot['status'] == 'Urgent':
-            bot_urgent.append(bot)
-        elif bot['status'] == 'Warning':
-            bot_warning.append(bot)
-        else:
-            continue
+    print(broken_bots)
 
-    while bot_urgent != []:
-        bot_urgent = CalcDist(bot_urgent, crew_list, routes)
-
-    while bot_warning != []:
-        bot_warning = CalcDist(bot_warning, crew_list, routes)
+    genome_parameters = {
+        "path": {"type": "[int]", "possible_values": broken_bots.keys(), "mutation_function": "swap"}
+    }
 
 
     """
-    Updating 'Thing' description
+    Define a fitness function
+    A pythonic way to find the length of a round trip
     """
-    for crew in crew_list:
-        if not crew['desc']:
-            crew['desc'] = '[' + str(crew['route'][0]) + ']'
+    def distance(p1, p2):
+        dist = geopy.distance.distance(p1,p2).m
+        return dist
+
+    def sum_of_distances(individual):
+        broken_bots = [position[bot] for bot in individual["path"]]
+        return sum(
+            [distance(bot_1, bot_2) for (bot_1, bot_2) in zip(broken_bots, broken_bots[1:] + [broken_bots[0]])]
+        )
+    my_population = evolve(
+        genome_parameters,
+        fitness_function=my_fitness_function,
+        anneal_mutation_rate=True,
+        show_fitness_plot=True,
+        num_generations=100,
+    )
+
+    print(my_population)
+
 
 
     """
     Uploading routes to server
-    """
 
     for crew in crew_list:
         try:
@@ -180,7 +163,7 @@ def main():
         except:
                 logging.exception("Exception thrown generating route")
 
-
+    """
 """
 Logging data
 """

@@ -15,15 +15,15 @@ def CalcDist(bot_list, crew_list, routes):
             cb_dist.append({'crewid': crew['iotid'], 'robotid': bot['iotid'], 'dist': dist, 'botcoord': bot['coord']})
 
     cb_dist = sorted(cb_dist, key=lambda k: k['dist'])
-    min_dist = math.inf
+    min_len = math.inf
     for crew in crew_list:
-        if len(crew['route']) < min_dist:
-            min_dist = len(crew['route'])
+        if len(crew['route']) < min_len:
+            min_len = len(crew['route'])
 
 
     for route in cb_dist:
         for crew in crew_list:
-            if (route['crewid'] == crew['iotid']) and (len(crew['route']) < (min_dist*2+1)):
+            if (route['crewid'] == crew['iotid']) and (len(crew['route']) < (min_len*2+1)):
                 crew['route'].append(route['robotid'])
                 crew['coord'] = route['botcoord']
                 bot_list = [bot for bot in bot_list if bot['iotid'] != route['robotid']]
@@ -124,12 +124,14 @@ def main():
         if not crew['desc']:
             continue
         else:
-
             crew_desc = crew['desc'][1:-1]
             crew_desc = crew_desc.split(',')
             try:
                 crew_desc = list(map(int, crew_desc))
                 crew['route'] = crew_desc
+                for bot in broken_bots:
+                    if crew_desc[-1] == bot['iotid']:
+                        crew['coord'] = bot['coord']
                 broken_bots = [bot for bot in broken_bots if bot['iotid'] not in crew_desc]
             except:
                 crew['desc'] = [];
@@ -139,36 +141,24 @@ def main():
     Calculate distance between crew and robot
     """
     routes = []
-    bot_urgent = []
-    bot_warning = []
-
-    for bot in broken_bots:
-        if bot['status'] == 'Urgent':
-            bot_urgent.append(bot)
-        elif bot['status'] == 'Warning':
-            bot_warning.append(bot)
-        else:
-            continue
-
-    while bot_urgent != []:
-        bot_urgent = CalcDist(bot_urgent, crew_list, routes)
-
-    while bot_warning != []:
-        bot_warning = CalcDist(bot_warning, crew_list, routes)
+    while broken_bots != []:
+        broken_bots = CalcDist(broken_bots, crew_list, routes)
 
 
     """
     Updating 'Thing' description
     """
     for crew in crew_list:
+        if not crew['route']:
+            continue
         if not crew['desc']:
             crew['desc'] = '[' + str(crew['route'][0]) + ']'
+        crew['desc'] = '[]'
 
 
     """
     Uploading routes to server
     """
-
     for crew in crew_list:
         try:
             data = {"description": crew['desc'], "properties": {"route": crew['route']}}
