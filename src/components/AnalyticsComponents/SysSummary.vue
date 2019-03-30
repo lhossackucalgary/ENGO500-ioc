@@ -55,7 +55,7 @@ export default {
                         var stat = "R4 - Unknown";
                         stat_exist.r4 = true;
                     }
-                    else if (th[i].status == "Needs Parts") {
+                    else if (th[i].status == "Needs parts") {
                         var stat = "R5 - Needs Parts";
                         stat_exist.r5 = true;
                     }
