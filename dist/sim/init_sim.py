@@ -26,7 +26,7 @@ def init_datastreams(id):
         {
             "name": "CPU_TEMP_stream_%d" %id,
             "description": "Datastream for recording temperature",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "Degree Celsius",
                 "symbol": "degC",
@@ -39,7 +39,7 @@ def init_datastreams(id):
         {
             "name": "POWER_DRAW_stream_%d" %id,
             "description": "Datastream for recording pressure",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "kiloPascal",
                 "symbol": "kPa",
@@ -52,7 +52,7 @@ def init_datastreams(id):
         {
             "name": "HP_stream_%d" %id,
             "description": "Health percentage",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "percentage",
                 "symbol": "%",
