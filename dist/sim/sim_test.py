@@ -11,8 +11,11 @@ and sensors for robots.
 import logging
 import os
 import requests
-import pickle
 import random
+import csv
+import pickle
+import datetime
+import re
 from util import *
 
 
@@ -203,11 +206,26 @@ def getData():
         dstype = ds["description"]
         
 
+def csvToJson():
+    sid = []
+    with open('HealthHistData.csv', newline='') as csvfile:
+        sid = list(csv.reader(csvfile))
+ 
+    f = open('healthHistJson.txt','w')
+    for i in range(len(sid)):
+        #strdate = datetime.datetime.strptime(sid[i][0], '%d %b %Y')
+        #print(strdate)
+        #exit()
+        ent = "{"+" \"date\": \"{0} 00:00:00 GMT-6\", \"average\": {1}, \"high\": {2}, \"low\": {3}".format(sid[i][0], sid[i][1], sid[i][2], sid[i][3])+"},\n"
+        f.write(ent)
+    f.close()
+
 def main():
-    create_crews()
-    create_robots()
+    #create_crews()
+    #create_robots()
     #init_sensors()
     #init_observedProperties()
+    csvToJson()
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
