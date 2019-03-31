@@ -96,7 +96,7 @@ export default {
         var spec = {
         "$schema": "https://vega.github.io/schema/vega/v5.json",
         "width": 1000,
-        "height": 300,
+        "height": 500,
         "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
         "autosize": "none",
 
