@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3 class="head">Robot Health</h3>
+      <h2 class="head">Current Robot State</h2>
       <div id="vis1box" class="vis_div">
           <svg id="vis1" class="svg_boxes"></svg>
       </div>
@@ -18,7 +18,7 @@
 import * as d3 from 'd3'
 
 /* constants */
-const _margin = ({top: 10, right: 0, bottom: 30, left: 40});
+const _margin = ({top: 10, right: 0, bottom: 50, left: 45});
 
 var _vis1;
 
@@ -58,11 +58,11 @@ var Healthplot = function(){
 
         this.xScale = d3.scaleBand()
             .domain(d3.range(0, xLength))
-            .rangeRound(xRange)
+            .range(xRange)
             .padding(0.1);
 
         this.xAxisScale = d3.scaleBand()
-            .rangeRound(xRange) 
+            .range(xRange) 
             .domain(this.data.map(function(d){ return d.robot; }));
 
     };
@@ -85,15 +85,15 @@ var Healthplot = function(){
 
         // x-axis label
         this.svg.append("text")
-            .attr("x", this.width / 2)
-            .attr("y", this.height - _margin.bottom / 2 + 15)
+            .attr("x", 100)
+            .attr("y", this.height - _margin.bottom / 2 + 20)
             .style("text-anchor", "middle")
             .text("Robot Name");
 
         // y-axis label
         this.svg.append("text")
             .attr("x", _margin.left)
-            .attr("y", this.height/2)
+            .attr("y", this.height/2 + 10)
             .attr("transform", `rotate(-90, ${_margin.left / 3}, ${this.height/2})`)
             .style("text-anchor", "middle")
             .text("Health (%)");
@@ -108,7 +108,7 @@ var Healthplot = function(){
 
         var xScale = d3.scaleBand()
             .domain(d3.range(0, this.xLength))
-            .rangeRound(this.xRange)
+            .range(this.xRange)
             .padding(0.1);
         
         var h = this.height;
@@ -118,7 +118,11 @@ var Healthplot = function(){
             .enter()
             .append("rect")
             .attr("class", "bar")
-            .style("fill","lightgreen")
+            .style("fill", function(d) {
+                if (d.result > 67) return "lightgreen";
+                if (d.result > 33) return "orange";
+                else return "red";
+                })
             .attr("width", xScale.bandwidth())
             .attr("height", function(d) { 
               return (h - _margin.bottom - yScale(d.result)); 
@@ -165,11 +169,13 @@ export default {
             this._vis1 = new Healthplot();
             this._vis1.svg = d3.select("#vis1");
             //match size of svg container in html
-            this._vis1.width = this._vis1.svg.node().getBoundingClientRect().width != undefined ?
-                this._vis1.svg.node().getBoundingClientRect().width : this._vis1.width; //if undefined
+            //this._vis1.width = this._vis1.svg.node().getBoundingClientRect().width != undefined ?
+            //    this._vis1.svg.node().getBoundingClientRect().width : this._vis1.width; //if undefined
             this._vis1.height = this._vis1.svg.node().getBoundingClientRect().height;
-
             this._vis1.data = this.$store.state.ROBOT_HEALTH;
+            this._vis1.width = this.$store.state.ROBOT_HEALTH.length*30;
+            document.getElementById('vis1').setAttribute("width", this.$store.state.ROBOT_HEALTH.length*30+"px");
+
             this._vis1.setupScales([this._vis1.height - _margin.bottom, _margin.top], [0, 100], [0, this._vis1.width - _margin.left], this._vis1.data.length);
             this._vis1.setupAxis();
             this._vis1.createBars();
@@ -215,16 +221,12 @@ li {
 a {
   color: #42b983;
 }
-div#vis1box {
-    overflow-y: scroll;
-}
 
 div.vis_div {
     float: left;
     width: 85%;
     height: 470px;
-    overflow-y: scroll;
-    overflow-x:hidden !important;
+    overflow: scroll;
 }
 div.vis_btn {
     float: left;
@@ -262,15 +264,15 @@ button:focus {
     background: white;
     /*border: 1px solid lightgrey;*/
     display: block;
-    width: 95%;
     min-width: 800px;
-    min-height: 400px;
+    min-height: 500px;
     /*box-sizing: border-box;*/
     margin: 10px auto;
     overflow-x:hidden;
 }
 #vis1box {
     min-height: 800px;
+    overflow-y: scroll;
 }
 .spacer {
     height: 100px;

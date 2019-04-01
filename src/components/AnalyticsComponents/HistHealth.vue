@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h2>Sensor876: CPU Temperature</h2>
+      <h2>Robot Health</h2>
       <div id="vis3box" class="vis_div">
           <svg id="vis3" class="svg_boxes"></svg>
       </div>
@@ -42,7 +42,7 @@ var second = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
     ];
 
 var _vis3;
-var TEMPERATURE_DATA = [];
+var ALL_ROBOT_HEALTH = [];
 
 /* --------------------------------------------------------------------------------------------- */
 /* ---------------------------------------- LINE GRAPH ----------------------------------------- */
@@ -168,7 +168,7 @@ var singleLineGraph = function () {
                 //console.log(fulldt);
                 var html  = timestr + "<br/>" + datestr + "<br/>" +
                             "<span style='color:" + color + ";'>" + d.robot + "</span><br/>" +
-                            "<b>" + d.result + "</b> ˚C";
+                            "<b>" + d.result + "</b> %";
                 //console.log(d3.event.pageX+" "+d3.event.pageY);
                 tooltip.html(html)
                     .style("left", d3.event.pageX + "px")
@@ -176,7 +176,6 @@ var singleLineGraph = function () {
                 .transition()
                     .duration(200) // ms
                     .style("opacity", .9) // started as 0!
-
             
             })
             .on("mouseout", function(d) {
@@ -244,6 +243,14 @@ var singleLineGraph = function () {
                     }
                 }
             }
+        } else if (datatype == "health") {
+            for (var i = 0; i < rbt_names.length; i++) {
+                for (var j = 0; j < ALL_ROBOT_HEALTH.length; j++) {
+                    if (rbt_names[i] == ALL_ROBOT_HEALTH[j].robot) {
+                        all_rbt_obs.push(ALL_ROBOT_HEALTH[j]);
+                    }
+                }
+            }
         }
 
         this.data = all_rbt_obs;
@@ -288,7 +295,7 @@ var singleLineGraph = function () {
 }
 
 export default {
-  name: 'CPUTemp',
+  name: 'HistHealth',
   data () {
     return {
       _vis3: this._vis3,
@@ -297,15 +304,15 @@ export default {
   },
   methods: {
     setupVis3(){
-      if (this.$store.state.TEMPERATURE_DATA.length > 0) {
-          TEMPERATURE_DATA = this.$store.state.TEMPERATURE_DATA;
+      if (this.$store.state.ALL_ROBOT_HEALTH.length > 0) {
+          ALL_ROBOT_HEALTH = this.$store.state.ALL_ROBOT_HEALTH;
           this._vis3 = new singleLineGraph();
           this._vis3.svg = d3.select("#vis3");
           //match size of svg container in html
           this._vis3.width = this._vis3.svg.node().getBoundingClientRect().width != undefined ?
               this._vis3.svg.node().getBoundingClientRect().width : this._vis3.width; //if undefined
           this._vis3.height = this._vis3.svg.node().getBoundingClientRect().height;
-          this._vis3.yLabel = "Temperature (Celcius)";
+          this._vis3.yLabel = "Health (%)";
 
           var temp = this.message.split(" ");
           var rbt_names = [];
@@ -314,7 +321,7 @@ export default {
               rbt_names = rbt_names.concat(temp2);
           }
 
-          this._vis3.update(rbt_names, "temperature");
+          this._vis3.update(rbt_names, "health");
       } else {
           setTimeout(this.setupVis3, 500);
       }
@@ -327,7 +334,7 @@ export default {
             rbt_names = rbt_names.concat(temp2);
         }
         //console.log(rbt_names);
-        this._vis3.update(rbt_names, "temperature");
+        this._vis3.update(rbt_names, "health");
     }
   },
   mounted() {

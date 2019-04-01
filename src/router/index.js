@@ -12,6 +12,7 @@ import RobotHealth from '@/components/AnalyticsComponents/RobotHealth'
 import CPUTemp from '@/components/AnalyticsComponents/CPUTemp'
 import PowerDraw from '@/components/AnalyticsComponents/PowerDraw'
 import HistData from '@/components/AnalyticsComponents/HistData'
+import HistHealth from '@/components/AnalyticsComponents/HistHealth'
 
 Vue.use(Router)
 
@@ -55,6 +56,10 @@ export default new Router({
         {
           path: 'hist-data',
           component: HistData
+        },
+        {
+          path: 'hist-health',
+          component: HistHealth
         }
       ]
     },

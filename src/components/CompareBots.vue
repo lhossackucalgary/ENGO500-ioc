@@ -211,6 +211,7 @@ var singleLineGraph = function () {
     this.xAxis;
     this.yAxis;
     this.gx;
+    this.type;
 
     this.dataNestLength;
     this.legendSpace = {x:70, y:18};
@@ -255,7 +256,7 @@ var singleLineGraph = function () {
 
     }
 
-    this.multiLine = function(lineData, i) {
+    this.multiLine = function(lineData, i, datatype) {
 
         this.lineColorScale = d3.scaleOrdinal(d3["schemeSet2"]);
 
@@ -283,7 +284,7 @@ var singleLineGraph = function () {
             .data(lineData.values)
             .attr("class", "line")
             .attr("id", function(d) { 
-                return d.robot+"-"+d.date; 
+                return d.robot+"-"+d.date+"-"+datatype; 
                 })
             .attr("d", valueline(lineData.values))
             .attr("stroke", colors[i])
@@ -307,11 +308,11 @@ var singleLineGraph = function () {
             .attr("height", 10)
             .style("fill", colors[i])
             .on("mouseover", function(d) {
-                d3.select("#"+d.robot+"-"+d.date)
+                d3.select("#"+d.robot+"-"+d.date+"-"+datatype)
                     .attr("stroke-width", 5);
             })
             .on("mouseout", function(d) {
-                d3.select("#"+d.robot+"-"+d.date)
+                d3.select("#"+d.robot+"-"+d.date+"-"+datatype)
                     .attr("stroke-width", 2);
             });
 
@@ -323,11 +324,11 @@ var singleLineGraph = function () {
             .attr("class", "legend")    // style the legend
             .style("fill", "black")
             .on("mouseover", function(d) {
-                d3.select("#"+d.robot+"-"+d.date)
+                d3.select("#"+d.robot+"-"+d.date+"-"+datatype)
                     .attr("stroke-width", 5);
                 })
             .on("mouseout", function(d) {
-                d3.select("#"+d.robot+"-"+d.date)
+                d3.select("#"+d.robot+"-"+d.date+"-"+datatype)
                     .attr("stroke-width", 2);
             })
             .text(function(d) {return d.robot; });
@@ -336,6 +337,7 @@ var singleLineGraph = function () {
 
     this.update = function(rbt_names, datatype) {
         var all_rbt_obs = []; 
+        //this.type = datatype;
         if (datatype == "current") {
             for (var i = 0; i < rbt_names.length; i++) {
                 for (var j = 0; j < CURRENT_DATA.length; j++) {
@@ -387,7 +389,7 @@ var singleLineGraph = function () {
             .call(d3.axisLeft(this.yScale));
         
         for (var i = 0; i < dataNest.length; i++) {
-            this.multiLine(dataNest[i], i);
+            this.multiLine(dataNest[i], i, datatype);
         }
         /*
         //add new data
@@ -478,6 +480,7 @@ export default {
                 _vis2.svg.node().getBoundingClientRect().width : _vis2.width; //if undefined
             _vis2.height = _vis2.svg.node().getBoundingClientRect().height;
             _vis2.yLabel = "Current (Ampere)";
+            _vis2.type = "current";
 
             var rbt_names = [];
             message_v2 = "";
@@ -502,6 +505,7 @@ export default {
                 _vis3.svg.node().getBoundingClientRect().width : _vis3.width; //if undefined
             _vis3.height = _vis3.svg.node().getBoundingClientRect().height;
             _vis3.yLabel = "Temperature (Celcius)";
+            _vis3.type = "temperature";
 
             var rbt_names = [];
             message_v3 = "";
@@ -524,6 +528,7 @@ export default {
                 _vis4.svg.node().getBoundingClientRect().width : _vis4.width; //if undefined
             _vis4.height = _vis4.svg.node().getBoundingClientRect().height;
             _vis4.yLabel = "Health (%)";
+            _vis2.type = "health";
 
             var rbt_names = [];
             message_v4 = "";
