@@ -73,13 +73,32 @@ export default {
             }
 
             stat_colors = [];
-            if (stat_exist.a > 0) stat_colors.push('#000000');
-            if (stat_exist.r1 > 0) stat_colors.push('#32D144');
-            if (stat_exist.r2 > 0) stat_colors.push('#FB7F28');
-            if (stat_exist.r3 > 0) stat_colors.push('#EC1C24');
-            if (stat_exist.r4 > 0) stat_colors.push('#3F48CC');
-            if (stat_exist.r5 > 0) stat_colors.push('#585858');
-            console.log(stat_colors);
+            var stat_counter = [];
+            if (stat_exist.a > 0) {
+                stat_colors.push('#000000');
+                stat_counter.push({"status": "Active Crews", "count": stat_exist.a});
+            }
+            if (stat_exist.r1 > 0) {
+                stat_colors.push('#32D144');
+                stat_counter.push({"status": "R1 - Healthy", "count": stat_exist.r1});
+            }
+            if (stat_exist.r2 > 0) {
+                stat_colors.push('#FB7F28');
+                stat_counter.push({"status": "R2 - Warning", "count": stat_exist.r2});
+            }
+            if (stat_exist.r3 > 0) {
+                stat_colors.push('#EC1C24');
+                stat_counter.push({"status": "R3 - Urgent", "count": stat_exist.r3});
+            }
+            if (stat_exist.r4 > 0) {
+                stat_colors.push('#3F48CC');
+                stat_counter.push({"status": "R4 - Unknown", "count": stat_exist.r4});
+            }
+            if (stat_exist.r5 > 0) {
+                stat_colors.push('#585858');
+                stat_counter.push({"status": "R5 - Needs Parts", "count": stat_exist.r5});
+            }
+            //console.log(stat_colors);
             this._vis7data = {
                 "name": "robots",
                 "values": newData
@@ -87,14 +106,7 @@ export default {
             
             this._vis7count = {
                 "name": "botcount",
-                "values": [
-                    {"status": "R1 - Healthy", "count": stat_exist.r1},
-                    {"status": "R2 - Warning", "count": stat_exist.r2},
-                    {"status": "R3 - Urgent", "count": stat_exist.r3},
-                    {"status": "R4 - Unknown", "count": stat_exist.r4},
-                    {"status": "R5 - Needs Parts", "count": stat_exist.r5},
-                    {"status": "R1 - Active Crews", "count": stat_exist.a}
-                ]
+                "values": stat_counter
             }
 
             this.setupDotChart();
@@ -158,20 +170,19 @@ export default {
                 "enter": {
                 "fill": {"scale": "color", "field": "status"},
                 "xfocus": {"scale": "xscale", "field": "status", "band": 0.5},
-                "yfocus": {"signal": "cy"},
-                "tooltip": {"signal": "{'Name': datum.robot, 'ID': datum.id}"}
+                "yfocus": {"signal": "cy"}
                 },
                 "update": {
                 "size": {"signal": "pow(2 * radius, 2)"},
                 "stroke": {"value": "white"},
                 "strokeWidth": {"value": 1},
-                "zindex": {"value": 0}
+                "zindex": {"value": 0},
+                "tooltip": {"signal": "{'Name': datum.robot, 'ID': datum.id}"}
                 },
                 "hover": {
                 "stroke": {"value": "purple"},
                 "strokeWidth": {"value": 3},
-                "zindex": {"value": 1},
-                "tooltip": {"content": "data"}
+                "zindex": {"value": 1}
                 }
             },
             "transform": [
