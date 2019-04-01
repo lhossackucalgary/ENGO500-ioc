@@ -134,6 +134,19 @@ var Healthplot = function(){
             .text(function(d) {
                 return d.result; });
         // same as return d["robot"];
+        
+        this.svg.selectAll("barlabel")
+            .data(this.data)
+            .enter()
+            .append("text")
+                .attr("class", "barlabel")
+                .attr("x", function(d) { 
+                    return 240-yScale(d.result); 
+                    })
+                .attr("y", function(d, i) {return xScale(i) + _margin.left*6; })
+                .attr("transform", `rotate(-90, ${_margin.left}, ${this.height/2})`)
+                .text(function(d) {return d.result; })
+                .style("fill", "black");
     }
 
     this.update = function() {
