@@ -239,16 +239,6 @@ if __name__ == '__main__':
     fitness_function.best_route_in_history = []
     fitness_function.best_route_in_history_len = math.inf
 
-    # # init to random order
-    # def init_distr():
-    #     random.seed()
-    #     elem = random.choice(init_distr.curr_list)
-    #     init_distr.curr_list.remove(elem)
-    #     if len(init_distr.curr_list) == 0:
-    #         init_distr.curr_list = [i for i in range(0, len(INPUT_ARRAY))]
-    #     return elem
-    # init_distr.curr_list = [i for i in range(0, len(INPUT_ARRAY))]
-
     def twoOpt(gene):
         for i in range(len(gene)-1):
             temp_gene = []
@@ -356,10 +346,16 @@ if __name__ == '__main__':
                 storage_options={},
                 logging_options={})#{'format': '%(message)s', 'level': 20})
 
+    def splitOut(bot_list, num_crews):
+        pass
+
+    crews_list = splitOut(dualOpt(fitness_function.best_route_in_history))
+
+    # Upload to server
     route = []
     # print(fitness_function.best_route_in_history)
     # print([i["iotid"] for i in INPUT_ARRAY])
-    for i in fitness_function.best_route_in_history:
+    for i in dualOpt(fitness_function.best_route_in_history):
         route.append(INPUT_ARRAY[i]['iotid'])
 
     crew = CREW_ARRAY[0]
