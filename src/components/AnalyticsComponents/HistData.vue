@@ -279,7 +279,7 @@ export default {
                                     {"orient": "left", "scale": "yDetail", "grid":true, "title":"Health (%)"}
                                 ],
                                 "legends": [
-                                    {"orient": "bottom-right", "fill":"color", "offset": 0, "zindex": 1, "title":"Legend:", "fillColor":"white", "padding": 3,"labelFontSize": 18}
+                                    {"orient": "bottom-left", "fill":"color", "offset": 0, "zindex": 1, "title":"Legend:", "fillColor":"white", "padding": 3,"labelFontSize": 18}
                                 ]
                                 },
 
