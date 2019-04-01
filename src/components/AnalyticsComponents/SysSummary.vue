@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3>System Summary</h3>
+      <h2>System Summary</h2>
       <div id="vis7" class="vis_div"></div>
   </div>
 </template>
@@ -122,7 +122,7 @@ export default {
         "$schema": "https://vega.github.io/schema/vega/v5.json",
         "width": 1000,
         "height": 500,
-        "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
+        "padding": {"left": 5, "right": 5, "top": 0, "bottom": 30},
         "autosize": "none",
 
         "signals": [
@@ -158,7 +158,7 @@ export default {
         ],
 
         "axes": [
-            { "orient": "bottom", "scale": "xscale" }
+            { "orient": "bottom", "scale": "xscale", "labelFontSize": 15 }
         ],
 
         "marks": [

@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3 class="head">Robot Health</h3>
+      <h2 class="head">Current Robot State</h2>
       <div id="vis1box" class="vis_div">
           <svg id="vis1" class="svg_boxes"></svg>
       </div>
