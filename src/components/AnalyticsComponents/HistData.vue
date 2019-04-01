@@ -165,7 +165,7 @@ export default {
                                     {
                                     "name": "color",
                                     "type": "ordinal",
-                                    "domain": ["high", "average", "low"],
+                                    "domain": ["highest", "average", "lowest"],
                                     "range": ["lightgreen", "steelblue", "red"]
                                     }
                                 ],
@@ -194,6 +194,23 @@ export default {
                                         }
                                         },
                                         {
+                                        "type": "symbol",
+                                        "from": {"data": "health"},
+                                        "encode": {
+                                            "update": {
+                                            "shape": {"value" : "circle"},
+                                            "size": {"value" : 40},
+                                            "opacity": {"value" : 0.3},
+                                            "x": {"scale": "xDetail", "field": "date"},
+                                            "y": {"scale": "yDetail", "field": "high"},
+                                            "y2": {"scale": "yDetail", "value": 0},
+                                            "stroke": {"value": "lightgreen"},
+                                            "strokeWidth": {"value": 2},
+                                            "tooltip": {"signal": "{'Date': timeFormat(datum.date, '%b %d 20%y'), 'Highest Health (%)': datum.high}"}
+                                            }
+                                        }
+                                        },
+                                        {
                                         "type": "line",
                                         "from": {"data": "health"},
                                         "encode": {
@@ -202,7 +219,24 @@ export default {
                                             "y": {"scale": "yDetail", "field": "average"},
                                             "y2": {"scale": "yDetail", "value": 0},
                                             "stroke": {"value": "steelblue"},
-                                            "strokeWidth": {"value": 2}
+                                            "strokeWidth": {"value": 2},
+                                            }
+                                        }
+                                        },
+                                        {
+                                        "type": "symbol",
+                                        "from": {"data": "health"},
+                                        "encode": {
+                                            "update": {
+                                            "shape": {"value" : "circle"},
+                                            "size": {"value" : 40},
+                                            "opacity": {"value" : 0.3},
+                                            "x": {"scale": "xDetail", "field": "date"},
+                                            "y": {"scale": "yDetail", "field": "average"},
+                                            "y2": {"scale": "yDetail", "value": 0},
+                                            "stroke": {"value": "steelblue"},
+                                            "strokeWidth": {"value": 2},
+                                            "tooltip": {"signal": "{'Date': timeFormat(datum.date, '%b %d 20%y'), 'Average Health (%)': datum.average}"}
                                             }
                                         }
                                         },
@@ -215,7 +249,24 @@ export default {
                                             "y": {"scale": "yDetail", "field": "low"},
                                             "y2": {"scale": "yDetail", "value": 0},
                                             "stroke": {"value": "red"},
-                                            "strokeWidth": {"value": 2}
+                                            "strokeWidth": {"value": 2},
+                                            }
+                                        }
+                                        },
+                                        {
+                                        "type": "symbol",
+                                        "from": {"data": "health"},
+                                        "encode": {
+                                            "update": {
+                                            "shape": {"value" : "circle"},
+                                            "size": {"value" : 40},
+                                            "opacity": {"value" : 0.3},
+                                            "x": {"scale": "xDetail", "field": "date"},
+                                            "y": {"scale": "yDetail", "field": "low"},
+                                            "y2": {"scale": "yDetail", "value": 0},
+                                            "stroke": {"value": "red"},
+                                            "strokeWidth": {"value": 2},
+                                            "tooltip": {"signal": "{'Date': timeFormat(datum.date, '%b %d 20%y'), 'Lowest Health (%)': datum.low}"}
                                             }
                                         }
                                         }
