@@ -1,7 +1,7 @@
 <template>
   <div>
+      <h2>Sensor876: CPU Temperature</h2>
       <div id="vis3box" class="vis_div">
-          <h3>Sensor876: CPU Temperature</h3>
           <svg id="vis3" class="svg_boxes"></svg>
       </div>
       <div id="vis3btn" class="vis_btn">
@@ -9,6 +9,7 @@
           <textarea id="vis3textbox" v-model="message" placeholder="robot1 robot2 ..."></textarea>
           <br>
           <button id="btn_vis3_update" class="cat" v-on:click="vis3_update()">Update Chart</button>
+          <div id="tooltipbox"></div>
       </div>
   </div>
 
@@ -25,6 +26,20 @@ var colors = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', 
     '#806060', '#ff2200', '#330e00', '#e59173', '#993d00', '#4d4139', '#d97400', '#f2ba79', '#d9bfa3', '#ffaa00', '#734d00', '#332200', '#bfb300', '#6f7339', '#ccff00', '#1b3300', '#639926', '#d9ffbf', '#3df23d', '#304030', '#00733d', '#00f2a2',
     '#2db3aa', '#005c73', '#40d9ff', '#8fb6bf', '#002233', '#003d73', '#3995e6', '#001180', '#070033', '#574d99', '#7e39e6', '#3b264d', '#6b0073', '#b086b3', '#f23de6', '#b2005f', '#33001b', '#73002e', '#f27999', '#b20018']; // '#ffffff', '#000000',
 
+var month = [
+    "January", "February", "March",
+    "April", "May", "June", "July",
+    "August", "September", "October",
+    "November", "December"
+  ];
+
+var second = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10",
+    "11", "12", "13", "14", "15", "16", "17", "18", "19", "20",
+    "21", "22", "23", "24", "25", "26", "27", "28", "29", "30",
+    "31", "32", "33", "34", "35", "36", "37", "38", "39", "40",
+    "41", "42", "43", "44", "45", "46", "47", "48", "49", "50",
+    "51", "52", "53", "54", "55", "56", "57", "58", "59", "60",
+    ];
 
 var _vis3;
 var TEMPERATURE_DATA = [];
@@ -131,6 +146,45 @@ var singleLineGraph = function () {
             .append("svg:title")
             .text(lineData.key);
 
+        // Add points with tooltip
+        var tooltip = d3.select("#tooltipbox")
+                  .attr("class", "tooltip")
+                  .style("opacity", 0);
+
+        this.svg.selectAll("#dot"+lineData.values[0].robot)
+            .data(lineData.values)
+            .enter().append("circle")
+            .attr("id", function(d) {return "dot"+d.robot;})
+            .attr("r", 4)
+            .attr("cx", function(d) { return xScale(d.date);})
+            .attr("cy", function(d) { return yScale(d.result);})
+            .attr("fill", colors[i])
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .on("mouseover", function(d) {
+                var color = colors[i];
+                var dt = new Date(d.date);
+                var timestr = dt.getHours()+":"+dt.getMinutes()+":"+second[dt.getSeconds()];
+                var datestr = month[dt.getMonth()]+" "+dt.getDate()+" 20"+(dt.getYear()-100);
+                //console.log(fulldt);
+                var html  = timestr + "<br/>" + datestr + "<br/>" +
+                            "<span style='color:" + color + ";'>" + d.robot + "</span><br/>" +
+                            "<b>" + d.result + "</b> ˚C";
+                //console.log(d3.event.pageX+" "+d3.event.pageY);
+                tooltip.html(html)
+                    .style("left", d3.event.pageX + "px")
+                    .style("top", d3.event.pageY - 120 + "px")
+                .transition()
+                    .duration(200) // ms
+                    .style("opacity", .9) // started as 0!
+
+            
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                    .duration(300) // ms
+                    .style("opacity", 0);
+            });
+
         // Add the Legend
         var legendMax = parseInt((this.width/1.3)/this.legendSpace.x, 10);
         if (i == 0) var j = 0;
@@ -213,6 +267,16 @@ var singleLineGraph = function () {
             .call(d3.axisBottom(this.xScale));
 
         // Add the Y Axis
+        this.yAxis = d3.axisLeft(this.yScale)
+            .tickSize(-this.width)
+            .tickFormat("");
+
+        this.svg.append("g")
+            .attr("transform", `translate(${_margin.left}, 0)`)
+            .attr("class","grid")
+            .style("opacity", "0.2")
+            .call(this.yAxis);
+        
         this.svg.append("g")
             .attr("transform", `translate(${_margin.left}, 0)`)
             .call(d3.axisLeft(this.yScale));
@@ -341,4 +405,17 @@ button:focus {
     overflow-x:hidden;
     min-height: 600px;
 }
+.grid {
+    opacity: 0.2;
+    stroke-dasharray: 5 5; 
+}
+.tooltip {
+            position: absolute;
+            font-size: 12px;
+            width:  auto;
+            height: auto;
+            pointer-events: none;
+            background-color: white;
+            z-index: 1;
+        }
 </style>

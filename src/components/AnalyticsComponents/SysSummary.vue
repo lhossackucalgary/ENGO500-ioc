@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3>System Summary</h3>
+      <h2>System Summary</h2>
       <div id="vis7" class="vis_div"></div>
   </div>
 </template>
@@ -17,7 +17,8 @@ export default {
   name: 'SysSummary',
   data () {
     return {
-      _vis7data: []
+      _vis7data: [],
+      _vis7count: []
     }
   },
   mounted() {
@@ -27,12 +28,12 @@ export default {
      setUpVis7() {
         var th = this.$store.state.th;
         var stat_exist = {
-            "a": false,
-            "r1": false,
-            "r2": false,
-            "r3": false,
-            "r4": false,
-            "r5": false
+            "a": 0,
+            "r1": 0,
+            "r2": 0,
+            "r3": 0,
+            "r4": 0,
+            "r5": 0
         };
         if (th.length > 0) {
             var newData = [];
@@ -41,27 +42,27 @@ export default {
                 if (name == "robot") {
                     if (th[i].status == "Healthy") {
                         var stat = "R1 - Healthy";
-                        stat_exist.r1 = true;
+                        stat_exist.r1++;
                     }
                     else if (th[i].status == "Warning") {
                         var stat = "R2 - Warning";
-                        stat_exist.r2 = true;
+                        stat_exist.r2++;
                     }
                     else if (th[i].status == "Urgent") {
                         var stat = "R3 - Urgent";
-                        stat_exist.r3 = true;
+                        stat_exist.r3++;
                     }
                     else if (th[i].status == "Unknown") {
                         var stat = "R4 - Unknown";
-                        stat_exist.r4 = true;
+                        stat_exist.r4++;
                     }
                     else if (th[i].status == "Needs parts") {
                         var stat = "R5 - Needs Parts";
-                        stat_exist.r5 = true;
+                        stat_exist.r5++;
                     }
                 } else {
                     var stat = "Active Crews";
-                    stat_exist.a = true;
+                    stat_exist.a++;
                 }
                 var entry = {
                         "robot" : th[i].name,
@@ -72,18 +73,42 @@ export default {
             }
 
             stat_colors = [];
-            if (stat_exist.a == true) stat_colors.push('#000000');
-            if (stat_exist.r1 == true) stat_colors.push('#32D144');
-            if (stat_exist.r2 == true) stat_colors.push('#FB7F28');
-            if (stat_exist.r3 == true) stat_colors.push('#EC1C24');
-            if (stat_exist.r4 == true) stat_colors.push('#3F48CC');
-            if (stat_exist.r5 == true) stat_colors.push('#585858');
-            console.log(stat_colors);
-            this._vis7data = [{
+            var stat_counter = [];
+            if (stat_exist.a > 0) {
+                stat_colors.push('#000000');
+                stat_counter.push({"status": "Active Crews", "count": stat_exist.a});
+            }
+            if (stat_exist.r1 > 0) {
+                stat_colors.push('#32D144');
+                stat_counter.push({"status": "R1 - Healthy", "count": stat_exist.r1});
+            }
+            if (stat_exist.r2 > 0) {
+                stat_colors.push('#FB7F28');
+                stat_counter.push({"status": "R2 - Warning", "count": stat_exist.r2});
+            }
+            if (stat_exist.r3 > 0) {
+                stat_colors.push('#EC1C24');
+                stat_counter.push({"status": "R3 - Urgent", "count": stat_exist.r3});
+            }
+            if (stat_exist.r4 > 0) {
+                stat_colors.push('#3F48CC');
+                stat_counter.push({"status": "R4 - Unknown", "count": stat_exist.r4});
+            }
+            if (stat_exist.r5 > 0) {
+                stat_colors.push('#585858');
+                stat_counter.push({"status": "R5 - Needs Parts", "count": stat_exist.r5});
+            }
+            //console.log(stat_colors);
+            this._vis7data = {
                 "name": "robots",
                 "values": newData
-            }]
+            }
             
+            this._vis7count = {
+                "name": "botcount",
+                "values": stat_counter
+            }
+
             this.setupDotChart();
         } else {
             setTimeout(this.setUpVis7, 500)
@@ -97,12 +122,13 @@ export default {
         "$schema": "https://vega.github.io/schema/vega/v5.json",
         "width": 1000,
         "height": 500,
-        "padding": {"left": 5, "right": 5, "top": 0, "bottom": 20},
+        "padding": {"left": 5, "right": 5, "top": 0, "bottom": 30},
         "autosize": "none",
 
         "signals": [
             { "name": "cx", "update": "width / 2" },
             { "name": "cy", "update": "height / 2" },
+            { "name": "labelY", "update": "height - 10"},
             { "name": "radius", "value": 8, "bind": {"input": "range", "min": 2, "max": 15, "step": 1} },
             { "name": "collide", "value": 1},
             { "name": "gravityX", "value": 0.2},
@@ -110,7 +136,7 @@ export default {
             { "name": "static", "value": false}
         ],
 
-        "data": this._vis7data,
+        "data": [this._vis7data,this._vis7count],
 
         "scales": [
             {
@@ -132,7 +158,7 @@ export default {
         ],
 
         "axes": [
-            { "orient": "bottom", "scale": "xscale" }
+            { "orient": "bottom", "scale": "xscale", "labelFontSize": 15 }
         ],
 
         "marks": [
@@ -150,7 +176,8 @@ export default {
                 "size": {"signal": "pow(2 * radius, 2)"},
                 "stroke": {"value": "white"},
                 "strokeWidth": {"value": 1},
-                "zindex": {"value": 0}
+                "zindex": {"value": 0},
+                "tooltip": {"signal": "{'Name': datum.robot, 'ID': datum.id}"}
                 },
                 "hover": {
                 "stroke": {"value": "purple"},
@@ -170,6 +197,22 @@ export default {
                 ]
                 }
             ]
+            },
+            {
+            "type": "text",
+            "from": {"data": "botcount"},
+            "encode": {
+                "update": {
+                "x": {"scale": "xscale", "field": "status"},
+                "dx": {"value": 80},
+                "y": {"signal": "labelY"},
+                "fill": {"value": "black"},
+                "align": {"value": "center"},
+                "baseline": {"value": "center"},
+                "text": {"field": "count"},
+                "fontSize": {"value":18}
+                }
+            }
             }
         ]
         }
