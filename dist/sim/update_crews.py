@@ -13,7 +13,7 @@ def update_crews():
         logging.debug("Getting crew props..")
         id = crew["iotid"]
         try:
-            r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)" % id, headers = headers)
+            r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)?$top=10000" % id, headers = headers)
             if (r.status_code >= 200) and (r.status_code < 300):
                 props = r.json()["properties"]
                 logging.debug(props)
@@ -30,7 +30,7 @@ def update_crews():
 
         # ifexists, GET location of next robot in line, else set next_robot_loc to current_loc
         try:
-            r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Locations" % nextbot, headers = headers)
+            r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Locations?$top=50000" % nextbot, headers = headers)
             if (r.status_code >= 200) and (r.status_code < 300):
                 loc = r.json()["value"][0]["location"]
                 logging.debug(loc)

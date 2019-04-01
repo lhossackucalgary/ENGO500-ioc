@@ -5,9 +5,10 @@
             <div class="analytics-nav">
                 <div class="an-nav-center">
                     <router-link to="/analytics/sys-summary" class="an-nav-link">System Summary</router-link>
-                    <router-link to="/analytics/robot-health" class="an-nav-link">Robot Health</router-link>
+                    <router-link to="/analytics/robot-health" class="an-nav-link">Current Robot State</router-link>
                     <router-link to="/analytics/cpu-temp" class="an-nav-link">CPU Temperature</router-link>
                     <router-link to="/analytics/power-draw" class="an-nav-link">Power Draw</router-link>
+                    <router-link to="/analytics/hist-health" class="an-nav-link">Robot Health</router-link>
                     <router-link to="/analytics/hist-data" class="an-nav-link">Historical Data</router-link>
                 </div>
             </div>
@@ -67,7 +68,7 @@ export default {
 
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=5000", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=50000", true);
         xhttp.send();
         return obs;
     },
@@ -125,7 +126,7 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=500&$expand=Observations", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=5000&$expand=Observations", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
@@ -175,7 +176,7 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=500&$expand=Datastreams", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=5000&$expand=Datastreams", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
@@ -197,7 +198,7 @@ export default {
     },
     th_data_check() {
         if (this.th.length > 0) {
-            //console.log(th);
+            console.log(this.th);
             this.saveData(this.th);
             this.$store.commit('updateTh', this.th);
         } else {
@@ -222,10 +223,13 @@ export default {
         this.$store.commit('clearRobotHealth');
         this.$store.commit('clearTemperatureData');
         this.$store.commit('clearCurrentData');
+        this.$store.commit('clearAllRobotHealth');
+
         //extract latest health observation   
-        var obj_rb = function(robot, health) {
+        var obj_rb = function(robot, health, date) {
             this.robot = robot;
-            this.health = health;
+            this.result = health;
+            this.date = date;
         }
         for (var i = 0; i < th.length; i++) {
             var name = th[i].name.slice(0,5);
@@ -233,21 +237,39 @@ export default {
             if (name === "robot") {
                 var ds = th[i].ds;
                 var health = null;
+                var date = null;
                 var rnum = "r"+th[i].name.slice(5);
                 for (var j = 0; j < ds.length; j++) {
                     if (ds[j].type == 'H') {
                         health = ds[j].obids[0].result;
+                        date = ds[j].obids[0].resultTime;
                     }
                 }
-                var rb = new obj_rb(rnum, health);
+                var rb = new obj_rb(rnum, health, date);
                 this.$store.commit('pushRobotHealth', rb);
 
             }
         }
 
+        //extract all robot health data
+        for (var i = 0; i < th.length; i++) {
+            var ds = th[i].ds;
+            var rname = th[i].name;
+            for (var j = 0; j < ds.length; j++) {
+                if (ds[j].type == 'H') {
+                ds[j].obids.forEach(ob => {
+                    result = ob.result;
+                    date = ob.time;
+                    var h_obs = new obj_rb(rname, result, date);
+                    this.$store.commit('pushAllRobotHealth', h_obs);
+                });
+                }
+            }
+        }
+
         //extract all temperature observations
         //{ "robot" : "robot_1", "date" : "2019-02-07T18:02:05.000Z", "result" : 30 },
-        TEMPERATURE_DATA = [];
+
         var obj_temp = function(robot, date, result) {
             this.robot = robot;
             this.date = date;
@@ -263,7 +285,6 @@ export default {
                 // loop through all ds of the robot
                 for (var j = 0; j < ds.length; j++) {
                     if (ds[j].type == 'T') {
-                        //console.log(ds[j].id);
                         // loop through all obs of the temp ds
                         for (var k = 0; k < ds[j].obids.length; k++) {
                             result = ds[j].obids[k].result;

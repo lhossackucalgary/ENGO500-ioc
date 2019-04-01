@@ -13,22 +13,22 @@ import re
 from util import *
 
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
+allData = []
 
 """ grabs all robot status from API """
 def grabAllRobotStatus():
     # Make list of all robots and status
     bot_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
-        if (r.status_code >= 200) and (r.status_code < 300):
-            responseJSON = r.json()
-            things = responseJSON["value"]
-            for thing in things:
-                if "status" in thing["properties"]:
-                    bot = {"iotid": thing["@iot.id"], "status": thing["properties"]["status"]}
-                    bot_list.append(bot)
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)      
+        things = rd.json()["value"]
+        for thing in things:
+            if "status" in thing["properties"]:
+                bot = {"iotid": thing["@iot.id"], "status": thing["properties"]["status"]}
+                bot_list.append(bot)
     except:
-        logging.exception("Failed getting list of robots")
+        print("error: datastreams at 1")
+        exit()
 
     #save in data file
     #print(bot_list)
@@ -77,17 +77,17 @@ def updateRobotStatus():
     # Make list of all robots
     for stat in robotStats:
         if (stat["status"] == "Healthy"):
-            if random.randint(1,100) > 80:
+            if random.randint(1,100) > 90:
                 switchtoWarning(stat)
-            if random.randint(1,100) > 95:
+            if random.randint(1,100) > 97:
                 switchtoUrgent(stat)
 
         if (stat["status"] == "Warning"):
-            if random.randint(1,100) > 70:
+            if random.randint(1,100) > 85:
                 switchtoUrgent(stat)
 
         if (stat["status"] == "Unknown"):
-            if random.randint(1,100) > 60:
+            if random.randint(1,100) > 92:
                 switchtoHealthy(stat)
             else:
                 switchtoWarning(stat)
@@ -132,38 +132,37 @@ def getWarningRobots():
     return warningBots
 
 def getRobotDatastreams(id):
-    try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things(%d)/Datastreams" %id, headers = headers)
-        #print("getting datastreams")
-    except:
-        print("error: datastreams at 1")
+    datastreams = None
+    for thing in allData:
+        if (thing["@iot.id"] == id):
+            datastreams = thing["Datastreams"]
+    if (datastreams == None): 
+        print("error in getRobotDatastreams(id)")
         exit()
-
-    #get all datastreams in json form
-    datastreams = rd.json()["value"]
     return datastreams
 
 def getDatastreamObs(id):
-    try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams(%d)/Observations" %id, headers = headers)
-    except:
-        print("error: getting datastream obs in getDatastreamObs(id) for %d" %id)
+    obs = None
+    for thing in allData:
+        for ds in thing["Datastreams"]:
+            if (ds["@iot.id"] == id):
+                obs = ds["Observations"]
+    if (obs == None):
+        print("error in DatastreamObs")
         exit()
-
-    #get all obs in json form
-    obs = rd.json()["value"]
     return obs
 
 def getObsResult(id):
-    try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Observations(%d)" %id, headers = headers)
-    except:
-        print("error: getting result in getObsResult(id) for %d" %id)
+    result = None
+    for thing in allData:
+        for ds in thing["Datastreams"]:
+            for obs in ds["Observations"]:
+                if (obs["@iot.id"] == id):
+                    result = obs["result"] #may need float(obs["result"])
+    if (result == None):
+        print("error in getObsResult(id)")
         exit()
-
-    #get all obs in json form
-    obs = float(rd.json()["result"])
-    return obs
+    return result
 
 def calcRobotHP():
     #before writing, need to create datastream and obsType for health
@@ -231,13 +230,44 @@ def calcRobotHP():
         else:
             print("error retreiving HP datastream iotid for %d" %bot["iotid"])
 
+def getAllData():
+
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000&$expand=Datastreams", headers = headers)      
+        all_th_ds = rd.json()["value"]
+    except:
+        print("error: datastreams at 1")
+        exit()
+    
+    try:
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=5000&$expand=Observations&$top=50000", headers = headers)      
+        all_ds_ob = rd.json()["value"]
+    except:
+        print("error: datastreams at 2")
+        exit()
+    
+    c1 = 0
+    c2 = 0
+    for th_ds in all_th_ds:
+        for ds in th_ds["Datastreams"]:
+            for ds_ob in all_ds_ob:
+                if (ds["@iot.id"] == ds_ob["@iot.id"]):
+                    all_th_ds[c1]["Datastreams"][c2] = ds_ob
+            c2 = c2 + 1
+        c2 = 0
+        c1 = c1 + 1
+    
+    global allData
+    allData = all_th_ds  
+
 def main():
+
     """ break some bots (Please improve when... possible) """
     # Make list of all robots
     bot_list = []
     crew_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
@@ -249,17 +279,24 @@ def main():
     except:
         logging.exception("Failed getting list of robots")
 
+    """get all data from API"""
+    #print("getting all data")
+    getAllData()
     """grab current robot status from API"""
+    #print("grabbing all robot status")
     grabAllRobotStatus()
     """run this to reset robot status to healthy"""
     #resetRobotStatus()
     """caclulate health of robots as observation"""
     """(this is done before updateRobotStatus, as it should correlate to prior robot sim data)"""
+    #print("calculating Robot HP")
     calcRobotHP()
     """make some robots sick"""
+    #print("updating robot status")
     updateRobotStatus()
 
     """get ids of broken bots (aka bots with warning and urgent status)"""
+    #print("getting broken & warning bots")
     broken_bots = getUrgentRobots()
     warning_bots = getWarningRobots()
     for botid in warning_bots:

@@ -16,8 +16,8 @@ from util import *
 
 
 #Globals
-NUM_ROBOTS = 30
-NUM_CREW = 3
+NUM_ROBOTS = 250
+NUM_CREW = 0
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
 def init_datastreams(id):
@@ -26,7 +26,7 @@ def init_datastreams(id):
         {
             "name": "CPU_TEMP_stream_%d" %id,
             "description": "Datastream for recording temperature",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "Degree Celsius",
                 "symbol": "degC",
@@ -39,7 +39,7 @@ def init_datastreams(id):
         {
             "name": "POWER_DRAW_stream_%d" %id,
             "description": "Datastream for recording pressure",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "kiloPascal",
                 "symbol": "kPa",
@@ -52,7 +52,7 @@ def init_datastreams(id):
         {
             "name": "HP_stream_%d" %id,
             "description": "Health percentage",
-            "observationType": "application/pdf",
+            "observationType": r'http://www.opengis.net/def/observationType/OGC-OM/2.0/OM_Measurement',
             "unitOfMeasurement": {
                 "name": "percentage",
                 "symbol": "%",
@@ -204,7 +204,7 @@ def create_robots():
 def initSimData():
     #get all datastreams from api
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams", headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000", headers = headers)      
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -231,7 +231,7 @@ def initRobotStatusData():
     # Make list of all robots
     bot_list = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
@@ -250,7 +250,7 @@ def initRobotStatus():
     # Make list of all robots
     bot_id = []
     try:
-        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things", headers = headers)
+        r = requests.get(url = "http://routescout.sensorup.com/v1.0/Things?$top=1000", headers = headers)
         if (r.status_code >= 200) and (r.status_code < 300):
             responseJSON = r.json()
             things = responseJSON["value"]
