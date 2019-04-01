@@ -1,7 +1,7 @@
 <template>
   <div id="outer_box">
+      <h2>Sensor807: Motor Power Draw</h2>
       <div id="vis2box" class="vis_div">
-          <h2>Sensor807: Motor Power Draw</h2>
           <svg id="vis2" class="svg_boxes"></svg>
       </div>
       <div id="vis2btn" class="vis_btn">
