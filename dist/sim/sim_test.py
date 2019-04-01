@@ -225,7 +225,8 @@ def main():
     #create_robots()
     #init_sensors()
     #init_observedProperties()
-    csvToJson()
+    #csvToJson()
+    print(datetime.datetime.now().replace(microsecond=0).isoformat())
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.realpath(__file__))
