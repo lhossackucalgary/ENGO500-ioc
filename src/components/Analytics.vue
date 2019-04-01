@@ -8,6 +8,7 @@
                     <router-link to="/analytics/robot-health" class="an-nav-link">Robot Health</router-link>
                     <router-link to="/analytics/cpu-temp" class="an-nav-link">CPU Temperature</router-link>
                     <router-link to="/analytics/power-draw" class="an-nav-link">Power Draw</router-link>
+                    <router-link to="/analytics/hist-health" class="an-nav-link">Historical Health</router-link>
                     <router-link to="/analytics/hist-data" class="an-nav-link">Historical Data</router-link>
                 </div>
             </div>
