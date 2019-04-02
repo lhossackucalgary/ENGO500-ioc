@@ -271,7 +271,7 @@ var singleLineGraph = function () {
         // Add the X Axis
         this.svg.append("g")
             .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
-            .call(d3.axisBottom(this.xScale));
+            .call(d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%b %d %H:%M:%S")));
 
         // Add the Y Axis
         this.yAxis = d3.axisLeft(this.yScale)

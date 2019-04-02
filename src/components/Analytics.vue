@@ -62,7 +62,24 @@ export default {
             if (this.readyState == 4 && this.status == 200) {
                 var r = JSON.parse(xhttp.responseText).value;
                 r.forEach(result => {
-                    var ob = new obj_obs(result['@iot.id'], result['result'], result['resultTime']);
+                    var oldtime = result['resultTime'];
+                    var hour = oldtime.slice(11,13);
+                    var add_day = 0;
+                    hour = hour+12;
+                    if (hour > 24) {
+                        hour = hour%24;
+                        add_day = 1;
+                    }
+                    if (hour < 10) {
+                        hour = "0"+String(hour);
+                    }
+                    var alttime = oldtime.slice(0,11)+String(hour)+oldtime.slice(13);
+                    var altday = parseInt(oldtime.slice(8,10));
+                    var altday = altday + add_day;
+                    if (altday < 10) altday = "0"+String(altday);
+                    var fintime = alttime.slice(0,8)+String(altday)+alttime.slice(10);
+                    //console.log(fintime);
+                    var ob = new obj_obs(result['@iot.id'], result['result'], fintime);
                     obs.push(ob);
                 });
 

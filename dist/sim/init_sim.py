@@ -16,7 +16,7 @@ from util import *
 
 
 #Globals
-NUM_ROBOTS = 250
+NUM_ROBOTS = 200
 NUM_CREW = 0
 headers = {"Authorization": "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI="}
 
