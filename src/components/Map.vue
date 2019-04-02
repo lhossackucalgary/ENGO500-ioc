@@ -108,7 +108,7 @@ export default {
   width: 250px;
   top: 60px;
   left: 0;
-  height: 100%;
+  height: 80%;
 }
 
 #layercontainer {
