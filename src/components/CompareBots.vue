@@ -179,7 +179,11 @@ var Healthplot = function(){
             .enter()
             .append("rect")
                 .attr("class", "bar")
-                .style("fill","lightgreen")
+                .style("fill", function(d) {
+                    if (d.result > 67) return "lightgreen";
+                    if (d.result > 33) return "orange";
+                    else return "red";
+                })
                 .attr("width", _vis1.xScale.bandwidth())
                 .attr("height", function(d) { return (_vis1.height - _margin.bottom - _vis1.yScale(d.result)); })
                 .attr("x", function(d, i) { return _vis1.xScale(i); })
@@ -199,7 +203,7 @@ var Healthplot = function(){
                 .attr("class", "barlabel")
                 .attr("x", function(d, i) { 
                     //return 190-_vis1.yScale(d.result); 
-                    return _vis1.xScale(i) + _vis1.xScale.bandwidth()-15;
+                    return _vis1.xScale(i) + _vis1.xScale.bandwidth();
                     })
                 .attr("y", function(d, i) {
                     //console.log(c);
@@ -208,6 +212,7 @@ var Healthplot = function(){
                     })
                 //.attr("transform", `rotate(-90) translate(${_vis1.height/3}, ${_vis1.width/2})`) //, ${_margin.left/2}, ${_vis1.height/2}
                 .text(function(d) {return d.result; })
+                //.attr("transform", `translate(${_margin.left-23}, 0)`)
                 .style("fill", "black")
                 .style("text-anchor", "middle");
     }
@@ -459,7 +464,7 @@ var singleLineGraph = function () {
         // Add the X Axis
         this.svg.append("g")
             .attr("transform", `translate(${_margin.left}, ${this.height - _margin.bottom})`)
-            .call(d3.axisBottom(this.xScale));
+            .call(d3.axisBottom(this.xScale).tickFormat(d3.timeFormat("%b %d %H:%M:%S")));
 
         // Add the Y Axis
         this.yAxis = d3.axisLeft(this.yScale)
