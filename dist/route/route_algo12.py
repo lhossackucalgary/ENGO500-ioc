@@ -73,8 +73,9 @@ def threeOpt(gene, bots):
 
 def dualOpt(gene, bots):
     gene = copy.deepcopy(twoOpt(gene, bots))
-    # gene = copy.deepcopy(threeOpt(gene, bots))
+    gene = copy.deepcopy(threeOpt(gene, bots))
     return gene
+
 
 def main():
     """
