@@ -98,7 +98,7 @@ def main():
                     break
         crew['dist'] = crew_dist
         total_dist = total_dist + crew_dist
-        print(crew)
+        #print(crew)
     print('Total Dist: ' + str(total_dist))
 
 

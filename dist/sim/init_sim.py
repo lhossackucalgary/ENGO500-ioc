@@ -204,7 +204,7 @@ def create_robots():
 def initSimData():
     #get all datastreams from api
     try:
-        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000", headers = headers)      
+        rd = requests.get(url = "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000", headers = headers)
         #print("getting datastreams")
     except:
         print("error: datastreams at 1")
@@ -222,7 +222,7 @@ def initSimData():
         rand = random.randint(0,17)
         ds = {"iotid": id, "psn": rand }
         ds_list.append(ds)
-    
+
     #print(ds_list)
     with open(r'data/dataSim.data', 'wb') as f:
         pickle.dump(ds_list, f)
@@ -238,10 +238,10 @@ def initRobotStatusData():
             for thing in things:
                 if "status" in thing["properties"]:
                     bot = {"iotid": thing["@iot.id"], "status": thing["properties"]["status"], "count": 10}
-                    bot_list.append(bot)                 
+                    bot_list.append(bot)
     except:
         logging.exception("Failed getting list of robots")
-    
+
     #save in data file
     with open(r'data/robotStatus.data', 'wb') as f:
         pickle.dump(bot_list, f)
@@ -256,10 +256,10 @@ def initRobotStatus():
             things = responseJSON["value"]
             for thing in things:
                 if "status" in thing["properties"]:
-                    bot_id.append(thing["@iot.id"])                 
+                    bot_id.append(thing["@iot.id"])
     except:
         logging.exception("Failed getting list of robots")
-       
+
     #change all robot status to healthy
     for id in bot_id:
         try:
@@ -284,7 +284,7 @@ def main():
     initRobotStatusData()
     initRobotStatus()
 
-    
+
 
 
 if __name__ == '__main__':

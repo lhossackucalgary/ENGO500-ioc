@@ -42,7 +42,6 @@ def main():
         while item in crew_list:
             crew_list.remove(item)
 
-    print(crew_list)
     for index in broken_bots:
         try:
             broken_bot_loc = requests.get(url = "http://routescout.sensorup.com/v1.0/Things("+ str(index) + ")/Locations", headers = headers)
@@ -92,9 +91,7 @@ def main():
                 dist = geopy.distance.distance(broken_bot_coord[j],crew_coord[i]).km
                 cb_dist[j] = [j,dist]
 
-
             cb_dist.sort(key=lambda x: x[1])
-            print(cb_dist)
 
             for k in range(0,len(cb_dist)):
                 if (len(crew_routes[i])) <= (total_broken/len(crew_list)):
@@ -104,53 +101,9 @@ def main():
                     del broken_bot_coord[cb_dist[k][0]]
                     break
 
-
-        """
-        for i in range(0,len(crew_routes_dist)):
-            crew_routes_dist[i].sort(key=lambda x: x[1])
-            for j in range(0,len(crew_routes_dist[i])):
-                crew_routes[i].append(crew_routes_dist[i][j][0])
-        """
-
         if len(broken_bots) == 0:
             break
 
-
-    """
-    Check if there are any crews with 0 robots, if so - assign closest robot to crew
-
-
-    check_bot = []
-    check_crew = []
-    check_crew = [i for i,x in enumerate(crew_routes) if not x]
-    for i in range(0,len(crew_routes)):
-        if len(crew_routes[i]) > 1:
-            check_bot = check_bot + crew_routes[i]
-    check_dist = [[] for _ in range(0,len(check_bot))]
-
-
-    if (len(broken_bots) > len(crew_list)):
-        for i in range(0,len(check_crew)):
-
-            check_bot = []
-            for k in range(0,len(crew_routes)):
-                if len(crew_routes[k]) > 1:
-                    check_bot = check_bot + crew_routes[k]
-                check_dist = [[] for _ in range(0,len(check_bot))]
-
-            for j in range(0,len(check_bot)):
-                check_dist[j] = [check_bot[j],geopy.distance.distance(broken_bot_coord[(broken_bots.index(check_bot[j]))],crew_coord[i]).km]
-            min_check = min(check_dist, key=lambda x: x[1])
-
-            for crew in crew_routes:
-                try:
-                    crew.remove(min_check[0])
-                except ValueError:
-                    pass
-
-            crew_routes[check_crew[i]].append(min_check[0])
-    """
-    print(crew_routes)
     """
     Uploading routes to server
     """

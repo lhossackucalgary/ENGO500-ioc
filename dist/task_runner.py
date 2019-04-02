@@ -3,7 +3,7 @@ import time
 import os
 
 # OPTIONS:
-pylib = "/usr/local/bin/python3"
+pylib = r"C:\Windows\py.exe"
 
 def loop(counter):
     if counter % 2 == 0:
@@ -11,9 +11,9 @@ def loop(counter):
         os.chdir(os.sep.join([".", "monitor"]))
         subprocess.run([pylib, os.sep.join([".", "monitor.py"])])
         os.chdir("..")
-        print("starting route_algo10")
+        print("starting route_algo")
         os.chdir(os.sep.join([".", "route"]))
-        subprocess.run([pylib, os.sep.join([".", "route_algo10.py"])])
+        subprocess.run([pylib, os.sep.join([".", "route_algo12.py"])])
         os.chdir("..")
     print("starting sim_main")
     os.chdir(os.sep.join([".", "sim"]))
