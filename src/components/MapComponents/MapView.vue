@@ -257,7 +257,7 @@ export default {
       this.LoadMapData(this.things, this.thing_ids, this.thing_locations, this.bots_healthy_source,
                     this.bots_warning_source, this.bots_urgent_source, this.bots_unknown_source,
                     this.bots_needsparts_source, this.crews_source, this.routes_source);
-      setTimeout(this.sendDataRequest, 60000);
+      setTimeout(this.sendDataRequest, 15000);
     },
 
     getLocations: function(listOfThings, outputMap) {
