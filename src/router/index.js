@@ -20,8 +20,8 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'Splash',
-      component: Splash
+      name: 'Map',
+      component: Map
     },
     {
       path: '/map',

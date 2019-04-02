@@ -183,6 +183,7 @@ export default {
   width: 25%;
   background-color: white;
   text-align: left;
+  overflow-y: scroll;
 }
 #closecrewinfopanebtn {
   position: absolute;
