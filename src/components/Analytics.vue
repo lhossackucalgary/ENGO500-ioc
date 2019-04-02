@@ -45,10 +45,11 @@ export default {
       _vis_height: this._vis_height,
       _vis_width: this._vis_width,
       PADDING_FOR_LABELS: this.PADDING_FOR_LABELS,
-      obs: [],
+      obs: {},
       ds: [],
       th: [],
-      data_counter: 0
+      data_counter: 0,
+      obs_check_counter: 0
     }
   },
   methods: {
@@ -94,7 +95,7 @@ export default {
                         //console.log(fintime);
                         
                         var ob = new obj_obs(result['@iot.id'], result['result'], fintime);
-                        lthis.obs.push(ob);
+                        lthis.obs[String(ob.id)] = ob;
                     });
                 }
         }})(localthis);
@@ -158,9 +159,9 @@ export default {
                     
                     var ob = new obj_obs(result['@iot.id'], result['result'], fintime);
                     if (typeof(lthis.obs) === 'undefined') {
-                        lthis.obs = new Array();
+                        lthis.obs = new Object();
                     }
-                    lthis.obs.push(ob);
+                    lthis.obs[String(ob.id)] = ob;
                 });
 
             }
@@ -207,16 +208,25 @@ export default {
                     var obids = [];
                     for (var j = 0; j < obs.length; j++) {
                         var obid = obs[j]['@iot.id'];//obid at datastream i,
-
+// ----------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------
+//HERE ------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------
                         //get the info of the obs
+                        //var temp = obs_all[String(obid)];
+                        if (typeof(obs_all[String(obid)]) != 'undefined') {
+                                obids.push(obs_all[String(obid)]);
+                        }
+                        /*
                         obs_all.forEach(res => {
                             if (obid == res.id) {
                                 //push to obids, which now contains obs info (id, result, time)
                                 obids.push(res);
                             }
-                        })
+                        })*/
                     }
-
+                    //console.log(obids);
                     //create new obj_ds_ob to hold all of the data
                     var dsob = new Obj_ds_ob(dsid,type,obids);
                     //add to array of datastream w obs
@@ -281,12 +291,17 @@ export default {
         return thdsobs;
     },
     obs_data_check() {
-        if (typeof(this.obs) != 'undefined' && this.obs.length == this.data_counter) {
+        if (typeof(this.obs) != 'undefined' && Object.keys(this.obs).length == this.data_counter) { 
+            console.log(this.obs);
+            this.ds = this.loadDatastreams_Obs(this.obs);
+        } else if (typeof(this.obs) != 'undefined' && Object.keys(this.obs).length > 0 && this.obs_check_counter == Object.keys(this.obs).length) {
+            console.log("obs limit reached at length: " + Object.keys(this.obs).length);
             console.log(this.obs);
             this.ds = this.loadDatastreams_Obs(this.obs);
         } else {
             if (typeof(this.obs) != 'undefined') {
-                console.log(this.obs.length);
+                console.log(Object.keys(this.obs).length);
+                this.obs_check_counter = Object.keys(this.obs).length;
             }
             setTimeout(this.obs_data_check, 5000);
         }
