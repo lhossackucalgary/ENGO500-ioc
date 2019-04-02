@@ -77,17 +77,17 @@ def updateRobotStatus():
     # Make list of all robots
     for stat in robotStats:
         if (stat["status"] == "Healthy"):
-            if random.randint(1,100) > 90:
+            if random.randint(1,1000) > 995:
                 switchtoWarning(stat)
-            if random.randint(1,100) > 97:
+            if random.randint(1,1000) > 999:
                 switchtoUrgent(stat)
 
         if (stat["status"] == "Warning"):
-            if random.randint(1,100) > 85:
+            if random.randint(1,100) > 99:
                 switchtoUrgent(stat)
 
         if (stat["status"] == "Unknown"):
-            if random.randint(1,100) > 92:
+            if random.randint(1,100) > 95:
                 switchtoHealthy(stat)
             else:
                 switchtoWarning(stat)

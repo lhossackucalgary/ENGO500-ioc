@@ -32,8 +32,11 @@ var CURRENT_DATA = [];
 
 export default {
   name: 'Analytics',
-  mounted () {
+  created () {
     this.getData();
+  },
+  mounted () {
+    
   },
   data () {
     return {
@@ -45,9 +48,61 @@ export default {
       obs: [],
       ds: [],
       th: [],
+      data_counter: 0
     }
   },
   methods: {
+    getNextObs(url){
+        var localthis = this;
+        var xhttp2 = new XMLHttpRequest();
+        xhttp2.onreadystatechange = (function(lthis) {
+            return function () {
+                var obj_obs = function(id, result, time) {
+                    this.id = id;
+                    this.result = result;
+                    this.time = time;
+                }
+                if (this.readyState == 4 && this.status == 200) {
+                    var r = JSON.parse(xhttp2.responseText).value;
+                    r.forEach(result => {
+                        var oldtime = result['resultTime'];
+                        
+                        var hour = parseInt(oldtime.slice(11,13));
+                        var add_day = false;
+                        hour = hour+6;
+                        if (hour > 24) {
+                            hour = hour%24;
+                            add_day = true;
+                        }
+                        if (hour < 10) {
+                            hour = "0"+String(hour);
+                        }
+                        var alttime = oldtime.slice(0,11)+String(hour)+oldtime.slice(13);
+
+                        if (add_day == true) {
+                            var altday = parseInt(oldtime.slice(8,10));
+                            var altday = altday + 1;
+                            if (altday < 10) {
+                                altday = "0"+String(altday);
+                                //console.log(altday);
+                            }
+                            var fintime = alttime.slice(0,8)+String(altday)+alttime.slice(10);
+                        } else {
+                            var fintime = alttime;
+                        }
+                        
+                        //console.log(fintime);
+                        
+                        var ob = new obj_obs(result['@iot.id'], result['result'], fintime);
+                        lthis.obs.push(ob);
+                    });
+                }
+        }})(localthis);
+        xhttp2.open("GET", url, true);
+        xhttp2.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+        xhttp2.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+        xhttp2.send();
+    },
     loadObservations(){
         //create object to hold observation id, result, and time
         var obj_obs = function(id, result, time) {
@@ -56,38 +111,64 @@ export default {
             this.time = time;
         }
         //create an object with null values to hold resulting obs
-        var obs = [];
+        var localthis = this;
         var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function () {
+        xhttp.onreadystatechange = (function (lthis) {
+            return function () {
             if (this.readyState == 4 && this.status == 200) {
                 var r = JSON.parse(xhttp.responseText).value;
+                var dcheck = JSON.parse(xhttp.responseText);
+                var nl_exist = false;
+                var iot_count = JSON.parse(xhttp.responseText)['@iot.count'];
+                lthis.data_counter = iot_count;
+                if (iot_count > 2000) {
+                    for (let i = 2000; i < iot_count; i += 2000) {
+                        lthis.getNextObs("http://routescout.sensorup.com/v1.0/Observations?$top=2000&$skip=" + i);
+                    }
+                }
+
                 r.forEach(result => {
                     var oldtime = result['resultTime'];
-                    var hour = oldtime.slice(11,13);
-                    var add_day = 0;
-                    hour = hour+12;
+                    
+                    var hour = parseInt(oldtime.slice(11,13));
+                    var add_day = false;
+                    hour = hour+6;
                     if (hour > 24) {
                         hour = hour%24;
-                        add_day = 1;
+                        add_day = true;
                     }
                     if (hour < 10) {
                         hour = "0"+String(hour);
                     }
                     var alttime = oldtime.slice(0,11)+String(hour)+oldtime.slice(13);
-                    var altday = parseInt(oldtime.slice(8,10));
-                    var altday = altday + add_day;
-                    if (altday < 10) altday = "0"+String(altday);
-                    var fintime = alttime.slice(0,8)+String(altday)+alttime.slice(10);
+
+                    if (add_day == true) {
+                        var altday = parseInt(oldtime.slice(8,10));
+                        var altday = altday + 1;
+                        if (altday < 10) {
+                            altday = "0"+String(altday);
+                            //console.log(altday);
+                        }
+                        var fintime = alttime.slice(0,8)+String(altday)+alttime.slice(10);
+                    } else {
+                        var fintime = alttime;
+                    }
+                    
                     //console.log(fintime);
+                    
                     var ob = new obj_obs(result['@iot.id'], result['result'], fintime);
-                    obs.push(ob);
+                    if (typeof(lthis.obs) === 'undefined') {
+                        lthis.obs = new Array();
+                    }
+                    lthis.obs.push(ob);
                 });
 
             }
-        };
+        }})(localthis)
         xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Observations?$top=50000", true);
+        xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
+        xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
-        return obs;
     },
 
     loadDatastreams_Obs(obs_all){
@@ -143,7 +224,7 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=5000&$expand=Observations", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Datastreams?$top=50000&$expand=Observations", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
@@ -193,24 +274,30 @@ export default {
                 }
             }
         };
-        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=5000&$expand=Datastreams", true);
+        xhttp.open("GET", "http://routescout.sensorup.com/v1.0/Things?$top=50000&$expand=Datastreams", true);
         xhttp.setRequestHeader("Authorization", "Basic bWFpbjoxYTZhZjZkOC1hMDc0LTVlNDgtOTNiYi04ZGY3MDllZDE3ODI=");
         xhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
         xhttp.send();
         return thdsobs;
     },
     obs_data_check() {
-        if (this.obs.length > 0) {
+        if (typeof(this.obs) != 'undefined' && this.obs.length == this.data_counter) {
+            console.log(this.obs);
             this.ds = this.loadDatastreams_Obs(this.obs);
         } else {
-            setTimeout(this.obs_data_check, 500);
+            if (typeof(this.obs) != 'undefined') {
+                console.log(this.obs.length);
+            }
+            setTimeout(this.obs_data_check, 5000);
         }
     },
     ds_data_check() {
         if (this.ds.length > 0) {
+            console.log("datastream_obs loaded");
             this.th = this.loadThing_Datastreams_Obs(this.ds);
         } else {
-            setTimeout(this.ds_data_check, 500);
+            console.log("Loading datastream obs");
+            setTimeout(this.ds_data_check, 5000);
         }
     },
     th_data_check() {
@@ -219,7 +306,7 @@ export default {
             this.saveData(this.th);
             this.$store.commit('updateTh', this.th);
         } else {
-            setTimeout(this.th_data_check, 500);
+            setTimeout(this.th_data_check, 5000);
         }
     },
     getData(){
