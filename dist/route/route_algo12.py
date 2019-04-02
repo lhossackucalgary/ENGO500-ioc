@@ -161,6 +161,8 @@ def main():
     """
     If crew description is valid and not empty, add to crew route
     """
+    crew_desc_list = []
+
     for crew in crew_list:
         if not crew['desc']:
             continue
@@ -169,7 +171,7 @@ def main():
             crew_desc = crew_desc.split(',')
             try:
                 crew_desc = list(map(int, crew_desc))
-                crew['route'] = crew_desc
+                crew.append({'desc': crew_desc})
                 for bot in broken_bots:
                     if crew_desc[-1] == bot['iotid']:
                         crew['coord'] = bot['coord']
@@ -191,14 +193,14 @@ def main():
     """
     Route Optimization using 2 & 3-Opt
     """
-    # print(bot_copy)
-    # print(crew_list)
     bot_coord_dict = {}
     for bot in bot_copy:
         bot_coord_dict.update({bot['iotid']: bot['coord']})
 
+
     for crew in crew_list:
-        crew["route"] = dualOpt(crew["route"], bot_coord_dict)
+        crew['route'] = dualOpt(crew['route'], bot_coord_dict)
+        crew['route'] = crew['desc'] + crew['route']
 
 
     """
@@ -209,7 +211,6 @@ def main():
             continue
         if not crew['desc']:
             crew['desc'] = '[' + str(crew['route'][0]) + ']'
-        crew['desc'] = '[]'
 
 
     """
@@ -225,7 +226,6 @@ def main():
                 logging.warning("HTTP Error code while adding route for crew %d" % crew_list[index])
         except:
                 logging.exception("Exception thrown generating route")
-
 
 """
 Logging data
