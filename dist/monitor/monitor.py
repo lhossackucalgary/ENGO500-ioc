@@ -72,8 +72,7 @@ def switchtoUrgent(stat):
 def updateRobotStatus():
     #get updated robot status data
     #cwd = os.path.dirname(os.path.realpath(__file__))
-    robotStats = load_data(r'../sim/data/robotStatus.data')
-
+    robotStats = load_data(r'../sim/data/robotStatus.data') 
     # Make list of all robots
     for stat in robotStats:
         if (stat["status"] == "Healthy"):
